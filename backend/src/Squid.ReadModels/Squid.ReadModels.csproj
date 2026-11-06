@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Read projections and queries (doc 05 §4.4). A separate path from the write side. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

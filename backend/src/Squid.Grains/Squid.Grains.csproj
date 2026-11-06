@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Grains + resilience. Orchestrates the canonical model; never references the database (ADR-35). -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

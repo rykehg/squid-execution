@@ -1,0 +1,17 @@
+<Project>
+
+  <!-- Central package management (ADR-25): every package version lives here, never in a .csproj.
+       A PackageReference in a project carries no Version= attribute. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Test stack of Squid.Tests; this exact set restores on SDK 10.0.403 (GAP-07). -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,122 @@
+<Project>
+
+  <!-- ADR-25: the layer boundary is a BUILD rule, not a review habit (doc 05 section 11).
+       A project that reaches outside its layer fails to build, and the error names both
+       projects, for example:
+
+         error SQUID0001: Squid.Domain (layer: domain) must not reference Squid.Persistence.
+         The canonical model carries no infrastructure and no framework...
+
+       How it works: the prohibited names of a layer are declared in (SquidForbidden); each
+       real ProjectReference of the project being built is handed to
+       Squid.DependencyRule.Emitter.proj, which writes a violation line when the layer bans
+       that name; any line found becomes the error above. Adding the reference to a .csproj
+       is the only way to violate the rule. -->
+
+  <PropertyGroup>
+    <SquidDomain>Squid.Domain</SquidDomain>
+    <SquidGrains>Squid.Grains</SquidGrains>
+    <SquidPersistence>Squid.Persistence</SquidPersistence>
+    <SquidDependencyRuleEmitter>$(MSBuildThisFileDirectory)Squid.DependencyRule.Emitter.proj</SquidDependencyRuleEmitter>
+  </PropertyGroup>
+
+  <!-- Layer of the project being built. An unlisted project is a leaf and may reference anyone. -->
+  <PropertyGroup>
+    <SquidLayer Condition="'$(MSBuildProjectName)' == '$(SquidDomain)'">domain</SquidLayer>
+    <SquidLayer Condition="'$(MSBuildProjectName)' == '$(SquidGrains)'">grains</SquidLayer>
+    <SquidLayer Condition="'$(MSBuildProjectName)' == '$(SquidPersistence)' OR '$(MSBuildProjectName)' == 'Squid.ReadModels'">storage</SquidLayer>
+    <SquidLayer Condition="'$(MSBuildProjectName)' == 'Squid.Protocols'">adapter</SquidLayer>
+    <SquidLayer Condition="'$(MSBuildProjectName)' == 'Squid.Api' OR '$(MSBuildProjectName)' == 'Squid.PeerClient'">edge</SquidLayer>
+    <SquidLayer Condition="'$(MSBuildProjectName)' == 'Squid.Service' OR '$(MSBuildProjectName)' == 'Squid.Worker'">root</SquidLayer>
+    <SquidLayer Condition="'$(MSBuildProjectName)' == 'Squid.Tests'">test</SquidLayer>
+    <SquidLayerName Condition="'$(SquidLayer)' != ''">$(SquidLayer)</SquidLayerName>
+    <SquidLayerName Condition="'$(SquidLayerName)' == ''">unlisted</SquidLayerName>
+    <SquidDependencyReport>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)Squid.DependencyRule.violation'))</SquidDependencyReport>
+  </PropertyGroup>
+
+  <!-- Domain is the canonical model: no Orleans, no JSON-LD, no I/O, no project at all. -->
+  <ItemGroup Condition="'$(SquidLayer)' == 'domain'">
+    <SquidForbidden Include="*" Reason="The canonical model carries no infrastructure and no framework: no Orleans, no JSON-LD, no storage, no I/O." />
+  </ItemGroup>
+
+  <!-- Grains orchestrate Domain; the storage layer stays out (ADR-35). -->
+  <ItemGroup Condition="'$(SquidLayer)' == 'grains'">
+    <SquidForbidden Include="$(SquidPersistence)" Reason="Grains reach storage through IGrainStorage, never through a project reference (ADR-35)." />
+    <SquidForbidden Include="Squid.ReadModels" Reason="Grains own the write side; read projections are a separate path." />
+    <SquidForbidden Include="Squid.Service" Reason="A composition root cannot be referenced from a layer." />
+    <SquidForbidden Include="Squid.Worker" Reason="A composition root cannot be referenced from a layer." />
+  </ItemGroup>
+
+  <!-- Storage implements contracts; it never knows its callers. -->
+  <ItemGroup Condition="'$(SquidLayer)' == 'storage'">
+    <SquidForbidden Include="$(SquidGrains)" Reason="Storage depends on contracts, not on the grains that consume it." />
+    <SquidForbidden Include="Squid.Api" Reason="Storage must not depend on the HTTP edge." />
+    <SquidForbidden Include="Squid.Service" Reason="A composition root cannot be referenced from a layer." />
+    <SquidForbidden Include="Squid.Worker" Reason="A composition root cannot be referenced from a layer." />
+    <SquidForbidden Include="Squid.PeerClient" Reason="A console client must not be referenced from a layer." />
+  </ItemGroup>
+
+  <!-- Protocol adapters are replaceable: they do not reach back into the edge or the roots. -->
+  <ItemGroup Condition="'$(SquidLayer)' == 'adapter'">
+    <SquidForbidden Include="Squid.Api" Reason="A protocol adapter must not depend on the HTTP edge." />
+    <SquidForbidden Include="Squid.Service" Reason="A composition root cannot be referenced from a layer." />
+    <SquidForbidden Include="Squid.Worker" Reason="A composition root cannot be referenced from a layer." />
+  </ItemGroup>
+
+  <!-- The HTTP edge calls grains and reads ReadModels (doc 05 section 11). -->
+  <ItemGroup Condition="'$(SquidLayer)' == 'edge'">
+    <SquidForbidden Include="$(SquidPersistence)" Reason="The edge talks to grains and read models; it never opens the database itself." />
+    <SquidForbidden Include="Squid.Service" Reason="Composition happens in the root, not in the layers it composes." />
+    <SquidForbidden Include="Squid.Worker" Reason="Composition happens in the root, not in the layers it composes." />
+    <SquidForbidden Include="Squid.Api" Condition="'$(MSBuildProjectName)' != 'Squid.Api'" Reason="The HTTP edge is a leaf of the graph." />
+  </ItemGroup>
+
+  <!-- The roots compose everything; they are never referenced back. A root may reference
+       another root (both are composition roots, doc 05 section 11), so they are not banned
+       from each other. -->
+  <ItemGroup Condition="'$(SquidLayer)' == 'root'">
+    <SquidForbidden Include="Squid.Tests" Reason="A composition root cannot depend on the test assembly." />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SquidLayer)' == ''">
+    <SquidForbidden Include="Squid.Service" Reason="A composition root cannot be referenced from an unlisted project." />
+    <SquidForbidden Include="Squid.Worker" Reason="A composition root cannot be referenced from an unlisted project." />
+  </ItemGroup>
+
+  <!-- The rule. Each forbidden entry travels as 'Name|reason', so one lookup answers both
+       "is this edge banned" and "why": IndexOf('|Name|') can never match a prefix of another
+       project's name. An entry of '*' bans every edge (Domain).
+       '|' is used because the MSBuild task's Properties= is ';'-separated: a name carrying a
+       ';' would truncate the property list silently. -->
+  <Target Name="SquidCheckDependencyRule"
+          BeforeTargets="PrepareForBuild;_CheckForInvalidConfigurationAndPlatform"
+          Condition="'@(ProjectReference)' != ''">
+
+    <PropertyGroup>
+      <SquidBanList>|@(SquidForbidden->'%(Identity)|%(Reason)', '|')|</SquidBanList>
+      <SquidBanList Condition="'%(SquidForbidden.Identity)' == '*'">*</SquidBanList>
+    </PropertyGroup>
+
+    <Delete Files="$(SquidDependencyReport)" ContinueOnError="true" />
+
+    <!-- One edge per invocation, carried as 'Name|' so the child can split name from reason. -->
+    <MSBuild Projects="$(SquidDependencyRuleEmitter)"
+             Targets="SquidEmitEdge"
+             BuildInParallel="false"
+             Properties="ParentProject=$(MSBuildProjectName);ParentLayer=$(SquidLayerName);EdgeSpec=%(ProjectReference.Filename)|;BanList=$(SquidBanList);ReportFile=$(SquidDependencyReport)" />
+
+    <ReadLinesFromFile File="$(SquidDependencyReport)">
+      <Output TaskParameter="Lines" ItemName="SquidDependencyViolation" />
+    </ReadLinesFromFile>
+
+    <Delete Files="$(SquidDependencyReport)" ContinueOnError="true" />
+
+    <!-- One error per violation, each a single line: an Error task logs one line, so the
+         reason travels inside the message instead of on a second line. -->
+    <Error Condition="'@(SquidDependencyViolation)' != ''"
+           Code="SQUID0001"
+           Text="@(SquidDependencyViolation)" />
+
+  </Target>
+
+</Project>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Console client that simulates a remote instance and its failures. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Squid.Protocols\Squid.Protocols.csproj" />
+  </ItemGroup>
+
+</Project>

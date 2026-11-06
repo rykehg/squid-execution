@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- IGrainStorage (SQLite/Oracle), IDbConnectionFactory, quota ledger + migrations.
+       Implements contracts; it must not reference the grains that consume it (ADR-35). -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
