@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Unit + integration + architecture tests, run by `dotnet test` (xunit + Microsoft.NET.Test.Sdk).
+       Versions live in backend/Directory.Packages.props (ADR-25): no Version= here.
+       xunit.runner.visualstudio is built against Test SDK 17.9.0 while Directory.Packages.props pins
+       17.14.1, which is what NU1608 warns about; the four packages below are the set proven to
+       restore and run on this machine (GAP-07). -->
+
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);NU1608</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Every project is referenced so a forbidden edge found by a test has a project to point at. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Squid.Api\Squid.Api.csproj" />
+    <ProjectReference Include="..\..\src\Squid.Domain\Squid.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Squid.Grains\Squid.Grains.csproj" />
+    <ProjectReference Include="..\..\src\Squid.PeerClient\Squid.PeerClient.csproj" />
+    <ProjectReference Include="..\..\src\Squid.Persistence\Squid.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\Squid.Protocols\Squid.Protocols.csproj" />
+    <ProjectReference Include="..\..\src\Squid.ReadModels\Squid.ReadModels.csproj" />
+    <ProjectReference Include="..\..\src\Squid.Service\Squid.Service.csproj" />
+    <ProjectReference Include="..\..\src\Squid.Worker\Squid.Worker.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Minimal APIs, ActivityPub endpoints, SSE, auth (doc 05 §11). Calls grains and reads read models. -->
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
+    <ProjectReference Include="..\Squid.Grains\Squid.Grains.csproj" />
+    <ProjectReference Include="..\Squid.ReadModels\Squid.ReadModels.csproj" />
+  </ItemGroup>
+
+</Project>

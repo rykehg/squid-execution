@@ -1,0 +1,36 @@
+<Project>
+
+  <!-- Emitter invoked by backend/Directory.Build.targets, once per ProjectReference of the
+       project being built. Properties passed in:
+         ParentProject  project declaring the reference
+         ParentLayer    its layer (domain, grains, storage, adapter, edge, root, test)
+         EdgeSpec       the referenced project, as 'Name|' (the name is everything before '|')
+         BanList        '|'-separated 'Name|reason' entries this layer must not reference, or '*'
+         ReportFile     absolute path where the violation line is written, when banned
+       Why this file exists: an item condition cannot compare two item lists, so the
+       comparison happens here, in a property value, and WriteLinesToFile records the answer.
+       Three MSBuild constraints shaped this file, each measured rather than assumed:
+         - a ';' inside a Condition is rejected (MSB4090) and the backtick escape does not help;
+         - the MSBuild task's Properties= is ';'-separated, so any ';' in a value truncates it
+           silently: hence '|' inside this protocol and EdgeSpec ending in '|';
+         - a relative ReportFile resolves against the child build, so the path is absolute. -->
+
+  <Target Name="SquidEmitEdge">
+
+    <PropertyGroup>
+      <SquidEdgeName>$(EdgeSpec.Substring(0, $(EdgeSpec.IndexOf('|'))))</SquidEdgeName>
+      <SquidEdgeIndex Condition="'$(BanList)' != '*'">$(BanList.IndexOf('|$(SquidEdgeName)|'))</SquidEdgeIndex>
+      <SquidEdgeBanned Condition="'$(BanList)' == '*'">true</SquidEdgeBanned>
+      <SquidEdgeBanned Condition="'$(SquidEdgeIndex)' != '' AND '$(SquidEdgeIndex)' != '-1'">true</SquidEdgeBanned>
+      <SquidEdgeReason Condition="'$(SquidEdgeIndex)' != '' AND '$(SquidEdgeIndex)' != '-1'">$(BanList.Substring($([MSBuild]::Add($(SquidEdgeIndex), 1))).Split('|')[1])</SquidEdgeReason>
+      <SquidEdgeReason Condition="'$(BanList)' == '*'">$(BanList)</SquidEdgeReason>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(ReportFile)"
+                      Lines="$(ParentProject) (layer: $(ParentLayer)) must not reference $(SquidEdgeName). $(SquidEdgeReason) Remove that ProjectReference from $(ParentProject).csproj; the direction is fixed by doc 05 section 11 and ADR-25."
+                      Overwrite="true"
+                      Condition="'$(SquidEdgeBanned)' == 'true' AND !Exists('$(ReportFile)')" />
+
+  </Target>
+
+</Project>

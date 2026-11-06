@@ -1,0 +1,24 @@
+# Normaliza texto no índice para LF, independente do sistema operacional.
+* text=auto eol=lf
+
+# Scripts que o sistema operacional executa direto.
+*.ps1 text eol=crlf
+*.sh text eol=lf
+*.cmd text eol=crlf
+
+# Binários: nunca normalizar, nunca diff textual.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.mp4 binary
+*.webm binary
+*.mp3 binary
+*.ogg binary
+*.wav binary
+*.pdf binary
+*.zip binary
+*.db binary
+*.sqlite binary

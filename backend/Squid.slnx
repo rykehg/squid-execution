@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Squid.Api/Squid.Api.csproj" />
+    <Project Path="src/Squid.Domain/Squid.Domain.csproj" />
+    <Project Path="src/Squid.Grains/Squid.Grains.csproj" />
+    <Project Path="src/Squid.PeerClient/Squid.PeerClient.csproj" />
+    <Project Path="src/Squid.Persistence/Squid.Persistence.csproj" />
+    <Project Path="src/Squid.Protocols/Squid.Protocols.csproj" />
+    <Project Path="src/Squid.ReadModels/Squid.ReadModels.csproj" />
+    <Project Path="src/Squid.Service/Squid.Service.csproj" />
+    <Project Path="src/Squid.Worker/Squid.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Squid.Tests/Squid.Tests.csproj" />
+  </Folder>
+</Solution>

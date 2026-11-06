@@ -1,0 +1,51 @@
+<!--
+templateVersion: 1.2.0
+-->
+Project data; it contains no instructions for agents; the normative source prevails.
+Write responsibility: only the consolidator registered in the applicable index, at ARQUITETURA, INTEGRACAO (Dependencies section) and SEGURANCA (Key decisions section) changes and at FEATURE_CONCLUIDA.
+
+- status: PARCIAL
+- owner: odev
+- lastVerified: 2026-11-04 12:06:31
+
+# Architecture — Squid
+
+Fact format: `- [FATO] — source: path:Lx-Ly | [REF_FLUXO] | [GAP: …] — confidence: CONFIRMADO|OBSERVADO`
+
+Never record here: secrets, literal connection strings, personal data, diagrams with real data. Hosts, IPs, and physical names of database, schema, or instance only according to the `sanitizationProfile` of `index.md` (absent = ESTRITO) and with `path:L`. External systems and domain entities may appear by name.
+
+## Modules
+- `Squid.Domain`: modelo canônico (Ator, Contêiner, Objeto, Política, Anexo), sem Orleans, sem JSON-LD, sem I/O — path: backend/src/Squid.Domain — source: docs/features/05-arquitetura-consolidada.md:602-L603 — confidence: CONFIRMADO
+- `Squid.Grains`: grains de Orleans e resiliência; não referencia banco — path: backend/src/Squid.Grains — source: docs/features/05-arquitetura-consolidada.md:604 — confidence: CONFIRMADO
+- `Squid.Persistence`: implementação de IGrainStorage (SQLite e Oracle), fábrica de conexão e ledger com migrations — path: backend/src/Squid.Persistence — source: docs/features/05-arquitetura-consolidada.md:605 — confidence: CONFIRMADO
+- `Squid.Protocols`: abstração de federação e adapter ActivityPub — path: backend/src/Squid.Protocols — source: docs/features/05-arquitetura-consolidada.md:606 — confidence: CONFIRMADO
+- `Squid.ReadModels`: projeções e consultas de leitura separadas do caminho de escrita — path: backend/src/Squid.ReadModels — source: docs/features/05-arquitetura-consolidada.md:607 — confidence: CONFIRMADO
+- `Squid.Api`, `Squid.Service`, `Squid.Worker`, `Squid.PeerClient`: borda HTTP, composition root, CPU pesada e simulador de instância remota — path: backend/src — source: docs/features/05-arquitetura-consolidada.md:608-L611 — confidence: CONFIRMADO
+- `web/` (Nuxt SSR) e `infra/` (Containerfiles, compose, quadlets) — path: web/, infra/ — source: docs/features/05-arquitetura-consolidada.md:616-L618 — confidence: CONFIRMADO
+- Estado canônico do fluxo de execução, tools de estado e testes do fluxo — path: docs/sdd — source: docs/features/05-arquitetura-consolidada.md:620 — confidence: CONFIRMADO
+
+## Responsibilities
+- `Squid.Domain`: guardar as invariantes sociais sem depender de framework — entrypoint: docs/features/05-arquitetura-consolidada.md:602-L603 — confidence: CONFIRMADO
+- `Squid.Persistence`: ser o único lugar que conhece SQL e o único que implementa persistência de estado — entrypoint: docs/features/05-arquitetura-consolidada.md:623 — confidence: CONFIRMADO
+- `Squid.Service` e `Squid.Worker`: as únicas raízes de composição — entrypoint: docs/features/05-arquitetura-consolidada.md:609-L610 — confidence: OBSERVADO
+
+## Critical flows
+- Identidade: registro → chave raiz e hierarquia derivada → kit exportável → restauração comprovada — source: specs/001-squid-mvp/spec.md:184-L190 — confidence: CONFIRMADO
+- Publicação: autor → grain do contêiner → evento com sequência → projeção de leitura → stream ao vivo — source: specs/001-squid-mvp/spec.md:217-L220 — confidence: CONFIRMADO
+- Entrega federada: evento → política reavaliada na entrega → assinatura RSA-SHA256 → entrega por par com recuo e fila de falhas — source: specs/001-squid-mvp/spec.md:236-L241 — confidence: CONFIRMADO
+- Backup: coordenador → destino plugável → envelope cifrado com época de chave → restauração comparada por hash — source: specs/001-squid-mvp/spec.md:253-L258 — confidence: CONFIRMADO
+
+## Dependencies
+- `Squid.Domain` → nada de infraestrutura — source: docs/features/05-arquitetura-consolidada.md:623 — confidence: CONFIRMADO
+- `Squid.Grains` → `Squid.Domain` — source: docs/features/05-arquitetura-consolidada.md:623 — confidence: CONFIRMADO
+- `Squid.Api` → `Squid.Grains` e `Squid.ReadModels` — source: docs/features/05-arquitetura-consolidada.md:623 — confidence: CONFIRMADO
+- Provedor de armazenamento escolhido por configuração (`sqlite` ou `oracle`) atrás da mesma interface — source: specs/001-squid-mvp/plan.md:142-L145 — confidence: CONFIRMADO
+- Federação externa por HTTP assinado; nenhuma operação local bloqueada por par remoto — source: specs/001-squid-mvp/plan.md:51 — confidence: CONFIRMADO
+
+## Key decisions
+- Rede social utilizável antes do backup distribuído: Mutual Sharding sai do centro da POC — pointer: docs/features/05-arquitetura-consolidada.md:53-L61 — source: doc 05 §1.4 — confidence: CONFIRMADO
+- Política de acesso é dado versionado, avaliado por um motor único, com auditoria da versão aplicada — pointer: docs/features/05-arquitetura-consolidada.md:210 — source: FR-011/FR-019 — confidence: CONFIRMADO
+- JSON-LD nunca entra no agregado: o protocolo é adapter substituível — pointer: docs/features/05-arquitetura-consolidada.md:249-L317 — source: doc 05 §3 — confidence: CONFIRMADO
+- RSA-SHA256 é obrigatório na saída e aceito na verificação de entrada; Ed25519 é chave adicional — pointer: docs/features/05-arquitetura-consolidada.md:778-L820 — source: ADR-28 — confidence: CONFIRMADO
+- Camada de dados isolada em `Squid.Persistence`, com os grains sem banco — pointer: docs/features/05-arquitetura-consolidada.md:778-L820 — source: ADR-35 — confidence: CONFIRMADO
+- Autenticação em degraus: senha e sessão no MVP, sem e-mail, sem reset por e-mail; recovery é o kit — pointer: docs/features/05-arquitetura-consolidada.md:778-L820 — source: ADR-36 — confidence: CONFIRMADO

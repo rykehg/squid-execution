@@ -1,0 +1,50 @@
+# --- .NET ---
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+coverage.*
+*.coverage
+*.trx
+
+# --- Node / Nuxt ---
+node_modules/
+.nuxt/
+.output/
+.nitro/
+.cache/
+
+# --- Bancos locais (estado de dev, nunca versionado) ---
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# --- Estado local do .NET CLI (home e cache de pacotes usados por sdd-test.ps1) ---
+.dotnet-home/
+# Cache de pacotes do backend (nuget.config: globalPackagesFolder = .packages)
+backend/.packages/
+
+# --- Segredos e configuração local ---
+.env
+.env.*
+!.env.example
+*.pfx
+*.pem
+*.key
+
+# --- Checkouts de referência (ADR-26: privado, fora do git) ---
+ideias-references/
+
+# --- Logs de execução de teste (histórico local; o que vale fica no ## Evidence da tarefa) ---
+docs/sdd/runs/test-runs/
+!docs/sdd/runs/test-runs/.gitkeep
+
+# --- Sistema operacional e editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/

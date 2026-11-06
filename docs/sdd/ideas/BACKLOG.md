@@ -1,0 +1,52 @@
+<!--
+templateVersion: 1.0.0
+-->
+Ideas that are not in the MVP. A parked idea is not a promise and not a backlog item to implement now.
+Write responsibility: ODEV appends; never deletes. A human promotes an idea by decision, not by editing this file.
+
+- status: ATIVO
+- owner: odev
+- lastVerified: 2026-11-04 12:06:31
+
+# Ideas — parked
+
+## Parked during interview or planning
+
+| # | Idea | Where it came from | Suggested phase | Why not now |
+| --- | --- | --- | --- | --- |
+| I-01 | Bots e automação de primeira classe: ator `Service`, token com escopo, webhook assinado sobre a entrega por par (ADR-30) | doc 05 §13, feature 002 do repo de especificação | pós-MVP | exige federação e entrega por par antes de existir |
+| I-02 | Eventos, metas e enquetes: `Object.Kind` + agregado de resposta por ator (ADR-31) | doc 05 §13, feature 003 | pós-MVP | amplia o modelo de objeto antes de o feed estar fechado |
+| I-03 | Criptografia ponta a ponta (MLS) para mensagem 1-1 e grupo, chave por dispositivo (ADR-32) | doc 05 §13, feature 004 | fase 3 | o corpo da mensagem já nasce opaco; a federação não pode ser criptografada antes de funcionar |
+| I-04 | Mutual Sharding + Reed-Solomon entre guardiões, SSS com heartbeat e re-share | doc 05 §12.3 | fase 2 | diferencial do produto, mas só demonstra com pares reais (doc 05 §1.4) |
+| I-05 | App nativo mobile (Vue 3 + Capacitor + SQLite local) | doc 05 §12.3 | fase 2 | mobile do MVP é web responsivo primeiro |
+| I-06 | AT Protocol como segundo protocolo federado | doc 05 §12.3 | fase 2 | a abstração de protocolo nasce com um protocolo só (ADR-11) |
+| I-07 | Busca em comunidades (FTS no armazenamento local × banco gerenciado) — GAP 14 do doc 05 | doc 05 §14 | pós-MVP | não bloqueia nenhuma user story do MVP |
+| I-08 | Notificações push | doc 05 §12.3 | fase 2 | dependente do app nativo (I-05) |
+| I-09 | Cartões OpenGraph por tipo de mídia | doc 05 §12.3 | P-08+ | preview básico entra na P-08; variação por tipo é refinamento |
+| I-10 | Gate de testes em contêiner Linux (`podman compose`): o testhost do VSTest não roda com o processo pai em integridade Low no Windows, e um contêiner não herda rótulo de integridade. Resolve o ambiente para DEV e QA de uma vez e alinha ao ADR-23 (contêiner é verificação) | conversa 2026-11-05, decisão do humano | P-02 (junto com o primeiro CI) | custo de imagem + tempo de build; o gate atual já funciona no terminal Medium e na CI, então não bloqueia a P-01 |
+
+## Surfaced by the flow
+
+Improvements noticed while building: a simpler way to do something already shipped, a risk worth
+paying down, a pattern that repeats.
+
+| # | Observation | Evidence | Suggestion | Cost |
+| --- | --- | --- | --- | --- |
+| S-01 | O pacote de execução chegou sem `docs/sdd/`, então todo o estado de execução precisa nascer do zero neste repositório | `verify-hashes.ps1` → 13/13 artefatos, 0 problemas | estado canônico passa a viver só em `docs/sdd/` (feito no bootstrap) | S |
+| S-02 | `MANIFEST.md` cobre só os 13 artefatos sincronizados; README/DECISIONS/verify ficam fora da conferência | `MANIFEST.md:5-L7` | nenhuma ação: eles são handoff, não fonte | S |
+| S-03 | `sdd-state.ps1` sob PowerShell 5.1 lê `-Text` na página de código ANSI e grava acentos como `?`: 19 caracteres de um arquivo de tarefa foram corrompidos em uma chamada (recuperado reescrevendo o arquivo; nenhuma linha sobreviveu corrompida) | `docs/sdd/_tools/sdd-state.ps1` (uso `-Text`); execução de 2026-11-04 12:03 | enviar texto por stdin em UTF-8 (ou corrigir o script para forçar entrada UTF-8) e usar o `.ps1` como está no Linux; nunca `-Text` com acento no Windows | S |
+| S-04 | O `check` valida estrutura (seções, contagem de linhas) mas não valida encoding; um arquivo com `?` no lugar de acentos passaria | `docs/sdd/_tools/sdd-state.ps1` (comando `check`) | acrescentar ao `check` uma recusa a U+FFFD e a sequência `?` em palavras acentuadas conhecidas | S |
+| S-05 | A regra `SQUID0001` em `backend/Directory.Build.targets` dispara só quando existe `ProjectReference`; `Squid.Domain` tem zero por design, então um `PackageReference` do Orleans no Domain não é avaliado pela regra de build. Não reproduzido com pacote real (sem cache NuGet e sem rede: NU1301) | `backend/Directory.Build.targets` (target `SquidCheckDependencyRule`); log de TASK-0002 | fazer o target avaliar `PackageReference` quando a camada for `domain` (e quando for qualquer camada com lista de pacotes banidos), com teste que injeta um pacote e espera `SQUID0001` | M |
+| S-06 | `Squid.Tests` é um runner de reflexão próprio (sem xunit) porque não havia NuGet no ambiente; `dotnet test` não encontra provider e pendura | `backend/tests/Squid.Tests/Squid.Tests.csproj` | **em tratamento na TASK-0004**: migração para xunit + `Microsoft.NET.Test.Sdk`, com cache de pacotes em `backend/.packages` para funcionar offline | M |
+| S-07 | O `testhost` do VSTest morre com `Win32Exception (5): Acesso negado` em `ProcessManager.OpenProcess` quando o processo pai está em integridade **Low**. Não é defeito de produto: o mesmo projeto roda `Aprovado: 3` num terminal Medium | prova em TEMP com projeto xunit trivial; log de diagnóstico do VSTest de 2026-11-05 | mantido Medium para o terminal e daemon de teste separado para sessões Low; documentado em `docs/sdd/runs/RUNBOOK-retomada.md` | S |
+| S-08 | A regra `SQUID0001` não alcança aresta que fecha ciclo: o NuGet aborta a restauração com `MSB4006` antes de qualquer target rodar, e MSBuild não permite avaliar item list na passagem de avaliação (`MSB4099`). Medido: `Restore` no `BeforeTargets` não funciona | `backend/Directory.Build.targets`; execução de 2026-11-05 com cópia em TEMP | comportamento aceito: o teste exige `MSB4006` nomeando o projeto referenciado nesses casos; ADR se algum dia a mensagem precisar ser `SQUID0001` | S |
+| S-09 | Rótulo de integridade do Windows (MIC) grudado na árvore do repositório custou uma sessão inteira e não tem conserto a partir de um processo Low: `icacls` **exibe o nível do processo que lê** em vez do valor gravado, `/reset` não toca em rótulo, e `/setintegritylevel` só adiciona ACE. Resolvido copiando a árvore com `robocopy /COPY:DAT` para outro caminho (rótulo não é copiado) | execuções de 2026-11-04/05: 5 tentativas de `icacls`, `/reset /T` em 20.042 arquivos, verificação do destino em `C:\dev` | manter o repositório em caminho fora de `C:\Users`; se a negação reaparecer, **copiar** a árvore em vez de mexer em rótulo. Detalhes em `runs/RUNBOOK-retomada.md` | S |
+| S-10 | Depois de copiar o repositório, os `bin/` e `obj/` levados junto carregam caminhos absolutos do caminho antigo e quebram o restore com `Access to the path ...obj\*.tmp is denied`. O `robocopy /E` também preserva o atributo read-only, o que impede `Remove-Item -Force`; foi preciso `Directory.Delete(recursive)` | execução de 2026-11-05 18:59, logo após mover para `C:\dev` | ao mover ou copiar o repositório, apagar `bin/` e `obj/` antes de rodar restore. Vale para qualquer cópia de árvore .NET | S |
+
+## Promoted
+
+An idea becomes work only here, with a human decision recorded.
+
+| # | Promoted to | Decided by | Date/Time |
+| --- | --- | --- | --- |
+| NENHUM | — | — | — |

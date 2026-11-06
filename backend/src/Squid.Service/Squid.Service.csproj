@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Composition root: Silo + Api + health + dashboard. The only place that wires the stack. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Squid.Api\Squid.Api.csproj" />
+    <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
+    <ProjectReference Include="..\Squid.Grains\Squid.Grains.csproj" />
+    <ProjectReference Include="..\Squid.Persistence\Squid.Persistence.csproj" />
+    <ProjectReference Include="..\Squid.Protocols\Squid.Protocols.csproj" />
+    <ProjectReference Include="..\Squid.ReadModels\Squid.ReadModels.csproj" />
+  </ItemGroup>
+
+</Project>

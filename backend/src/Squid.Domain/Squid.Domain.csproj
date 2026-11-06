@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Canonical model (doc 05 §11): no Orleans, no JSON-LD, no I/O.
+       Domain has no ProjectReference and no PackageReference. The rule that enforces it
+       is in backend/Directory.Build.targets (SQUID0001). -->
+
+</Project>

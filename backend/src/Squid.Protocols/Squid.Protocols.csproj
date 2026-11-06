@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- IFederationProtocol + ActivityPubAdapter: the JSON-LD boundary lives here, never in Domain (ADR-11). -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
