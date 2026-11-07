@@ -6,8 +6,8 @@ Write responsibility: ODEV. Every other role reads it and never edits it.
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-05 18:55:00
-- snapshot: plan/history/0001-plan.md
+- lastVerified: 2026-11-07 08:30:00
+- snapshot: plan/history/0002-plan.md (fecho da P-01; 0001 é o bootstrap)
 
 # Plan — Squid
 
@@ -41,7 +41,7 @@ adotado) — a fase muda de nome, não de conteúdo.
 
 | Phase | Goal | Small deliveries | Status | Closed at |
 | --- | --- | --- | --- | --- |
-| P-01 | Fundação verificável: a instância nasce com estrutura, regra de dependência no build e storage que impõe ETag | TASK-0001 (DONE), TASK-0002 (DONE), TASK-0004 (AWAITING_QA), TASK-0003 (TASK_READY) | OPEN | — |
+| P-01 | Fundação verificável: a instância nasce com estrutura, regra de dependência no build e storage que impõe ETag | TASK-0001..TASK-0010 — todas DONE com QA PASSED (detalhe em `plan/history/0002-plan.md`) | **CLOSED** | 2026-11-07 08:30:00 |
 | P-02 | Identidade: ator local com perfil, chaves e descoberta | a cortar | NOT_STARTED | — |
 | P-03 | Contêineres sociais: grupo/comunidade com papéis, política versada e sucessão de propriedade | a cortar | NOT_STARTED | — |
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | a cortar | NOT_STARTED | — |
@@ -57,20 +57,32 @@ adotado) — a fase muda de nome, não de conteúdo.
 | TASK-0001 | Fundação do repositório: `git init`, `.gitignore`, estrutura de pastas da ADR-21, storage do fluxo `docs/sdd/_tools` | `.gitignore`, `.gitattributes`, `.editorconfig`, `README.md`, `backend/.gitkeep`, `web/.gitkeep`, `infra/.gitkeep`, `docs/sdd/_tools/check-task-0001.ps1` | no (base de todos) |
 | TASK-0002 | `backend/Squid.slnx` com os 10 projetos, central package management e regra de dependência verificada pelo build | `backend/**` | no (blockedBy TASK-0001) |
 | TASK-0003 | `IGrainStorage` SQLite com ETag imposto (`WHERE Version = @Version` → `InconsistentStateException`) e store name nunca hardcoded | `backend/src/Squid.Persistence/**`, `backend/tests/Squid.Tests/**` | no (blockedBy TASK-0002) |
+| TASK-0005 | Silo Orleans + `/health` + `/ready` + Orleans Dashboard em `Squid.Service` | `backend/src/Squid.Service/**`, `backend/Directory.Packages.props`, `backend/tests/Squid.Tests/**` | no (blockedBy 0003+0004; 0006 toca os mesmos) |
+| TASK-0006 | OTel exporter OTLP + Serilog com sanitização de PII | mesmos de TASK-0005 | no (blockedBy TASK-0005) |
+| TASK-0007 | `ContainerPolicy` + `IPolicyEvaluator` + testes da matriz no Domain (SPEC-0003) | `backend/src/Squid.Domain/**`, `backend/tests/Squid.Tests/**` | yes — disjunto de tudo que está aberto |
+| TASK-0008 | Containerfile multi-stage + `infra/compose.yaml` + DoD da fase (SPEC-0004) | `infra/**`, `docs/sdd/_tools/sdd-test.ps1` | yes — disjunto de tudo que está aberto |
+| TASK-0009 | Workflow GitHub Actions build+testes ubuntu com prova local (SPEC-0005) | `.github/**`, `docs/sdd/_tools/sdd-test.ps1\|sh` | yes — disjunto de tudo que está aberto |
+| TASK-0010 | Cinco runbooks do §8 + índice (SPEC-0006) | `docs/runbooks/**` | yes — diretório novo, disjunto de tudo |
 
-Gate de saída da P-01 (DoD do Sprint 0, doc 05 §12.2): estrutura versionada, `dotnet build` verde
-com a regra de dependência violável-detectada, e a suíte de storage provando ETag e isolamento de
-store. `/health`, Orleans Dashboard e OTel entram como entregas seguintes da P-01 depois destas três.
+Escopo da P-01: **Sprint 0 inteiro** (decisão humana 2026-11-06, mapeamento 1:1 com o doc 05).
+Gate de saída provado: `podman compose up` → `/health` verde → Dashboard acessível → trace de
+uma request visível no coletor (DoD do Sprint 0, doc 05 §12.2). Entregas, decisões e pendências
+em `plan/history/0002-plan.md`.
 
 ## Current state
 
-- phase: P-01
-- authority: SPEC
+- phase: P-01 **CLOSED** (2026-11-07 08:30:00) — a partir daqui o **código é a fonte real** e
+  `docs/memory-bank/` é a documentação viva; divergência levantada como `[DIVERGENCIA]` e o
+  código vence. Snapshot congelado: `plan/history/0002-plan.md`.
+- authority: **CODE** (era SPEC durante a P-01; virou no fecho)
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: despachar QA em TASK-0004 (gate verde: 16/16, exit 0, `runs/test-runs/20261105-190004-test-gate.log`); em seguida DEV em TASK-0003 (storage SQLite com ETag)
-- blocking gaps: NENHUM
+- nextAction: PARADO no fecho — não inicio a P-02 por conta própria. Próximo passo humano:
+  `/odev` para abrir a P-02 (Identidade) com entrevista/corte de spec; pendência à parte:
+  push ao GitHub + primeiro run da CI (AC-06 TASK-0009)
+- blocking gaps: NENHUM — pendências registradas: push+run da CI (humano), GAP-01/GAP-03 (P-02),
+  FR-016 descoberta (P-03), suite em Linux unverified (I-10)
 
 ## Adopted legacy documentation
 
@@ -111,3 +123,7 @@ nomes** — nenhum arquivo deles é copiado, nem como trecho.
 | 2026-11-04 11:58:28 | Nada é copiado de Mastodon ou Friendica (código publicado): só ideias e nomes | PHASE | Henrique |
 | 2026-11-04 11:58:28 | Identidade git global: `Henrique <henriquehg@gmail.com>` | PHASE | Henrique |
 | 2026-11-04 11:58:28 | Primeira carga P-01 = três entregas: fundação do repo, solution + regra de dependência, storage SQLite com ETag | PHASE | Henrique |
+| 2026-11-06 07:35:15 | D-01: instalar `Microsoft.Orleans.*` 10.2 + `Microsoft.Data.Sqlite` 10.0 com versão em `Directory.Packages.props` (contrato local sem Orleans rejeitado) | TASK | Henrique |
+| 2026-11-06 09:27:51 | P-01 = Sprint 0 inteiro do doc 05 (mapeamento 1:1), fecha só com o DoD completo `podman compose up → /health → Dashboard → trace` | PHASE | Henrique |
+| 2026-11-06 09:27:51 | Autorizado conjunto de pacotes de observabilidade de uma vez: OTel (hosting + exporter OTLP + instrumentação ASP.NET Core), Serilog + Serilog.AspNetCore e pacote de Orleans Dashboard compatível com 10.2 (escolha por sonda de DEV), versão em `Directory.Packages.props` | PHASE | Henrique |
+| 2026-11-06 17:12:45 | Instância ODEV única: esta sessão (Web) é a canônica; o fork do Telegram foi renomeado e arquivado pelo humano para eliminar dupla escrita no estado canônico | PHASE | Henrique |

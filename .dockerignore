@@ -1,0 +1,16 @@
+# Build context for infra/Containerfile is the repository root; without this list the
+# context is ~1.2 GB of caches and build output on every `podman compose build`.
+.dotnet-home/
+backend/.packages/
+**/bin/
+**/obj/
+.vs/
+node_modules/
+docs/
+specs/
+web/
+ideias-references/
+*.db
+*.db-*
+*.log
+.env

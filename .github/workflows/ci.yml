@@ -1,0 +1,42 @@
+# CI do Sprint 0 (SPEC-0005): build + gate de testes em todo push para develop/main e em
+# todo pull_request. Os passos invocam exatamente os comandos do gate local (GAP-17: o .ps1
+# e o script escolhido; o gêmeo .sh nao acha o solution, que so tem .slnx).
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      # sdd-test.ps1 define NUGET_PACKAGES quando a variavel esta ausente; fixar aqui deixa o
+      # caminho do cache identico ao caminho real dos pacotes em qualquer imagem de runner.
+      NUGET_PACKAGES: ${{ github.workspace }}/.dotnet-home/nuget
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: .NET SDK 10 pinado
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.403'
+
+      - name: Cache de pacotes NuGet
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.dotnet-home/nuget
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Build
+        run: pwsh -NoProfile -File docs/sdd/_tools/sdd-test.ps1 build
+
+      - name: Gate de testes
+        run: pwsh -NoProfile -File docs/sdd/_tools/sdd-test.ps1 test

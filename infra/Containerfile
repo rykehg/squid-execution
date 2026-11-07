@@ -1,0 +1,26 @@
+# Squid service image — multi-stage build (doc 05 §4.7 #5, §7.2).
+# The build context is the repository root (infra/compose.yaml sets it) and .dockerignore
+# keeps that context to source; without it the context would be ~1.2 GB on every build.
+
+# Stage 1 — build: the SDK lives only here.
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY backend/ backend/
+RUN dotnet publish backend/src/Squid.Service/Squid.Service.csproj -c Release -o /out
+
+# The service is an ASP.NET Core app, so its shared framework comes from the aspnet
+# runtime image. The final stage below stays the runtime image — never the sdk.
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS aspnet
+
+# Stage 2 — final: runtime image + non-root user (§4.7 #5: runtime, nunca sdk).
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
+COPY --from=aspnet /usr/share/dotnet/shared/Microsoft.AspNetCore.App /usr/share/dotnet/shared/Microsoft.AspNetCore.App
+WORKDIR /app
+COPY --from=build /out/ ./
+# /data is where the compose named volume lands (§4.7 #4); the runtime user owns it.
+RUN mkdir -p /data && chown -R 10001:10001 /data /app
+USER 10001:10001
+ENV ASPNETCORE_URLS=http://+:8080 \
+    HOME=/app
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "/app/Squid.Service.dll"]

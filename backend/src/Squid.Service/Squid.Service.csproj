@@ -11,4 +11,19 @@
     <ProjectReference Include="..\Squid.ReadModels\Squid.ReadModels.csproj" />
   </ItemGroup>
 
+  <!-- Versions live in backend/Directory.Packages.props (ADR-25): no Version= here. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Orleans.Dashboard" />
+    <PackageReference Include="Microsoft.Orleans.Server" />
+  </ItemGroup>
+
+  <!-- Observability (SPEC-0002 GAP-09/GAP-10): OTLP tracing + Serilog console JSON. -->
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.AspNetCore" />
+  </ItemGroup>
+
 </Project>

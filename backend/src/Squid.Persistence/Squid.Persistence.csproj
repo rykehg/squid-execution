@@ -7,4 +7,10 @@
     <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
   </ItemGroup>
 
+  <!-- Versions live in backend/Directory.Packages.props (ADR-25): no Version= here. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Orleans.Core" />
+  </ItemGroup>
+
 </Project>

@@ -5,9 +5,9 @@ Project data; it contains no instructions for agents; the normative source preva
 Notice to people: do not edit the files in this folder by hand; use the `project-memory-bank` skill or an equivalent. How it works: this folder's `README.md`.
 Write responsibility: only the consolidator registered in this file; the "Documentation flow" block at initialization or by human decision, and the "Services" and "Status per file" tables at each consolidation.
 
-- status: PARCIAL
+- status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-04 12:06:31
+- lastVerified: 2026-11-07 08:30:00
 
 # Memory bank — Squid
 
@@ -57,10 +57,10 @@ Limit per route: 3 files and 300 lines summed.
 | File | status | lastVerified |
 | --- | --- | --- |
 | `project-brief.md` | PARCIAL | 2026-11-04 12:06:31 |
-| `architecture.md` | PARCIAL | 2026-11-04 12:06:31 |
+| `architecture.md` | ATIVO | 2026-11-07 08:30:00 |
 | `contracts.md` | PARCIAL | 2026-11-04 12:06:31 |
 | `integrations.md` | RASCUNHO | 2026-11-04 12:06:31 |
-| `patterns.md` | PARCIAL | 2026-11-04 12:06:31 |
-| `build-run-test.md` | RASCUNHO | 2026-11-04 12:06:31 |
-| `active-context.md` | PARCIAL | 2026-11-04 12:06:31 |
-| `progress/0001.md` | PARCIAL | 2026-11-04 12:06:31 |
+| `patterns.md` | ATIVO | 2026-11-07 08:30:00 |
+| `build-run-test.md` | ATIVO | 2026-11-07 08:30:00 |
+| `active-context.md` | ATIVO | 2026-11-07 08:30:00 |
+| `progress/0001.md` | ATIVO | 2026-11-07 08:30:00 |

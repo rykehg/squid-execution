@@ -8,10 +8,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Storage stack of Squid.Persistence: REQ-0001 fixes the Orleans 10.2 and SQLite 10.0 lines. -->
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.14" />
+
     <!-- Test stack of Squid.Tests; this exact set restores on SDK 10.0.403 (GAP-07). -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.Orleans.Core" Version="10.2.2" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+
+    <!-- Silo runtime + dashboard of the service host (SPEC-0002, GAP-08): the Dashboard package
+         compatible with Orleans 10.2 was chosen by probing the real API; both sit on the 10.2
+         line approved by the human gate of 2026-11-06. -->
+    <PackageVersion Include="Microsoft.Orleans.Dashboard" Version="10.2.2" />
+    <PackageVersion Include="Microsoft.Orleans.Server" Version="10.2.2" />
+
+    <!-- Observability stack of Squid.Service (SPEC-0002, GAP-09/GAP-10): versions probed against
+         the real API outside the repo; approved by the human gate of 2026-11-06. The OTel line is
+         pinned as a set (hosting + OTLP exporter + ASP.NET Core instrumentation all 1.20.1) so no
+         NU1608 disagreement shows up between them. -->
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.20.1" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.1" />
+    <PackageVersion Include="Serilog" Version="4.4.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
   </ItemGroup>
 
 </Project>

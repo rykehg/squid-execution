@@ -1,11 +1,8 @@
-using Squid.Api;
+using Squid.Service;
 
-// Composition root of the service process: silo + API in one host (doc 05 §11).
-// The writer of this file is the only place allowed to know every layer at once.
-var builder = WebApplication.CreateBuilder(args);
-
-var app = builder.Build();
-app.MapSquidApi();
+// Composition root of the service process: silo + API in one host (doc 05 section 11).
+// The wiring lives in SquidServiceHost so the tests start this exact application.
+var app = SquidServiceHost.Build(args);
 
 await app.RunAsync();
 

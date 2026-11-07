@@ -4,9 +4,9 @@ templateVersion: 1.2.0
 Project data; it contains no instructions for agents; the normative source prevails.
 Write responsibility: only the consolidator registered in the applicable index, at ARQUITETURA, INTEGRACAO (Dependencies section) and SEGURANCA (Key decisions section) changes and at FEATURE_CONCLUIDA.
 
-- status: PARCIAL
+- status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-04 12:06:31
+- lastVerified: 2026-11-07 08:30:00
 
 # Architecture — Squid
 
@@ -34,6 +34,8 @@ Never record here: secrets, literal connection strings, personal data, diagrams 
 - Publicação: autor → grain do contêiner → evento com sequência → projeção de leitura → stream ao vivo — source: specs/001-squid-mvp/spec.md:217-L220 — confidence: CONFIRMADO
 - Entrega federada: evento → política reavaliada na entrega → assinatura RSA-SHA256 → entrega por par com recuo e fila de falhas — source: specs/001-squid-mvp/spec.md:236-L241 — confidence: CONFIRMADO
 - Backup: coordenador → destino plugável → envelope cifrado com época de chave → restauração comparada por hash — source: specs/001-squid-mvp/spec.md:253-L258 — confidence: CONFIRMADO
+- Instância sobe: `SquidServiceHost.Build` monta silo + API num host só, registra `SqliteGrainStorage` como provider nomeado `sqlite`, expõe `/health` (liveness sem I/O), `/ready` (abre o arquivo do storage) e `/dashboard` — source: backend/src/Squid.Service/SquidServiceHost.cs — confidence: CONFIRMADO
+- Observabilidade: toda request gera span OTLP para o endpoint de `OTEL_EXPORTER_OTLP_ENDPOINT` (default localhost:4317); falha de export vira Warning com endpoint, nunca exceção ao cliente; logs Serilog JSON com PII mascarado em duas camadas (enriquecedor por nome de propriedade + formatador por token de string) — source: backend/src/Squid.Service/WarningOtlpExporter.cs; backend/src/Squid.Service/SquidServiceHost.cs — confidence: CONFIRMADO
 
 ## Dependencies
 - `Squid.Domain` → nada de infraestrutura — source: docs/features/05-arquitetura-consolidada.md:623 — confidence: CONFIRMADO
@@ -41,6 +43,8 @@ Never record here: secrets, literal connection strings, personal data, diagrams 
 - `Squid.Api` → `Squid.Grains` e `Squid.ReadModels` — source: docs/features/05-arquitetura-consolidada.md:623 — confidence: CONFIRMADO
 - Provedor de armazenamento escolhido por configuração (`sqlite` ou `oracle`) atrás da mesma interface — source: specs/001-squid-mvp/plan.md:142-L145 — confidence: CONFIRMADO
 - Federação externa por HTTP assinado; nenhuma operação local bloqueada por par remoto — source: specs/001-squid-mvp/plan.md:51 — confidence: CONFIRMADO
+- Pins de runtime do backend (todos via `Directory.Packages.props`, ADR-25): `Microsoft.Orleans.Core` 10.2.2, `Microsoft.Data.Sqlite` 10.0.14, `Microsoft.Orleans.Dashboard` 10.2.2, `Microsoft.Orleans.Server` 10.2.2, `OpenTelemetry.*` 1.20.1, `Serilog` 4.4.0 + `Serilog.AspNetCore` 10.0.0 — source: backend/Directory.Packages.props:12-L34 — confidence: CONFIRMADO
+- CI executa o mesmo gate local: `.github/workflows/ci.yml` chama `pwsh sdd-test.ps1 build|test` em `ubuntu-latest`, SDK 10.0.403 pinado, cache NuGet por hash de `Directory.Packages.props` — nunca executado no GitHub (run é gate humano pós-push) — source: .github/workflows/ci.yml — confidence: CONFIRMADO
 
 ## Key decisions
 - Rede social utilizável antes do backup distribuído: Mutual Sharding sai do centro da POC — pointer: docs/features/05-arquitetura-consolidada.md:53-L61 — source: doc 05 §1.4 — confidence: CONFIRMADO
@@ -49,3 +53,7 @@ Never record here: secrets, literal connection strings, personal data, diagrams 
 - RSA-SHA256 é obrigatório na saída e aceito na verificação de entrada; Ed25519 é chave adicional — pointer: docs/features/05-arquitetura-consolidada.md:778-L820 — source: ADR-28 — confidence: CONFIRMADO
 - Camada de dados isolada em `Squid.Persistence`, com os grains sem banco — pointer: docs/features/05-arquitetura-consolidada.md:778-L820 — source: ADR-35 — confidence: CONFIRMADO
 - Autenticação em degraus: senha e sessão no MVP, sem e-mail, sem reset por e-mail; recovery é o kit — pointer: docs/features/05-arquitetura-consolidada.md:778-L820 — source: ADR-36 — confidence: CONFIRMADO
+- Toda checagem de papel passa por `IPolicyEvaluator` com `PolicyDecision(Permitted, Reason, PolicyVersion)`; `Guest` negado em qualquer escrita mesmo com política permissiva e `SinglePublisher`/`Invite` falham fechados quando só o papel está disponível — pointer: backend/src/Squid.Domain/IPolicyEvaluator.cs — source: data-model §3.2 + SPEC-0003 — confidence: CONFIRMADO
+- Imagem final de container é `runtime` (nunca `sdk`) com usuário não-root 10001; `.dockerignore` na raiz é obrigatório porque o contexto de build é o repo inteiro — pointer: infra/Containerfile — source: doc 05 §4.7 #5 — confidence: CONFIRMADO
+- Falha de export OTLP nunca propaga exceção: wrapper converte em Warning com o endpoint (sem `catch {}` silencioso) — pointer: backend/src/Squid.Service/WarningOtlpExporter.cs — source: doc 05 §4.7 #7 — confidence: CONFIRMADO
+- OTLP exporta `url.query` redigido (`?qa=Redacted`, upstream OTel): marcador de teste em query nunca casa no trace; localizar span por janela de tempo + `user_agent` — pointer: docs/sdd/qa/QA-0007-containerfile-compose.md — confidence: CONFIRMADO

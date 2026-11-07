@@ -9,12 +9,12 @@ Write responsibility: the control block, AC list and Doubts are written by ODEV 
 ```yaml
 runId: R-20261104-02
 taskId: TASK-0004
-status: AWAITING_QA
+status: DONE
 agent: odev
 phase: P-01
 sequence: 3
 createdAt: 2026-11-04 15:30:00
-updatedAt: 2026-11-05 19:00:04
+updatedAt: 2026-11-06 00:36:12
 parent: SPEC-0001
 authority: SPEC
 parallel: false
@@ -35,9 +35,9 @@ humanGate:
   scope: migracao do runner de reflexao para xunit + Test SDK, com cache de pacotes em backend/.packages
   expiresAt: NENHUM
 blocker: NENHUM
-nextAction: AWAITING_QA - despachar QA em TASK-0004 contra os ACs, com o gate verde em docs/sdd/runs/test-runs/20261105-190004-test-gate.log (Aprovado 16, exit 0); depois despachar DEV em TASK-0003
+nextAction: DONE - QA-0002 PASSED (7/7 ACs, qaAttempt 1/2); proxima entrega da P-01: TASK-0003 storage SQLite com ETag - dispatch DEV em seguida
 evidence: []
-memoryBankFlags: []
+memoryBankFlags: [MUDANCA_RELEVANTE: BUILD - memory-bank/build-run-test.md:43 descreve o workspace antigo; gate verde agora em C:\dev\squid-squad-net - source: runs/RUNBOOK-retomada.md]
 ```
 
 ## Intent
@@ -122,6 +122,26 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 - 2026-11-05 18:58:00 | odev | causa da falha era uma assercao minha sem base: a linha assert-do-from exigia que o declarante aparecesse sempre. Medido, nao e o que o MSBuild faz em recusa por ciclo. Corrigido: o projeto referenciado e sempre exigido; o declarante so e exigido quando a recusa vem da regra (SQUID0001)
 - 2026-11-05 18:59:00 | odev | segunda causa, separada e tambem de ambiente: os bin/ e obj/ copiados pelo robocopy carregam caminhos absolutos do caminho antigo e quebraram o restore com "Access to the path ...obj\*.tmp is denied". Removidas as 20 pastas e o restore passou a limpar corretamente
 - 2026-11-05 19:00:04 | odev | gate completo verde: Aprovado 16, Com falha 0, exit 0, 25 s. AC-01, AC-02, AC-03 e AC-04 verificados pela execucao. AC-05 (falha real produz Failed >= 1) foi provado na pratica pelo proprio run de 18:54:52, que saiu com exit 1 e nomeou os tres casos
+- 2026-11-06 00:14:20 | qa | QA-0002 aberto contra os ACs da TASK-0004 (qaAttempt 1/2); arvore de trabalho limpa no inicio (git status vazio)
+- 2026-11-06 00:14:20 | qa | AC-04: git grep -n -E PackageReference.*Version -- *.csproj exit 1 - nenhum csproj carrega Version=; git grep PackageVersion Include em backend/Directory.Packages.props exit 0 - 3 versoes de teste centralizadas (17.14.1, 2.9.3, 3.1.4)
+- 2026-11-06 00:14:20 | qa | AC-06: git grep -e TestRunner -e ISelfCheckingTest -e ITestClass -e RunAll em backend/tests exit 1 - nenhuma ocorrencia; git ls-files mostra so csproj + BuildProbe + DependencyRuleTests + DomainHasNoInfrastructureTests, sem Framework/ nem Program.cs
+- 2026-11-06 00:14:20 | qa | AC-02: dotnet test backend/Squid.slnx --list-tests exit 0 - 16 casos descobertos: 8 arestas proibidas, 5 legais, 3 do dominio
+- 2026-11-06 00:14:20 | qa | AC-01: powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test exit 0 - gate verde Aprovado 16, Com falha 0, Total 16 em 24 s, log docs/sdd/runs/test-runs/20261105-235048-test-gate.log
+- 2026-11-06 00:14:20 | qa | AC-03: sdd-test.ps1 test backend/Squid.slnx -TestFilter FullyQualifiedName~DomainProjectTargetsNet10 exit 0 - Aprovado 1, Total 1, 22 ms, log docs/sdd/runs/test-runs/20261105-235107-test-filter.log
+- 2026-11-06 00:14:20 | qa | AC-05: mesma execucao com assercao falsa temporaria injetada em DomainHasNoInfrastructureTests.cs:70 exit 1 - Com falha 1 e exit 1 do dotnet registrado no cabecalho do log docs/sdd/runs/test-runs/20261105-235200-test-filter.log
+- 2026-11-06 00:14:20 | qa | AC-05: git checkout do arquivo injetado, git status --porcelain e git diff --exit-code limpos, nenhum residuo de QA0002 ou net9.9 no repositorio
+- 2026-11-06 00:14:20 | qa | AC-02: sonda dotnet em C:\Users\Ryke\AppData\Local\Temp\qa0002-probe (removida depois da execucao) exit 0 - TheoryAttribute herda de FactAttribute nos 2 metodos Theory e FactAttribute nos 3 Fact, todos xunit; nenhuma dependencia nova
+- 2026-11-06 00:14:20 | qa | AC-07: sdd-test.ps1 test com TEMP e TMP negados em C:\Windows\System32\qa0002-temp exit 3 - MSB1025 com System.UnauthorizedAccessException classificado como ambiente, exit 3, log docs/sdd/runs/test-runs/20261105-235452-test-gate.log
+- 2026-11-06 00:14:20 | qa | AC-01 e AC-05: gate final apos o revert exit 0 - Aprovado 16, Com falha 0, Total 16 em 27 s, log docs/sdd/runs/test-runs/20261105-235912-test-gate.log
+- 2026-11-06 00:14:20 | qa | gêmeo sh executado sob Git Bash: sdd-test.sh probe exit 0; sdd-test.sh test backend/Squid.slnx exit 0 com Aprovado 16, Total 16
+- 2026-11-06 00:14:20 | qa | finding: sdd-test.sh test sem target exit 1 - find_sln so procura *.sln e a solucao do repo e Squid.slnx, MSB1003 rotulado como falha de produto (docs/sdd/_tools/sdd-test.sh:20)
+- 2026-11-06 00:14:20 | qa | finding: gêmeo sh roda dotnet test --no-build e nao grava log em test-runs/, divergindo do contrato declarado em sdd-test.sh:3
+- 2026-11-06 00:14:20 | qa | finding: sdd-test.ps1:188 imprimiu a assinatura do testhost numa falha de TEMP negado - exit 3 correto, motivo impresso impreciso
+- 2026-11-06 00:14:20 | qa | verdict PASSED: AC-01 a AC-07 provados por execucao, nenhum BLOCKER, preExistingFailures NENHUM; relatorio em docs/sdd/qa/QA-0002-migrar-testes-xunit.md; plataforma Linux ficou unverified (distribuicao WSL podman-machine-default sem .NET SDK, instalar exigiria gate)
+- 2026-11-06 00:36:50 | odev | veredito QA-0002 adjudicado: PASSED com 7/7 ACs provados por execucao (gate 2x verde 16/16, filtro Total 1, falha deliberada Com falha 1 + exit 1 e revertida, TEMP negado exit 3); transicao AWAITING_QA -> DONE
+- 2026-11-06 00:36:50 | odev | AC-02 adjudicado: a redacao do AC diz 4 testes [Fact] e ha 5 metodos (2 Theory + 3 Fact); a sonda do QA provou TheoryAttribute <- FactAttribute e todos os comportamentos enumerados estao cobertos - redacao aceita, nenhum comportamento faltando
+- 2026-11-06 00:36:50 | odev | findings fora dos ACs registrados como S-11, S-12 e S-13 em ideas/BACKLOG.md (gemeo sdd-test.sh nao acha Squid.slnx e diverge do contrato; sdd-test.ps1:188 motivo impreciso) - nao bloqueiam a entrega
+- 2026-11-06 00:36:50 | odev | unverified registrado: gate em Linux/WSL (distribuicao WSL sem .NET SDK; instalar exigiria gate humano) - risco coberto por I-10
 
 ## Evidence
 
@@ -148,3 +168,18 @@ Commands actually run, with exit code, and where the proof lives. No evidence, n
 | 2026-11-05 08:22:24 | odev | dotnet restore backend/src/Squid.Api/Squid.Api.csproj | 1 | docs/sdd/tasks/TASK-0004-migrar-testes-para-xunit.md |
 | 2026-11-05 18:54:52 | odev | powershell sdd-test.ps1 test (workspace novo, antes da correcao) | 1 | docs/sdd/runs/test-runs/20261105-185452-test-gate.log (13 aprovados, 3 falhas: Domain->Persistence, Grains->Service, Domain->Grains) |
 | 2026-11-05 19:00:04 | odev | powershell sdd-test.ps1 test (gate completo, apos correcao) | 0 | docs/sdd/runs/test-runs/20261105-190004-test-gate.log (Aprovado 16, Com falha 0) |
+| 2026-11-06 00:15:33 | qa | git grep -n -E PackageReference.*Version -- *.csproj | 1 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (AC-04: nenhum csproj carrega Version=) |
+| 2026-11-06 00:15:33 | qa | git grep -n PackageVersion Include -- backend/Directory.Packages.props | 0 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (AC-04: 3 PackageVersion centralizados) |
+| 2026-11-06 00:15:33 | qa | git grep -n -e TestRunner -e ISelfCheckingTest -e ITestClass -e RunAll -- backend/tests | 1 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (AC-06: nenhuma ocorrencia) |
+| 2026-11-06 00:15:33 | qa | git ls-files backend/tests | 0 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (AC-06: 4 arquivos rastreados, sem Framework nem Program.cs) |
+| 2026-11-06 00:15:33 | qa | dotnet test backend/Squid.slnx --list-tests | 0 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (AC-02: 16 casos descobertos) |
+| 2026-11-06 00:15:34 | qa | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test | 0 | docs/sdd/runs/test-runs/20261105-235048-test-gate.log (AC-01: Aprovado 16, Com falha 0) |
+| 2026-11-06 00:15:34 | qa | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test backend/Squid.slnx -TestFilter FullyQualifiedName~DomainProjectTargetsNet10 | 0 | docs/sdd/runs/test-runs/20261105-235107-test-filter.log (AC-03: Total 1, Aprovado 1) |
+| 2026-11-06 00:15:34 | qa | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test backend/Squid.slnx -TestFilter FullyQualifiedName~DomainProjectTargetsNet10 com assercao falsa temporaria | 1 | docs/sdd/runs/test-runs/20261105-235200-test-filter.log (AC-05: Com falha 1, exit 1 do dotnet) |
+| 2026-11-06 00:15:34 | qa | git checkout -- backend/tests/Squid.Tests/Architecture/DomainHasNoInfrastructureTests.cs | 0 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (AC-05: revertido, git status limpo) |
+| 2026-11-06 00:15:34 | qa | dotnet run --project C:\Users\Ryke\AppData\Local\Temp\qa0002-probe\Probe.csproj -- Squid.Tests.dll | 0 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (AC-02: TheoryAttribute herda de FactAttribute; sonda removida) |
+| 2026-11-06 00:15:34 | qa | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test backend/Squid.slnx com TEMP negado em System32 | 3 | docs/sdd/runs/test-runs/20261105-235452-test-gate.log (AC-07: classificado como ambiente) |
+| 2026-11-06 00:15:34 | qa | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test gate final apos o revert | 0 | docs/sdd/runs/test-runs/20261105-235912-test-gate.log (AC-01: Aprovado 16, Com falha 0) |
+| 2026-11-06 00:15:34 | qa | bash docs/sdd/_tools/sdd-test.sh probe | 0 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (gêmeo sh executa sob Git Bash) |
+| 2026-11-06 00:15:34 | qa | bash docs/sdd/_tools/sdd-test.sh test | 1 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (finding 1: nao acha Squid.slnx, MSB1003) |
+| 2026-11-06 00:15:34 | qa | bash docs/sdd/_tools/sdd-test.sh test backend/Squid.slnx | 0 | docs/sdd/qa/QA-0002-migrar-testes-xunit.md (gêmeo sh: Aprovado 16, Total 16) |
