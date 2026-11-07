@@ -79,10 +79,11 @@ em `plan/history/0002-plan.md`.
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
 - nextAction: PARADO no fecho — não inicio a P-02 por conta própria. Próximo passo humano:
-  `/odev` para abrir a P-02 (Identidade) com entrevista/corte de spec; pendência à parte:
-  push ao GitHub + primeiro run da CI (AC-06 TASK-0009)
-- blocking gaps: NENHUM — pendências registradas: push+run da CI (humano), GAP-01/GAP-03 (P-02),
-  FR-016 descoberta (P-03), suite em Linux unverified (I-10)
+  `/odev` para abrir a P-02 (Identidade) com entrevista/corte de spec. Pendência de CI
+  **resolvida** (run verde 98/98 em ubuntu-26.04 em 2026-11-07); pós-fecho: TASK-0011
+  (bugfix dashboard) DONE com QA-0010 PASSED
+- blocking gaps: NENHUM — pendências registradas: GAP-01/GAP-03 (P-02), FR-016 descoberta
+  (P-03), S-11 (gêmeo .sh sem executar no run), S-19 (.dockerignore `**/.vs`)
 
 ## Adopted legacy documentation
 

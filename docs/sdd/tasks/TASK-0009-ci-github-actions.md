@@ -14,7 +14,7 @@ agent: odev
 phase: P-01
 sequence: 2
 createdAt: 2026-11-06 23:18:15
-updatedAt: 2026-11-07 00:36:08
+updatedAt: 2026-11-07 15:31:56
 parent: SPEC-0005
 authority: SPEC
 parallel: true
@@ -35,7 +35,7 @@ humanGate:
   scope: decisoes de entrevista da SPEC-0005 - runner so ubuntu (aceita risco de falhas de plataforma novas) e prova local (workflow valido + mesmos comandos verdes aqui; primeiro run no GitHub e gate humano posterior apos push do humano - ODEV nunca faz push)
   expiresAt: NENHUM
 blocker: NENHUM
-nextAction: DONE - QA-0008 PASSED (6/6 ACs, qaAttempt 1/2, 5 mutacoes provaram os checks, nenhum push); pendencia humana: push + primeiro run no GitHub (AC-06); ultima entrega da P-01: runbooks
+nextAction: DONE - QA-0008 PASSED e PENDENCIA HUMANA RESOLVIDA: push feito e primeiro run do GitHub Actions VERDE (build exit 0, gate 98/98 em ubuntu-26.04, cache salvo, 0 errors)
 evidence: []
 memoryBankFlags: [MUDANCA_RELEVANTE: BUILD - workflow .github/workflows/ci.yml entregue (push develop/main + pull_request, permissions contents read, setup-dotnet 10.0.403 pinado, cache NuGet hashFiles Directory.Packages.props, passos pwsh sdd-test.ps1 build/test) e validado localmente, mas NUNCA executado no GitHub: primeiro run e gate humano pos-push - source: .github/workflows/ci.yml] [MUDANCA_RELEVANTE: BUILD - secao CI de docs/memory-bank/build-run-test.md ainda diz nenhum pipeline criado ainda; consolidar no phase close apos o run humano - source: docs/memory-bank/build-run-test.md:39]
 ```
@@ -126,6 +126,9 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 - 2026-11-07 00:36:11 | odev | F2/INFO adjudicado: o gemeo .sh mede exit 3 na QA (duas vezes) e o DEV registrou 1 - ambos nao-verde, a conclusao do GAP-17 (escolha do .ps1) nao muda; divergencia de exit code entre rodadas de um script que falha nao altera o veredito
 - 2026-11-07 00:36:11 | odev | F3/INFO aceito: 2 bugs do proprio harness da QA (aspas do PS5.1 no py -c, quoting do bash aninhado) corrigidos e re-executados verdes em sessao
 - 2026-11-07 00:36:11 | odev | pendencia humana registrada: push para github.com/rykehg/squid-execution + primeiro run do workflow (AC-06) - gate humano posterior, nunca feito pelo fluxo
+- 2026-11-07 15:32:36 | odev | PENDENCIA HUMANA RESOLVIDA: humano deu push e o primeiro run do GitHub Actions foi VERDE - logs recebidos em C:\dev\squid-squad-net\logs_114873942112.zip (actions do github.com/rykehg/squid-execution, runner ubuntu-26.04, job build-and-test)
+- 2026-11-07 15:32:36 | odev | run: build exit 0 com 0 Warning 0 Error; gate de testes exit 0 com Passed 97... na verdade 98/98 em 17 s (docs/sdd/runs/test-runs/20261107-182610-test-gate.log no runner); cache NuGet salvo com a chave Linux-nuget; nenhum ##[error] em nenhum step - so deprecation de Node.js 20 nas actions oficiais (upstream, nao nosso)
+- 2026-11-07 15:32:36 | odev | LACUNA DE LINUX FECHADA NO CI: a suite inteira (98/98) rodou em Linux real pela primeira vez - o unverified recorrente das QAs (suite so no Windows) agora tem execucao no ubuntu do GitHub; o twin sdd-test.sh (S-11) segue nao executado no run (o workflow usa o .ps1 via pwsh)
 
 ## Evidence
 
@@ -162,3 +165,5 @@ Commands actually run, with exit code, and where the proof lives. No evidence, n
 | 2026-11-07 00:32:18 | qa | git rev-list --left-right --count HEAD...origin/develop | 0 | AC-06 - 0 0; HEAD=origin/develop=9e867d9; 0 commits since task creation - no push |
 | 2026-11-07 00:32:18 | qa | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/qa/qa-check-task-0009.ps1 (final apos QA-0008) | 0 | AC-05 end state: 13 checks 0 FAIL - QA-0008 listed as QA flow artifact |
 | 2026-11-07 00:32:48 | qa | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-state.ps1 check TASK-0009 | 0 | structure intact after QA appends - check OK log 21 evidence 27 |
+| 2026-11-07 15:32:36 | odev | run do GitHub Actions job build-and-test (ubuntu-26.04) - step Build: pwsh sdd-test.ps1 build | 0 | C:\dev\squid-squad-net\logs_114873942112.zip (build-and-test\5_Build.txt - 0 Warning 0 Error, exit 0) |
+| 2026-11-07 15:32:37 | odev | run do GitHub Actions job build-and-test (ubuntu-26.04) - step Gate de testes: pwsh sdd-test.ps1 test | 0 | C:\dev\squid-squad-net\logs_114873942112.zip (build-and-test\6_Gate de testes.txt - Passed 98 Failed 0 Total 98, exit 0; log do runner 20261107-182610-test-gate.log) |

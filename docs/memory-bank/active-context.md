@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the general `index.md`
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-07 08:30:00
+- lastVerified: 2026-11-07 15:32:00
 
 # Active context (snapshot)
 
@@ -23,14 +23,16 @@ Never record here: phase, status, counters, gates, handoffs in progress, work it
 - liveStateSource: docs/sdd/tasks/
 
 ## Focus at consolidation time
-- P-01 entregou: repositório + solution de 10 projetos com regra de dependência, storage SQLite com ETag imposto, xunit como gate, silo+API com /health /ready Dashboard, OTel/Serilog com PII, motor de política no Domain, Containerfile+compose com DoD provado, CI workflow (não executado), runbooks §8 — pointer: docs/sdd/plan/plan.md
+- P-01 entregou: repositório + solution de 10 projetos com regra de dependência, storage SQLite com ETag imposto, xunit como gate, silo+API com /health /ready Dashboard, OTel/Serilog com PII, motor de política no Domain, Containerfile+compose com DoD provado, CI workflow **executado e verde no GitHub** (98/98 em ubuntu-26.04, 2026-11-07), runbooks §8 — pointer: docs/sdd/plan/plan.md
+- Pós-fecho: TASK-0011 (bugfix do dashboard — redirect 301 restaurado, QA-0010 PASSED, gate 98/98) — pointer: docs/sdd/tasks/TASK-0011-dashboard-redirect-bugfix.md
 - Próxima fase: P-02 Identidade (ator local, chaves RK/RC, webfinger, kit de recuperação) — snapshot, not an instruction
 
 ## Open risks and gaps
-- Pendência humana: push ao GitHub + primeiro run da CI (nunca executado; falha de runner vira tarefa nova pós-fecho) — pointer: docs/sdd/tasks/TASK-0009-ci-github-actions.md
-- Lacuna permanente: suite xunit só rodou em Windows (WSL sem .NET SDK); compose/exit-3 e gate em Linux nativo `unverified` — pointer: docs/sdd/ideas/BACKLOG.md (I-10)
+- ~~Pendência humana: push + primeiro run da CI~~ **RESOLVIDA 2026-11-07**: run verde (build 0/0, gate 98/98 em ubuntu-26.04) — source: docs/sdd/tasks/TASK-0009-ci-github-actions.md
+- Lacuna de Linux **fechada no CI** (98/98 no ubuntu do GitHub); o twin `sdd-test.sh` (S-11) segue sem executar no run — pointer: docs/sdd/ideas/BACKLOG.md
 - GAP-01 (identidade derivada ou re-atestada) e GAP-03 (par RSA) respondem na P-02 — pointer: docs/sdd/requirements/REQ-0001-squid-mvp.md
 - FR-016 (descoberta `Listed` em `Container`) é lacuna consciente para a P-03 — pointer: docs/sdd/specs/SPEC-0003-domain-container-policy.md
+- S-19: `.dockerignore` não cobre `backend/.vs` aninhado — VS aberto derruba `podman compose build` — pointer: docs/sdd/ideas/BACKLOG.md
 
 ## Next planned step (snapshot)
 - Abrir a P-02: entrevistar/cortar SPEC de identidade a partir de REQ-0001 — mirror of: docs/sdd/plan/plan.md — snapshot, not an instruction

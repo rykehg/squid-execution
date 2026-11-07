@@ -28,7 +28,7 @@ Never record here: values of secret variables, commands with credentials, litera
 
 ## Commands
 - build: `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 build` — separa falha de ambiente (exit 3) de falha de produto — source: docs/sdd/_tools/sdd-test.ps1 — confidence: CONFIRMADO
-- gate de testes: `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test` — suite completa com as provas de build; última execução 97/97 exit 0 — source: docs/sdd/runs/test-runs/20261107-020119-test-gate.log — confidence: CONFIRMADO
+- gate de testes: `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test` — suite completa com as provas de build; última execução local 98/98 exit 0 (2026-11-07) e no CI 98/98 (2026-11-07) — source: docs/sdd/runs/test-runs/20261107-145249-test-gate.log — confidence: CONFIRMADO
 - run em contêiner (DoD da P-01): `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 compose` — build da imagem, `/health` `/ready` `/dashboard` 200, span no coletor, volume persistente; sem podman/provider classifica como ambiente exit 3 — source: docs/sdd/_tools/sdd-test.ps1 — confidence: CONFIRMADO
 - stack dev manual: `podman compose -f infra/compose.yaml up -d` / `down` (nunca `-v` em rotina); porta 8080 (API) e 16686 (Jaeger) — source: infra/compose.yaml — confidence: CONFIRMADO
 - run: `dotnet run --project backend/src/Squid.Service` sobe silo + API (composition root) — source: backend/src/Squid.Service/SquidServiceHost.cs — confidence: CONFIRMADO
@@ -37,7 +37,8 @@ Never record here: values of secret variables, commands with credentials, litera
 - Nenhuma variável obrigatória no bootstrapping; a seleção de provedor de armazenamento nasce por configuração (`sqlite` | `oracle`), com nome de chave ainda não definido — source: specs/001-squid-mvp/plan.md:142-L145 — confidence: OBSERVADO
 
 ## CI
-- Workflow entregue em `.github/workflows/ci.yml`: gatilhos push em develop/main + pull_request, runner `ubuntu-latest`, `permissions: contents: read`, SDK 10.0.403 pinado, cache NuGet por hash de `Directory.Packages.props`, passos `pwsh -NoProfile -File docs/sdd/_tools/sdd-test.ps1 build|test` — validado localmente (PyYAML + 5 mutações vermelhas) mas **nunca executado no GitHub**: o primeiro run é gate humano após push — source: .github/workflows/ci.yml; docs/sdd/qa/QA-0008-ci-github-actions.md — confidence: CONFIRMADO
+- Workflow `.github/workflows/ci.yml` executado e **VERDE** no primeiro run (2026-11-07, push humano): gatilhos push em develop/main + pull_request, runner `ubuntu-26.04`, `permissions: contents: read`, SDK 10.0.403 pinado, cache NuGet por hash de `Directory.Packages.props`, passos `pwsh -NoProfile -File docs/sdd/_tools/sdd-test.ps1 build|test` — build 0 warnings/0 erros, gate **98/98 exit 0** em 17 s, nenhum `##[error]` (só deprecation upstream de Node.js nas actions oficiais) — source: C:\dev\squid-squad-net\logs_114873942112.zip (actions de github.com/rykehg/squid-execution) — confidence: CONFIRMADO
+- **Suite em Linux executada pela primeira vez no run do CI** (98/98 no ubuntu): fecha o unverified recorrente das QAs de que a suite só rodava no Windows; o gêmeo `sdd-test.sh` (S-11) segue não executado no run (o workflow usa o `.ps1` via pwsh) — source: mesmo zip, build-and-test\6_Gate de testes.txt — confidence: CONFIRMADO
 - O gêmeo `docs/sdd/_tools/sdd-test.sh` NÃO roda neste repo (procura `*.sln`, o solution é `*.slnx` → exit 3); o gate é o `.ps1` — source: docs/sdd/tasks/TASK-0009-ci-github-actions.md — confidence: CONFIRMADO
 
 ## Container tooling (esta máquina)
