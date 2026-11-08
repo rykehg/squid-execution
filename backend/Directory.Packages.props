@@ -32,6 +32,10 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.1" />
     <PackageVersion Include="Serilog" Version="4.4.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+
+    <!-- Crypto package of the identity phase (SPEC-0007 GAP-08): BouncyCastle.Cryptography is the
+         single crypto dependency (Argon2id + Ed25519), approved by the human gate of 2026-11-07. -->
+    <PackageVersion Include="BouncyCastle.Cryptography" Version="2.7.0" />
   </ItemGroup>
 
 </Project>

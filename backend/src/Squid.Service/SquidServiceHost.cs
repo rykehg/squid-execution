@@ -12,7 +12,12 @@ using Serilog;
 using Serilog.Configuration;
 using Serilog.Formatting.Json;
 using Squid.Api;
+using Squid.Api.Auth;
+using Squid.Api.Discovery;
+using Squid.Api.Recovery;
+using Squid.Grains.Actors;
 using Squid.Persistence;
+using Squid.Protocols.ActivityPub;
 
 namespace Squid.Service;
 
@@ -71,6 +76,18 @@ public static class SquidServiceHost
 
         // Created eagerly: the file and its schema exist before the first request is served.
         var storage = new SqliteGrainStorage(connectionString);
+
+        // Identity wiring (SPEC-0007): the actor aggregate resolves through the production
+        // IActorEventStore adapter — it lives here because ADR-35 forbids Squid.Grains ->
+        // Squid.Persistence (backlog S-21) — and the credential row behind the auth surface is
+        // read through IAuthStore, whose Squid.Api side cannot see the storage either.
+        builder.Services.AddSingleton<IActorEventStore>(_ => new SqliteActorEventStore(connectionString));
+        builder.Services.AddTransient<ActorGrain>();
+        builder.Services.AddSingleton<IAuthStore>(_ => new SqliteAuthStore(storage));
+        // Kit verification marker (SPEC-0007 B-13): same storage, its own store name — the row
+        // FR-007 reads lives beside the credential row without widening the closed auth slice.
+        builder.Services.AddSingleton<IRecoveryStore>(_ => new SqliteRecoveryStore(storage));
+
         builder.UseOrleans(silo =>
         {
             silo.Services.AddGrainStorage(StorageProviderName, (_, _) => storage);
@@ -93,6 +110,15 @@ public static class SquidServiceHost
         // leaves the browser on the slashless URL, where the bundle's relative paths resolve to 404.
         app.MapOrleansDashboard("/dashboard");
         app.MapSquidApi();
+        // Auth routes and the session/CSRF middleware (TASK-0014); one call site, owned by Auth/**.
+        app.MapSquidAuth();
+        // Recovery kit (TASK-0016): generate, verify, import (SPEC-0007 B-12..B-15). It maps after
+        // auth so the session/CSRF middleware above is already in the pipeline these routes run on.
+        app.MapSquidRecovery();
+        // Discovery (TASK-0015): webfinger + profile JSON-LD (SPEC-0007 B-09..B-11). The document
+        // bytes come from Squid.Protocols through this one delegate — the edge never sees the
+        // adapter (ADR-11), and every absolute URL derives from the request's own Host (B-09a).
+        app.MapSquidDiscovery(ProfileJsonLd.Serialize);
 
         return app;
     }

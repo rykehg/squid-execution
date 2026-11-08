@@ -4,6 +4,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
+    <!-- The profile mapping publishes actor state it only reads (SPEC-0007 B-10); the adapter
+         layer may reach the grains — it still may not reach the edge (Directory.Build.targets). -->
+    <ProjectReference Include="..\Squid.Grains\Squid.Grains.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@ Write responsibility: ODEV.
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-04 12:06:31
+- lastVerified: 2026-11-07 16:09:01
 
 # REQ-0001 — Squid: MVP de rede social federada auto-hospedada
 
@@ -73,20 +73,24 @@ only when a wrong guess destroys data or misroutes the product.
 
 | Gap | Question | Default assumption if the human does not answer | Blocking | Status |
 | --- | --- | --- | --- | --- |
-| GAP-01 | A `RK` (chave raiz) de onde nasce a identidade: a chave pública Ed25519 é derivada da `RK` (continuidade após recuperação) ou gerada nova e re-atestada por terceiros? | Derivada da `RK` via HKDF, com a prova de continuidade no kit — é o que sustenta "mesma chave pública após restaurar o kit" (FR-006, premissa de continuidade) | no | OPEN |
+| GAP-01 | A `RK` (chave raiz) de onde nasce a identidade: a chave pública Ed25519 é derivada da `RK` (continuidade após recuperação) ou gerada nova e re-atestada por terceiros? | Derivada da `RK` via HKDF, com a prova de continuidade no kit — é o que sustenta "mesma chave pública após restaurar o kit" (FR-006, premissa de continuidade) | no | RESOLVED |
 | GAP-02 | A fonte de pacotes NuGet é a rede pública ou uma fonte local versionada? O doc 05 §11 registra `nuget.config` com fonte local como bloqueio real já ocorrido | Fonte pública `nuget.org` com `nuget.config` versionado no backend; fonte local entra só se o CI exigir rede fechada | no | OPEN |
-| GAP-03 | O par RSA-SHA256 por ator é gerado no registro e guardado no estado + kit (R-02), mas o doc 04 §1.2 ainda não tem a linha do par RSA | Par RSA-2048 gerado no registro, embrulhado por `HKDF(RK, "fed/rsa-wrap")`, no estado do ator e no kit, como ADR-28 e R-02 determinam | no | OPEN |
+| GAP-03 | O par RSA-SHA256 por ator é gerado no registro e guardado no estado + kit (R-02), mas o doc 04 §1.2 ainda não tem a linha do par RSA | Par RSA-2048 gerado no registro, embrulhado por `HKDF(RK, "fed/rsa-wrap")`, no estado do ator e no kit, como ADR-28 e R-02 determinam | no | RESOLVED |
 | GAP-04 | Formato do `etag` em `IGrainStorage`: base64 do `GrainStateVersion` do Orleans (como o storage oficial do Azure) ou inteiro textual da sequência de versão | `GrainStateVersion` serializado em base64, com `Version` monotônica por grain e comparação exata em `WHERE Version = @Version` | no | OPEN |
 | GAP-05 | A suíte de storage roda contra Oracle ATP só em job agendado; no MVP o gate é SQLite apenas? | SQLite é o gate do CI rápido; Oracle entra em job agendado quando houver credencial — a suíte de contratos é escrita contra a interface, não contra o SQLite | no | OPEN |
 | GAP-06 | O front `web/` é criado na P-01 como pasta reservada ou só na P-08? | Pasta reservada por `web/.gitkeep` (a ADR-21 fixa o layout); nenhum código Nuxt antes da P-08 | no | OPEN |
+| GAP-07 | Autenticação do ator local (R-03 do doc 05 §14): senha + sessão, passkey ou OIDC? | Senha + sessão cookie com Argon2id (o que o Sprint 1 já lista); passkey (fase 2) e OIDC de instância (fase 3) reservados no contrato, nunca substituem o kit | no | RESOLVED |
+| GAP-08 | Qual pacote NuGet entrega Argon2id + Ed25519 + HKDF no backend? Nenhum pacote de cripto existe no repo hoje; instalar dependência é gate humano | `BouncyCastle.Cryptography` como pacote único (Argon2id, Ed25519, X25519, HKDF), versão só em `Directory.Packages.props` (ADR-25) | no | RESOLVED |
 
 ## Answers received
 
 | Gap | Answer | Answering party | Date/Time |
 | --- | --- | --- | --- |
-| GAP-01 | pendente — resposta no fechamento da P-02, quando a chave existir | NENHUM | NENHUM |
+| GAP-01 | Derivada da `RK` via HKDF com prova de continuidade no kit — mesma chave pública após restaurar o kit | HUMAN | 2026-11-07 16:06:40 |
 | GAP-02 | pendente — resposta ao cortar TASK-0002 | NENHUM | NENHUM |
-| GAP-03 | pendente — resposta ao cortar a entrega de chaves da P-02 | NENHUM | NENHUM |
+| GAP-03 | Par RSA-2048 gerado no registro, embrulhado por `HKDF(RK, "fed/rsa-wrap")`, no estado do ator e no kit | HUMAN | 2026-11-07 16:06:40 |
 | GAP-04 | pendente — resposta ao cortar TASK-0003 | NENHUM | NENHUM |
 | GAP-05 | pendente — resposta ao cortar TASK-0003 | NENHUM | NENHUM |
 | GAP-06 | resposta por suposição em vigor na P-01 (segue aberta até decisão sua) | ODEV | 2026-11-04 12:06:31 |
+| GAP-07 | Senha + sessão cookie `squid_session` (HttpOnly, Secure, SameSite=Lax, 30 dias deslizantes) com Argon2id e CSRF dupla submissão; passkey/OIDC reservados no contrato | HUMAN | 2026-11-07 16:06:40 |
+| GAP-08 | `BouncyCastle.Cryptography` como pacote único, versão só em `Directory.Packages.props` | HUMAN | 2026-11-07 16:06:40 |

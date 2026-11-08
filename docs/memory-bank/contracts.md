@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the applicable index, 
 
 - status: PARCIAL
 - owner: odev
-- lastVerified: 2026-11-04 12:06:31
+- lastVerified: 2026-11-08 09:45:19
 
 # Contracts — Squid
 
@@ -15,8 +15,8 @@ Fact format: `- [FATO] — source: path:Lx-Ly | [REF_FLUXO] | [GAP: …] — con
 Never record here: real payloads, examples with real data, tokens, credentials in URL. Hosts and physical names of queues or topics per environment only according to the `sanitizationProfile` of `index.md` (absent = ESTRITO). Request examples only with a marked placeholder (e.g.: `<token-jwt-aqui>`), preferably by pointer.
 
 ## Endpoints
-- Superfície REST do cliente (identidade, contêineres, política, publicação, timeline com marcador de sequência, mensageria, stream ao vivo, mídia, administração): contrato publicado, ainda sem handler; recurso invisível responde não encontrado — handler: NENHUM — published contract: specs/001-squid-mvp/contracts/http-api.md — source: docs/sdd/specs/SPEC-0001-fundacao-repositorio-e-storage.md — confidence: CONFIRMADO
-- Superfície federada (descoberta, perfil, inbox/outbox, objeto e contêiner): contrato publicado, ainda sem handler — handler: NENHUM — published contract: specs/001-squid-mvp/contracts/activitypub.md — source: docs/features/05-arquitetura-consolidada.md:239-L317 — confidence: CONFIRMADO
+- Superfície REST do cliente (identidade, contêineres, política, publicação, timeline com marcador de sequência, mensageria, stream ao vivo, mídia, administração): contrato publicado; **em handlers desde a P-02**: `POST /api/auth/register|login|logout|logout-all`, `GET /api/auth/me`, `POST /api/recovery/kit|kit/verify|import`, `GET /.well-known/webfinger`, `GET /users/{name}` — o resto segue sem handler e responde não encontrado — handler: backend/src/Squid.Api/Auth|Recovery|Discovery — published contract: specs/001-squid-mvp/contracts/http-api.md — source: docs/sdd/specs/SPEC-0007-identidade-ator-local-chaves-sessao-kit.md — confidence: CONFIRMADO
+- Superfície federada (descoberta, perfil, inbox/outbox, objeto e contêiner): **descoberta e perfil servidos desde a P-02** (webfinger + `/users/{name}`); `inbox`/`outbox`/`followers`/`following` e `rel=profile` continuam sem handler até P-06/P-08 (backlog S-26) — handler: backend/src/Squid.Api/Discovery — published contract: specs/001-squid-mvp/contracts/activitypub.md — source: docs/sdd/specs/SPEC-0007-identidade-ator-local-chaves-sessao-kit.md — confidence: CONFIRMADO
 - Contrato de destino de backup e de restauração (envelope com época de chave, faixa de sequência, hash e tamanho): publicado, ainda sem handler — handler: NENHUM — published contract: specs/001-squid-mvp/contracts/backup-recovery.md — source: specs/001-squid-mvp/spec.md:253-L258 — confidence: CONFIRMADO
 
 ## Events and queues
@@ -29,3 +29,6 @@ Never record here: real payloads, examples with real data, tokens, credentials i
 - Error `InconsistentStateException` — meaning: a escrita encontrou uma versão de estado diferente da esperada e nada foi gravado — pointer: docs/features/05-arquitetura-consolidada.md:400 — source: doc 05 §4.7 #1 — confidence: CONFIRMADO
 - Error "não encontrado" para recurso invisível — meaning: negar acesso não revela a existência do recurso — pointer: specs/001-squid-mvp/spec.md:206 — source: FR-018 — confidence: CONFIRMADO
 - Formato de erro padronizado da API — pointer: specs/001-squid-mvp/contracts/http-api.md — source: specs/001-squid-mvp/plan.md:199-L202 — confidence: CONFIRMADO
+- Contrato da superfície de auth (P-02): 401 de login byte-a-byte idêntico para handle inexistente e senha errada (sem traceId, dummy hash sempre verificado, não enumera); CSRF dupla submissão exigido em toda mutação EXCETO `/register` e `/login`; cookies `squid_session` (HttpOnly+Secure+Lax, 30d deslizantes, re-emitido) e `squid_csrf` (sem HttpOnly) — source: docs/sdd/qa/QA-0013-registro-login-sessao.md — confidence: CONFIRMADO
+- Kit de `POST /api/recovery/kit` = 4 campos do contrato §3 + `wrappedSigningKey` (exigido pelo data-model §2.12 para reidratar a RSA); import em campos planos + `handle` + `password`; senha errada → 401 `recovery_failed` único com estado intacto; **emenda humana 2026-11-08 (S-27)**: a `RC` é persistida em claro (re-export idêntico preservado; decisão registrada no plano) — source: backend/src/Squid.Api/Recovery/RecoveryEndpoints.cs:71; docs/sdd/plan/plan.md — confidence: CONFIRMADO
+- Descoberta: o domínio da instância é o `Host` da própria requisição (origem = scheme + Host), sem chave de configuração; `X-Forwarded-*` não é lido (parked I-11, fase de proxy) — source: docs/sdd/specs/SPEC-0007-identidade-ator-local-chaves-sessao-kit.md (B-09a) — confidence: CONFIRMADO

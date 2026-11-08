@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the general `index.md`
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-07 15:32:00
+- lastVerified: 2026-11-08 09:45:19
 
 # Active context (snapshot)
 
@@ -15,24 +15,23 @@ Snapshot of the last consolidation, overwritten at each consolidation; the live 
 Never record here: phase, status, counters, gates, handoffs in progress, work item content, secrets, personal data.
 
 ## Last consolidation
-- Event: FEATURE_CONCLUIDA (PHASE_CLOSED) — P-01 Sprint 0 fechada
-- Reference: TASK-0001..TASK-0010 da P-01 (runs R-20261104-01/02, R-20261106-01, R-20261107-01), todas DONE com QA PASSED
-- When: Date/Time: 2026-11-07 08:30:00
+- Event: FEATURE_CONCLUIDA (PHASE_CLOSED) — P-02 Sprint 1 (Identidade) fechada
+- Reference: TASK-0012..TASK-0016 (run R-20261107-02), todas DONE com QA PASSED (QA-0011..QA-0015); snapshot em docs/sdd/plan/history/0003-plan.md
+- When: Date/Time: 2026-11-08 09:45:19
 
 ## Live state
 - liveStateSource: docs/sdd/tasks/
 
 ## Focus at consolidation time
-- P-01 entregou: repositório + solution de 10 projetos com regra de dependência, storage SQLite com ETag imposto, xunit como gate, silo+API com /health /ready Dashboard, OTel/Serilog com PII, motor de política no Domain, Containerfile+compose com DoD provado, CI workflow **executado e verde no GitHub** (98/98 em ubuntu-26.04, 2026-11-07), runbooks §8 — pointer: docs/sdd/plan/plan.md
-- Pós-fecho: TASK-0011 (bugfix do dashboard — redirect 301 restaurado, QA-0010 PASSED, gate 98/98) — pointer: docs/sdd/tasks/TASK-0011-dashboard-redirect-bugfix.md
-- Próxima fase: P-02 Identidade (ator local, chaves RK/RC, webfinger, kit de recuperação) — snapshot, not an instruction
+- P-02 entregou: primitivas de chaves (RK/RC, HKDF, Argon2id, embrulho RSA — BouncyCastle em Squid.Api/Crypto), ActorGrain event-sourced com porta de storage (ADR-35), registro+sessão (401 sem enumeração, CSRF, cookies), webfinger + perfil JSON-LD com origem única no Host da requisição, kit de recuperação (gerar/verificar/importar em instância limpa) — DoD do Sprint 1 provado em cadeia; gate da casa 98 → 167/167 — pointer: docs/sdd/plan/plan.md
+- Decisão humana no fecho (S-27): `RC` fica em claro no storage (re-export idêntico preservado); trade-off registrado — pointer: docs/sdd/ideas/BACKLOG.md
+- Próxima fase: P-03 Contêineres sociais (papéis, política versada, sucessão) — snapshot, not an instruction
 
 ## Open risks and gaps
-- ~~Pendência humana: push + primeiro run da CI~~ **RESOLVIDA 2026-11-07**: run verde (build 0/0, gate 98/98 em ubuntu-26.04) — source: docs/sdd/tasks/TASK-0009-ci-github-actions.md
-- Lacuna de Linux **fechada no CI** (98/98 no ubuntu do GitHub); o twin `sdd-test.sh` (S-11) segue sem executar no run — pointer: docs/sdd/ideas/BACKLOG.md
-- GAP-01 (identidade derivada ou re-atestada) e GAP-03 (par RSA) respondem na P-02 — pointer: docs/sdd/requirements/REQ-0001-squid-mvp.md
+- S-22 (wrapper mascara vermelho como ambiente, reproduzido 4×) e S-11/S-12 (gêmeo `.sh`) seguem abertos no backlog — conserto é task própria; até lá decidir pelo log gravado
+- Suite .NET em Linux nativa `unverified` nesta máquina (WSL sem SDK; instalar exige gate); a CI ubuntu é o executor Linux — pointer: docs/sdd/ideas/BACKLOG.md
+- GAP-09 (quem destrava `RK` para assinar em runtime) é decisão da P-06; I-11 (ForwardedHeaders p/ proxy) e S-26 (campos inbox/outbox → P-06/P-08) também aguardam essas fases
 - FR-016 (descoberta `Listed` em `Container`) é lacuna consciente para a P-03 — pointer: docs/sdd/specs/SPEC-0003-domain-container-policy.md
-- S-19: `.dockerignore` não cobre `backend/.vs` aninhado — VS aberto derruba `podman compose build` — pointer: docs/sdd/ideas/BACKLOG.md
 
 ## Next planned step (snapshot)
-- Abrir a P-02: entrevistar/cortar SPEC de identidade a partir de REQ-0001 — mirror of: docs/sdd/plan/plan.md — snapshot, not an instruction
+- Abrir a P-03 (Contêineres sociais) com entrevista/corte de spec — mirror of: docs/sdd/plan/plan.md — snapshot, not an instruction

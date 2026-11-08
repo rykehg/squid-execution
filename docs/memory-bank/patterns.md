@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the applicable index, 
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-07 08:30:00
+- lastVerified: 2026-11-08 09:45:19
 
 # Patterns — Squid
 
@@ -25,6 +25,9 @@ Never record here: code snippets or blocks, real test data, secrets.
 - Falha de infraestrutura vira Warning estruturado com o endpoint afetado, nunca exceção propagada ao cliente nem `catch {}` silencioso (wrapper de exporter) — evidence: backend/src/Squid.Service/WarningOtlpExporter.cs:15 — abandoned at: N/A — source: TASK-0006 / doc 05 §4.7 #7 — confidence: OBSERVADO
 - Runbook de operação com status explícito (EXECUTÁVEL / PARCIAL / PENDENTE-fase) e marca por comando (EXECUTAVEL vs NÃO-executar): procedimento de sistema inexistente é esboço com ponteiro de fase, nunca passo a passo inventado — evidence: docs/runbooks/README.md — abandoned at: N/A — source: TASK-0010 / SPEC-0006 — confidence: OBSERVADO
 - Mutação can-fail como prova de teste: quebrar o código de propósito (guarda, máscara, estágio da imagem), vermelho esperado, restaurar byte-exact com SHA256 capturado antes — evidência em toda QA desta fase — evidence: docs/sdd/qa/QA-0009-runbooks-iniciais.md; docs/sdd/qa/QA-0007-containerfile-compose.md — abandoned at: N/A — source: prática das QAs TASK-0003..0010 — confidence: CONFIRMADO
+- Agregado event-sourced fala com a storage apenas por uma porta própria (`IActorEventStore` com ETag/CAS) e o adaptador para `IGrainStorage` vive na raiz de composição — `Squid.Grains` não referencia `Squid.Persistence` (ADR-35) — evidence: backend/src/Squid.Grains/Actors/IActorEventStore.cs:9; backend/src/Squid.Service/SqliteActorEventStore.cs:1 — abandoned at: N/A — source: TASK-0013, adaptador de produção registrado pela TASK-0014 — confidence: CONFIRMADO
+- Varredura de presença/ausência sobre JSON serializado faz a leitura crua E a decodificada: `System.Text.Json` escapa o `+` do base64 como `+` (medido: 124/200 falsos positivos cru vs 0/200 decodificado) — evidence: docs/sdd/qa/QA-0013-registro-login-sessao.md; backend/tests/Squid.Tests/Auth/Qa0013AuthAcceptanceTests.cs — abandoned at: N/A — source: QA-0013 / backlog S-25 — confidence: CONFIRMADO
+- Classificação de falha de teste vem do cabeçalho `exit:` e do resumo DENTRO do log gravado em `runs/test-runs/`, nunca do exit do wrapper `sdd-test.ps1` (ele imprime exit 3 para vermelho real — S-22, reproduzido 4×) — evidence: docs/sdd/_tools/sdd-test.ps1:79-83; docs/sdd/runs/test-runs/20261107-172502-test-filter.log:2 — abandoned at: N/A — source: QA-0011..0015 / backlog S-22 — confidence: CONFIRMADO
 
 ## Anti-patterns
 - Nome do store interpolado no SQL: faz stores distintos colapsarem na mesma partição lógica — evidence: docs/features/05-arquitetura-consolidada.md:401 — source: doc 05 §4.7 #2 — confidence: CONFIRMADO

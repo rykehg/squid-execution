@@ -7,6 +7,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Key primitives under src/Squid.Api/Crypto (SPEC-0007): Argon2id and Ed25519 come from
+         BouncyCastle; the version lives only in backend/Directory.Packages.props (ADR-25). -->
+    <PackageReference Include="BouncyCastle.Cryptography" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
     <ProjectReference Include="..\Squid.Grains\Squid.Grains.csproj" />
     <ProjectReference Include="..\Squid.ReadModels\Squid.ReadModels.csproj" />

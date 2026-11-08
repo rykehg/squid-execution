@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the applicable index, 
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-07 08:30:00
+- lastVerified: 2026-11-08 09:45:19
 
 # Build, run and tests — Squid
 
@@ -28,7 +28,7 @@ Never record here: values of secret variables, commands with credentials, litera
 
 ## Commands
 - build: `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 build` — separa falha de ambiente (exit 3) de falha de produto — source: docs/sdd/_tools/sdd-test.ps1 — confidence: CONFIRMADO
-- gate de testes: `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test` — suite completa com as provas de build; última execução local 98/98 exit 0 (2026-11-07) e no CI 98/98 (2026-11-07) — source: docs/sdd/runs/test-runs/20261107-145249-test-gate.log — confidence: CONFIRMADO
+- gate de testes: `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test` — suite completa com as provas de build; última execução local **167/167 exit 0** (2026-11-08, fecho da P-02); no CI 98/98 (2026-11-07, run anterior) — source: docs/sdd/runs/test-runs/20261108-010157-test-gate.log — confidence: CONFIRMADO
 - run em contêiner (DoD da P-01): `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 compose` — build da imagem, `/health` `/ready` `/dashboard` 200, span no coletor, volume persistente; sem podman/provider classifica como ambiente exit 3 — source: docs/sdd/_tools/sdd-test.ps1 — confidence: CONFIRMADO
 - stack dev manual: `podman compose -f infra/compose.yaml up -d` / `down` (nunca `-v` em rotina); porta 8080 (API) e 16686 (Jaeger) — source: infra/compose.yaml — confidence: CONFIRMADO
 - run: `dotnet run --project backend/src/Squid.Service` sobe silo + API (composition root) — source: backend/src/Squid.Service/SquidServiceHost.cs — confidence: CONFIRMADO
@@ -50,3 +50,5 @@ Never record here: values of secret variables, commands with credentials, litera
 - `docs/sdd/_tools/check-task-0001.ps1` — verifica os ACs de estrutura do repositório, sem dependência externa — source: GAP: not populated — confidence: OBSERVADO
 - `sdd-test.ps1 build|test|health|compose` classifica falha de ambiente como exit 3 (nunca defeito de produto) e grava cada execução em `docs/sdd/runs/test-runs/<timestamp>-<modo>.log` — source: docs/sdd/_tools/sdd-test.ps1 — confidence: CONFIRMADO
 - Armadilhas de sandbox já pagas (teste de unidade com `Start-Process -RedirectStandardOutput` devolve `ExitCode` vazio; testhost morre com Win32Exception 5 em integridade Low): usar `cmd /c` + `%ERRORLEVEL%` e o `RUNBOOK-retomada.md` — source: docs/sdd/ideas/BACKLOG.md (S-15, S-07) — confidence: CONFIRMADO
+- **O wrapper `sdd-test.ps1` pode imprimir exit 3 (ambiente) para vermelho REAL** (S-22): `Test-SandboxSignature` casa o substring `handle` solto e o detector de resumo não reconhece `Com falha!` — reproduzido 4× na P-02 (ex.: log `20261107-172502-test-filter.log` diz `exit: 1` enquanto o console dizia 3). Decidir ambiente/produto SEMPRE pelo cabeçalho `exit:` e resumo do **log gravado**; conserto é task própria (backlog S-22) — source: docs/sdd/_tools/sdd-test.ps1:79-83 — confidence: CONFIRMADO
+- Após restaurar uma mutação byte-exact, **bumpar o mtime** do arquivo: o build incremental roda o binário mutado sobre a fonte já restaurada (S-23, visto na QA-0012) — source: docs/sdd/runs/test-runs/20261107-175335-test-gate.log:1 — confidence: CONFIRMADO
