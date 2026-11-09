@@ -12,9 +12,12 @@ using Serilog;
 using Serilog.Configuration;
 using Serilog.Formatting.Json;
 using Squid.Api;
+using Squid.Api.Admin;
 using Squid.Api.Auth;
+using Squid.Api.Containers;
 using Squid.Api.Discovery;
 using Squid.Api.Recovery;
+using Squid.Domain;
 using Squid.Grains.Actors;
 using Squid.Persistence;
 using Squid.Protocols.ActivityPub;
@@ -33,8 +36,13 @@ public static class SquidServiceHost
     /// <summary>Name of the Orleans storage provider that wraps <see cref="SqliteGrainStorage"/>.</summary>
     public const string StorageProviderName = "sqlite";
 
-    /// <summary>Builds the full application: silo, SQLite grain storage, /health, /ready, dashboard.</summary>
-    public static WebApplication Build(string[] args)
+    /// <summary>
+    /// Builds the full application: silo, SQLite grain storage, /health, /ready, dashboard.
+    /// <paramref name="configure"/> is the test seam of GAP-17: it runs after every production
+    /// registration, so a test can swap the <see cref="TimeProvider"/> of the section G timers
+    /// (and any configuration) before the application is built; production passes nothing.
+    /// </summary>
+    public static WebApplication Build(string[] args, Action<WebApplicationBuilder>? configure = null)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -87,6 +95,17 @@ public static class SquidServiceHost
         // Kit verification marker (SPEC-0007 B-13): same storage, its own store name — the row
         // FR-007 reads lives beside the credential row without widening the closed auth slice.
         builder.Services.AddSingleton<IRecoveryStore>(_ => new SqliteRecoveryStore(storage));
+        // Container core (SPEC-0008 A): the edge declares IContainerStore (ADR-35) and this root
+        // binds it to the same SQLite file, under its own store names.
+        builder.Services.AddSingleton<IContainerStore>(_ => new SqliteContainerStore(storage, connectionString));
+        // Policy decisions (SPEC-0008 B/C): the single evaluator of data-model §3.2 and the
+        // append-only trail of FR-019, both over the same file — the trail is a container of the
+        // same slice, so it lives beside the rows it describes.
+        builder.Services.AddSingleton<IPolicyEvaluator, PolicyEvaluator>();
+        builder.Services.AddSingleton<IPolicyAuditStore>(_ => new SqlitePolicyAuditStore(storage));
+        // GAP-17: one injectable clock for the section G timers — the succession inactivity and
+        // the delete grace read it instead of the wall, so no test ever sleeps 90 days.
+        builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 
         builder.UseOrleans(silo =>
         {
@@ -96,6 +115,7 @@ public static class SquidServiceHost
         });
         builder.Services.AddSingleton(new StorageReadiness(connectionString));
 
+        configure?.Invoke(builder);
         var app = builder.Build();
 
         app.UseRouting();
@@ -112,6 +132,13 @@ public static class SquidServiceHost
         app.MapSquidApi();
         // Auth routes and the session/CSRF middleware (TASK-0014); one call site, owned by Auth/**.
         app.MapSquidAuth();
+        // Container core (TASK-0017): create/read/edit plus the owner membership (SPEC-0008 A).
+        // It maps after auth, so the session/CSRF middleware above already guards these routes.
+        app.MapSquidContainers();
+        // Policy, trail and operator (TASK-0018): PUT /policy rides with the container routes,
+        // and GET /api/admin/audit sits on the same session pipeline behind the operator gate
+        // (SPEC-0008 B/C/D). The operator list is configuration — Instance:Operators, GAP-14.
+        app.MapSquidAdmin();
         // Recovery kit (TASK-0016): generate, verify, import (SPEC-0007 B-12..B-15). It maps after
         // auth so the session/CSRF middleware above is already in the pipeline these routes run on.
         app.MapSquidRecovery();

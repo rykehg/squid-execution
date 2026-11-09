@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the general `index.md`
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-08 09:45:19
+- lastVerified: 2026-11-09 04:55:35
 
 # Active context (snapshot)
 
@@ -15,23 +15,22 @@ Snapshot of the last consolidation, overwritten at each consolidation; the live 
 Never record here: phase, status, counters, gates, handoffs in progress, work item content, secrets, personal data.
 
 ## Last consolidation
-- Event: FEATURE_CONCLUIDA (PHASE_CLOSED) — P-02 Sprint 1 (Identidade) fechada
-- Reference: TASK-0012..TASK-0016 (run R-20261107-02), todas DONE com QA PASSED (QA-0011..QA-0015); snapshot em docs/sdd/plan/history/0003-plan.md
-- When: Date/Time: 2026-11-08 09:45:19
+- Event: FEATURE_CONCLUIDA (PHASE_CLOSED) — P-03 Sprint 2 (Contêineres sociais) fechada
+- Reference: TASK-0017..TASK-0022 (run R-20261108-01), todas DONE com QA PASSED (QA-0016..QA-0021); snapshot em docs/sdd/plan/history/0004-plan.md
+- When: 2026-11-09 04:55:35
 
 ## Live state
 - liveStateSource: docs/sdd/tasks/
 
 ## Focus at consolidation time
-- P-02 entregou: primitivas de chaves (RK/RC, HKDF, Argon2id, embrulho RSA — BouncyCastle em Squid.Api/Crypto), ActorGrain event-sourced com porta de storage (ADR-35), registro+sessão (401 sem enumeração, CSRF, cookies), webfinger + perfil JSON-LD com origem única no Host da requisição, kit de recuperação (gerar/verificar/importar em instância limpa) — DoD do Sprint 1 provado em cadeia; gate da casa 98 → 167/167 — pointer: docs/sdd/plan/plan.md
-- Decisão humana no fecho (S-27): `RC` fica em claro no storage (re-export idêntico preservado); trade-off registrado — pointer: docs/sdd/ideas/BACKLOG.md
-- Próxima fase: P-03 Contêineres sociais (papéis, política versada, sucessão) — snapshot, not an instruction
+- P-03 entregou: agregado `Container` com presets e ETag, política versionada `If-Match` (409/428), trilha `PolicyDecision` append-only com `GET /api/admin/audit` e operador `Instance:Operators`, membership §3.3 (join/invite/leave/página de membros), papéis e moderação com `IPolicyEvaluator` em contexto do ator (`PolicyActor` — GAP-11 fechado, facet `singlePublisher` do DoD), sucessão/claim com relógio injetável + transferência + soft delete + override do operador (DoD "nunca órfão"), descoberta FR-016 (só listados) — gate da casa 167 → 244/244 — pointer: docs/sdd/plan/plan.md
+- Emendas humanas desta fase: origem scheme+Host no `Id` de contêiner (2026-11-08 15:57:34) e `ChangePolicy` na trilha (2026-11-08 17:38:56) — pointer: docs/sdd/plan/plan.md
+- Correções adjudicadas no fluxo: join em contêiner não-público (S-30 → AC-07) e trilha das recusas de invariante (F2 → AC-08), ambas na TASK-0021
 
 ## Open risks and gaps
-- S-22 (wrapper mascara vermelho como ambiente, reproduzido 4×) e S-11/S-12 (gêmeo `.sh`) seguem abertos no backlog — conserto é task própria; até lá decidir pelo log gravado
-- Suite .NET em Linux nativa `unverified` nesta máquina (WSL sem SDK; instalar exige gate); a CI ubuntu é o executor Linux — pointer: docs/sdd/ideas/BACKLOG.md
-- GAP-09 (quem destrava `RK` para assinar em runtime) é decisão da P-06; I-11 (ForwardedHeaders p/ proxy) e S-26 (campos inbox/outbox → P-06/P-08) também aguardam essas fases
-- FR-016 (descoberta `Listed` em `Container`) é lacuna consciente para a P-03 — pointer: docs/sdd/specs/SPEC-0003-domain-container-policy.md
+- Dívidas de saneamento no backlog: S-29/S-32 (paginação em memória — índice exige migration com gate), S-33 (slug `search` sombreado pela rota literal), S-22/S-11/S-12 (armadilhas do wrapper e do gêmeo `.sh`), S-19, S-26 — pointer: docs/sdd/ideas/BACKLOG.md
+- Suite .NET em Linux nativa `unverified` nesta máquina (WSL sem SDK, instalar exige gate); a CI ubuntu é o executor Linux — só o checker `.sh` roda lá
+- GAP-02/04/05/06 seguem abertos; GAP-09 e I-11 esperam a P-06; FR-016 encerrou na P-03 (TASK-0022)
 
 ## Next planned step (snapshot)
-- Abrir a P-03 (Contêineres sociais) com entrevista/corte de spec — mirror of: docs/sdd/plan/plan.md — snapshot, not an instruction
+- Aguarda decisão humana para abrir a P-04 (Publicação e feed) — mirror of: docs/sdd/plan/plan.md — snapshot, not an instruction

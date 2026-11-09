@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the applicable index, 
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-07 08:30:00
+- lastVerified: 2026-11-09 04:55:35
 
 # Architecture — Squid
 
@@ -26,7 +26,7 @@ Never record here: secrets, literal connection strings, personal data, diagrams 
 
 ## Responsibilities
 - `Squid.Domain`: guardar as invariantes sociais sem depender de framework — entrypoint: docs/features/05-arquitetura-consolidada.md:602-L603 — confidence: CONFIRMADO
-- `Squid.Persistence`: ser o único lugar que conhece SQL e o único que implementa persistência de estado — entrypoint: docs/features/05-arquitetura-consolidada.md:623 — confidence: CONFIRMADO
+- `Squid.Persistence`: dono de `IGrainStorage` (SQLite/Oracle), fábrica de conexão e migrations — **[DIVERGENCIA resolvida no fecho da P-03: código vence]** o facto gravado aqui dizia "o único lugar que conhece SQL", mas as stores da raiz de composição em `Squid.Service` (`SqliteAuthStore`, `SqliteActorEventStore`, `SqliteContainerStore`, `SqlitePolicyAuditStore`) leem e gravam SQLite direto desde a P-02 — o doc 05:623 continua valendo para grains e migrations — entrypoint: docs/features/05-arquitetura-consolidada.md:623 | source: backend/src/Squid.Service/SqliteContainerStore.cs:239 (flag MUDANCA_RELEVANTE ARQUITETURA da QA-0021) — confidence: CONFIRMADO
 - `Squid.Service` e `Squid.Worker`: as únicas raízes de composição — entrypoint: docs/features/05-arquitetura-consolidada.md:609-L610 — confidence: OBSERVADO
 
 ## Critical flows
@@ -53,7 +53,7 @@ Never record here: secrets, literal connection strings, personal data, diagrams 
 - RSA-SHA256 é obrigatório na saída e aceito na verificação de entrada; Ed25519 é chave adicional — pointer: docs/features/05-arquitetura-consolidada.md:778-L820 — source: ADR-28 — confidence: CONFIRMADO
 - Camada de dados isolada em `Squid.Persistence`, com os grains sem banco — pointer: docs/features/05-arquitetura-consolidada.md:778-L820 — source: ADR-35 — confidence: CONFIRMADO
 - Autenticação em degraus: senha e sessão no MVP, sem e-mail, sem reset por e-mail; recovery é o kit — pointer: docs/features/05-arquitetura-consolidada.md:778-L820 — source: ADR-36 — confidence: CONFIRMADO
-- Toda checagem de papel passa por `IPolicyEvaluator` com `PolicyDecision(Permitted, Reason, PolicyVersion)`; `Guest` negado em qualquer escrita mesmo com política permissiva e `SinglePublisher`/`Invite` falham fechados quando só o papel está disponível — pointer: backend/src/Squid.Domain/IPolicyEvaluator.cs — source: data-model §3.2 + SPEC-0003 — confidence: CONFIRMADO
+- Toda checagem de papel passa por `IPolicyEvaluator` com `PolicyDecision(Permitted, Reason, PolicyVersion)`; `Guest` negado em qualquer escrita mesmo com política permissiva — **GAP-11 fechado na P-03**: a avaliação ganhou o contexto do ator `PolicyActor(Role, State?, IsPublisher)` (`SinglePublisher` nega `Member` comum e permite o publisher nomeado ativo; `Silenced` lê/não escreve; `Banned` não lê), e a assinatura só-papel virou wrapper que preserva a matriz da TASK-0007 — pointer: backend/src/Squid.Domain/IPolicyEvaluator.cs:44 — source: data-model §3.2 + SPEC-0003/0008 — confidence: CONFIRMADO
 - Imagem final de container é `runtime` (nunca `sdk`) com usuário não-root 10001; `.dockerignore` na raiz é obrigatório porque o contexto de build é o repo inteiro — pointer: infra/Containerfile — source: doc 05 §4.7 #5 — confidence: CONFIRMADO
 - Falha de export OTLP nunca propaga exceção: wrapper converte em Warning com o endpoint (sem `catch {}` silencioso) — pointer: backend/src/Squid.Service/WarningOtlpExporter.cs — source: doc 05 §4.7 #7 — confidence: CONFIRMADO
 - OTLP exporta `url.query` redigido (`?qa=Redacted`, upstream OTel): marcador de teste em query nunca casa no trace; localizar span por janela de tempo + `user_agent` — pointer: docs/sdd/qa/QA-0007-containerfile-compose.md — confidence: CONFIRMADO

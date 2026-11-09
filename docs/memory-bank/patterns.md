@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the applicable index, 
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-08 09:45:19
+- lastVerified: 2026-11-09 04:55:35
 
 # Patterns — Squid
 
@@ -28,6 +28,11 @@ Never record here: code snippets or blocks, real test data, secrets.
 - Agregado event-sourced fala com a storage apenas por uma porta própria (`IActorEventStore` com ETag/CAS) e o adaptador para `IGrainStorage` vive na raiz de composição — `Squid.Grains` não referencia `Squid.Persistence` (ADR-35) — evidence: backend/src/Squid.Grains/Actors/IActorEventStore.cs:9; backend/src/Squid.Service/SqliteActorEventStore.cs:1 — abandoned at: N/A — source: TASK-0013, adaptador de produção registrado pela TASK-0014 — confidence: CONFIRMADO
 - Varredura de presença/ausência sobre JSON serializado faz a leitura crua E a decodificada: `System.Text.Json` escapa o `+` do base64 como `+` (medido: 124/200 falsos positivos cru vs 0/200 decodificado) — evidence: docs/sdd/qa/QA-0013-registro-login-sessao.md; backend/tests/Squid.Tests/Auth/Qa0013AuthAcceptanceTests.cs — abandoned at: N/A — source: QA-0013 / backlog S-25 — confidence: CONFIRMADO
 - Classificação de falha de teste vem do cabeçalho `exit:` e do resumo DENTRO do log gravado em `runs/test-runs/`, nunca do exit do wrapper `sdd-test.ps1` (ele imprime exit 3 para vermelho real — S-22, reproduzido 4×) — evidence: docs/sdd/_tools/sdd-test.ps1:79-83; docs/sdd/runs/test-runs/20261107-172502-test-filter.log:2 — abandoned at: N/A — source: QA-0011..0015 / backlog S-22 — confidence: CONFIRMADO
+
+- Store SQLite da raiz de composição sem migration: escrita com concorrência otimista **recusada** (guarda `WHERE Version = @Version`, nada gravado em conflito) sobre documento próprio do `IGrainStorage`, no mesmo padrão do `SqliteAuthStore` — evidence: backend/src/Squid.Service/SqliteContainerStore.cs:95; backend/src/Squid.Service/SqlitePolicyAuditStore.cs:15 — abandoned at: N/A — source: TASK-0017/0018, flag PADRAO_NOVO consolidada no fecho da P-03 — confidence: CONFIRMADO
+- Trilha/estado append-only em documento único do `IGrainStorage` com porta mínima (`Append` + `Query`), desempate estável por linha e leitura mais recente primeiro — evidence: backend/src/Squid.Service/SqlitePolicyAuditStore.cs:15; backend/src/Squid.Service/SqliteActorEventStore.cs — abandoned at: N/A — source: TASK-0018 (flag PADRAO_NOVO), precedente TASK-0013 — confidence: CONFIRMADO
+- Relógio injetável `TimeProvider` nos timers de domínio (claim de 90 dias, carência de 30) registrado na raiz de composição, para o teste mover dias sem dormir — evidence: backend/src/Squid.Service/SquidServiceHost.cs:42; backend/src/Squid.Service/SquidServiceHost.cs:108 — abandoned at: N/A — source: TASK-0021 / GAP-17 — confidence: CONFIRMADO
+- `shortcut:` com o limite declarado em comentário quando o código aceita uma simplificação de propósito (dois writes sem transação, scan sem índice, guard de recurso): dívida visível para o ledger, nunca escondida — evidence: backend/src/Squid.Api/Containers/Ownership.cs:28; backend/src/Squid.Service/SqliteContainerStore.cs:231; backend/src/Squid.Api/Auth/AuthEndpoints.cs:102 — abandoned at: N/A — source: house style das fases P-02/P-03 (S-32) — confidence: CONFIRMADO
 
 ## Anti-patterns
 - Nome do store interpolado no SQL: faz stores distintos colapsarem na mesma partição lógica — evidence: docs/features/05-arquitetura-consolidada.md:401 — source: doc 05 §4.7 #2 — confidence: CONFIRMADO
