@@ -1,0 +1,26 @@
+﻿# QA-0032 scope/residue scan - 2026-11-11 19:07:10
+1. QA-MUTATION residue in backend (sem bin/obj) = 0
+2. SHA256 of the four driver targets vs PRE:
+   245FF00B64F2 expected=245FF00B64F2 match=True  backend/src/Squid.Worker/Thumbnail/ThumbnailService.cs
+   2BC78140D6CC expected=2BC78140D6CC match=True  backend/src/Squid.Api/Media/MediaEndpoints.cs
+   03ADE1779D4D expected=03ADE1779D4D match=True  backend/tests/Squid.Tests/Load/FeedLoadTests.cs
+   B44E2DA5F1FF expected=B44E2DA5F1FF match=True  backend/tests/Squid.Tests/Load/Sprint3ClosingFacetTests.cs
+3. mtime sweep since dispatch 18:35 (backend/src+tests, sem bin/obj) = 4:
+   18:55:58  backend\src\Squid.Worker\Thumbnail\ThumbnailService.cs
+   18:56:32  backend\src\Squid.Api\Media\MediaEndpoints.cs
+   18:57:41  backend\tests\Squid.Tests\Load\FeedLoadTests.cs
+   18:58:49  backend\tests\Squid.Tests\Load\Sprint3ClosingFacetTests.cs
+4. git vs QA-0032-git-baseline: baseline=132 current=144 added=12 removed=0 fora-do-escopo=0
+   + ?? docs/sdd/qa/QA-0032-load-run1.log
+   + ?? docs/sdd/qa/QA-0032-load-run2.log
+   + ?? docs/sdd/qa/QA-0032-load-run3.log
+   + ?? docs/sdd/qa/QA-0032-load-run4.log
+   + ?? docs/sdd/qa/QA-0032-loadtest-p50p99.log
+   + ?? docs/sdd/qa/QA-0032-mutations-run.log
+   + ?? docs/sdd/qa/QA-0032-mutations-run2.log
+   + ?? docs/sdd/qa/QA-0032-mutations.log
+   + ?? docs/sdd/qa/QA-0032-restore.log
+   + ?? docs/sdd/qa/qa-check-task-0032.ps1
+   + ?? docs/sdd/qa/qa-check-task-0032.sh
+   + ?? docs/sdd/qa/qa-mutate-task-0032.ps1
+5. temp backups qa0032-* = 0

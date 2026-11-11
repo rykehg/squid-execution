@@ -3,8 +3,13 @@
   <!-- CPU-heavy work: media, backup, cipher, Reed-Solomon (doc 05 §4.6). A composition root,
        isolated from the silo scheduler. A console app on the shared framework rather than
        Microsoft.NET.Sdk.Worker: that SDK pulls Microsoft.Extensions.Hosting in through a
-       PackageReference, and every version in this solution is pinned centrally (ADR-25) with
-       no package yet (GAP-02). The hosted-service shape arrives with the first real worker. -->
+       PackageReference, and every version in this solution is pinned centrally (ADR-25) with no
+       package needed — the framework reference below already carries the host and its hosted
+       services, which is what the first work item uses: the projection pump of SPEC-0009 section B
+       (TASK-0024), consuming the activity log through Squid.ReadModels' Dapper reader.
+       Section J (TASK-0032) adds the thumbnail pass: SkiaSharp (same pinned versions as
+       Squid.Service's decode step) and Squid.Api for the media contracts of the volume it sweeps —
+       a root composes the layers below it, and the dependency rule bans a root only from Squid.Tests. -->
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -15,9 +20,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The media contracts the thumbnail pass and its serving route share (SPEC-0009 section J,
+         TASK-0032): IMediaStore's volume layout and the registered placeholder — contracts only,
+         never a route call. The roots still do not reference each other (the dependency rule
+         proves Squid.Service -> Squid.Worker), and the pump and quota sweep reach neither edge. -->
+    <ProjectReference Include="..\Squid.Api\Squid.Api.csproj" />
     <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
     <ProjectReference Include="..\Squid.Persistence\Squid.Persistence.csproj" />
     <ProjectReference Include="..\Squid.Protocols\Squid.Protocols.csproj" />
+    <!-- Read side: the Dapper readers the projection pump consumes (SPEC-0009 section B). -->
+    <ProjectReference Include="..\Squid.ReadModels\Squid.ReadModels.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The thumbnail decode of SPEC-0009 section J (TASK-0032): SkiaSharp where the code that
+         uses it lives (the same rule Squid.Service's pipeline follows); versions only in
+         backend/Directory.Packages.props (ADR-25), and the Linux natives ship with it so the
+         Worker's pass does not DllNotFoundException on CI ubuntu or compose. -->
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
   </ItemGroup>
 
 </Project>

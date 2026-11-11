@@ -1,0 +1,10 @@
+C1 PASS gate 20261110-234659-test-gate.log exit=0 falha=0 aprovado=428
+C2 PASS filter 20261110-234152-test-filter.log exit=0 aprovado=9
+C3 PASS SUMMARY cycles=5 failed=0 residue-QA-MUTATION=0 temp-backups=0
+C4 PASS residuo QA-MUTATION=0
+C5 PASS adicionadas=8 removidas=0 fora-do-escopo=0
+  adicionadas: ?? docs/sdd/qa/QA-0031-check-sh.log|?? docs/sdd/qa/QA-0031-check.log|?? docs/sdd/qa/QA-0031-denuncia-fila-suspensao.md|?? docs/sdd/qa/QA-0031-git-baseline.txt|?? docs/sdd/qa/QA-0031-mutations.log|?? docs/sdd/qa/qa-check-task-0031.ps1|?? docs/sdd/qa/qa-check-task-0031.sh|?? docs/sdd/qa/qa-mutate-task-0031.ps1|
+C6 PASS status=AWAITING_QA qaAttempts=0/2 AC-05 presente
+C7 PASS docs: QA-0031-denuncia-fila-suspensao.md 
+C8 PASS backups temporarios=0
+SUMMARY total=8 fails=0

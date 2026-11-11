@@ -11,6 +11,11 @@
     <!-- Storage stack of Squid.Persistence: REQ-0001 fixes the Orleans 10.2 and SQLite 10.0 lines. -->
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.14" />
 
+    <!-- Dapper is the read/query package of the projections (SPEC-0009 section B decision 5 and
+         data-model §4; approved by the human gate of 2026-11-09 together with the migration).
+         Version lives here and only here (ADR-25). -->
+    <PackageVersion Include="Dapper" Version="2.1.89" />
+
     <!-- Test stack of Squid.Tests; this exact set restores on SDK 10.0.403 (GAP-07). -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="Microsoft.Orleans.Core" Version="10.2.2" />
@@ -36,6 +41,18 @@
     <!-- Crypto package of the identity phase (SPEC-0007 GAP-08): BouncyCastle.Cryptography is the
          single crypto dependency (Argon2id + Ed25519), approved by the human gate of 2026-11-07. -->
     <PackageVersion Include="BouncyCastle.Cryptography" Version="2.7.0" />
+
+    <!-- Image pipeline of the media slice (SPEC-0009 section E, decision 3): SkiaSharp is the
+         single image package, decode only — the EXIF strip and the blurHash encoder are
+         hand-written code (human gate of 2026-11-09, ADR-25). Its own native payload arrives as
+         SkiaSharp's transitive dependency, so this stays the only declared image package.
+         Version lives here and only here. -->
+    <PackageVersion Include="SkiaSharp" Version="4.155.0" />
+
+    <!-- Linux native payload of the same pipeline (human gate 2026-11-10 08:00:15, AC-06 of
+         TASK-0028): SkiaSharp brings Win32/macOS natives only, so CI ubuntu and compose would
+         throw DllNotFoundException on decode. Same version as SkiaSharp, never a different one. -->
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="4.155.0" />
   </ItemGroup>
 
 </Project>

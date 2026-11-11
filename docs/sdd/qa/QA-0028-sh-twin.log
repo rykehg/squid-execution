@@ -1,0 +1,35 @@
+command: bash docs/sdd/_tools/sdd-test.sh probe / test backend/Squid.slnx (WSL)
+--- probe (exit=0) ---
+wsl : time="2026-11-10T14:52:57-03:00" level=warning msg="RunRoot is pointing to a path (/run/user/1000/containers) 
+which is not writable. Most likely podman will fail."
+No linha:2 caractere:10
++ $probe = wsl bash -lc "cd $repoWsl && bash docs/sdd/_tools/sdd-test.s ...
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (time="2026-11-1...man will fail.":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error: creating events dirs: mkdir /run/user/1000: permission denied
+dotnet: docs/sdd/_tools/sdd-test.sh: line 35: dotnet: command not found
+runtime: 
+docker: absent
+podman: /usr/sbin/podman
+wsl: absent
+git: /usr/sbin/git
+curl: /usr/sbin/curl
+docker daemon: docs/sdd/_tools/sdd-test.sh: line 40: docker: command not found
+note: a sandbox can block outbound HTTPS and process pipes; build/test failures are
+      not product failures until a normal shell reproduces them.
+
+--- test backend/Squid.slnx (exit=1) ---
+wsl : time="2026-11-10T14:52:58-03:00" level=warning msg="RunRoot is pointing to a path (/run/user/1000/containers) 
+which is not writable. Most likely podman will fail."
+No linha:4 caractere:9
++ $test = wsl bash -lc "cd $repoWsl && bash docs/sdd/_tools/sdd-test.sh ...
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (time="2026-11-1...man will fail.":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error: creating events dirs: mkdir /run/user/1000: permission denied
+test: backend/Squid.slnx
+docs/sdd/_tools/sdd-test.sh: line 64: dotnet: command not found
+test: exit 127 (real test failure)

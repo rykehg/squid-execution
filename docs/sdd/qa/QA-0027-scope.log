@@ -1,0 +1,67 @@
+﻿=== QA-0027 SCOPE SCAN (AC-06) ===
+when: 2026-11-10 12:54:31
+
+--- 1. git delta vs QA-0027 baseline (captured 11:36 before QA wrote) ---
+baseline=125 current=128 new=3
+  ?? docs/sdd/qa/QA-0027-ceiling-probe.log
+  ?? docs/sdd/qa/QA-0027-mutations.log
+  ?? docs/sdd/qa/QA-0027-observations.log
+
+--- 2. git delta vs QA-0026 baseline (correction scope) ---
+new since QA-0026 baseline=18
+  ?? backend/tests/Squid.Tests/Media/MediaCeilingTests.cs
+  ?? backend/tests/Squid.Tests/Media/QaTask0027Tests.cs
+  ?? docs/sdd/qa/QA-0026-ceiling-probe.log
+  ?? docs/sdd/qa/QA-0026-check.log
+  ?? docs/sdd/qa/QA-0026-mutation-probe-m11.log
+  ?? docs/sdd/qa/QA-0026-mutations-run1.log
+  ?? docs/sdd/qa/QA-0026-mutations.log
+  ?? docs/sdd/qa/QA-0026-observations.log
+  ?? docs/sdd/qa/QA-0026-scope.log
+  ?? docs/sdd/qa/QA-0026-sh-twin.log
+  ?? docs/sdd/qa/QA-0026-upload-midia-skia.md
+  ?? docs/sdd/qa/QA-0027-ceiling-probe.log
+  ?? docs/sdd/qa/QA-0027-git-baseline.txt
+  ?? docs/sdd/qa/QA-0027-mutations.log
+  ?? docs/sdd/qa/QA-0027-observations.log
+  ?? docs/sdd/qa/qa-check-task-0027.ps1
+  ?? docs/sdd/qa/qa-check-task-0027.sh
+  ?? docs/sdd/qa/qa-mutate-task-0027.ps1
+
+--- 3. mtime in correction window 10:00:00-11:02:00 (sem bin/obj) ---
+  10:47:34 backend\tests\Squid.Tests\Media\MediaCeilingTests.cs
+  10:21:27 backend\tests\Squid.Tests\Media\MediaHost.cs
+count=2; fora dos toques: 0
+
+--- 4. Directory.Packages.props untouched by correction? ---
+mtime=2026-11-09 23:00:01 (correcao comecou 10:00 -> intocado=True)
+
+--- 5. mtime desde 08:00:00 (checker window) ---
+hits=8 outside=0
+
+--- 6. QA-MUTATION residue in backend/ (sem bin/obj) ---
+residue=0
+
+--- 7. SHA256 final vs PRE do driver (S-16/S-23) ---
+PRE count=13
+ExifStripper.cs=14013D3A737A PRE=14013D3A737A PRE-MATCH
+MediaEndpoints.cs=449032345F9E PRE=449032345F9E PRE-MATCH
+PostEndpoints.cs=5EBD7DF5E601 PRE=5EBD7DF5E601 PRE-MATCH
+SkiaMediaProcessor.cs=229107B71CD9 PRE=229107B71CD9 PRE-MATCH
+MediaOptions.cs=3BA462816D85 PRE=3BA462816D85 PRE-MATCH
+
+--- 8. SkiaSharp placement ---
+props: <PackageVersion Include="SkiaSharp" Version="4.155.0" />
+csproj: <PackageReference Include="SkiaSharp" />
+outros csproj com SkiaSharp: 0 
+
+--- 9. TEMP backups qa0027-/qa0026- ---
+temp-backups=0
+
+--- 10. test class facts ---
+QaTask0027Tests [Fact]=5 (probe removido)
+MediaCeilingTests [Fact]=2
+--- correction window widened: 09:46:44 (QA-0026 verdict) .. 11:36:00 (QA-0027 baseline gate) ---
+  10:47:34 backend\tests\Squid.Tests\Media\MediaCeilingTests.cs
+  10:21:27 backend\tests\Squid.Tests\Media\MediaHost.cs
+count=2 outside-touches=0

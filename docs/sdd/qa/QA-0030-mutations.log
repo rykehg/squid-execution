@@ -1,0 +1,27 @@
+﻿# QA-0030 mutations - 2026-11-10 21:36:22
+M1 PRE 814E4A5ACDC0 | editado backend\src\Squid.Api\Posts\PostEndpoints.cs | AC-04: o 404 deixa de ser identico byte a byte
+M1 RUN wrapper=1 logExit=1 aprovado=24 falha=6 log=20261110-213701-test-filter.log
+M1 RED-IN-LOG Squid.Tests.Posts.QaTask0030Tests.A_removed_post_answers_the_very_same_404_bytes_as_one_that_never_existed [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._existed [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Posts.QaTask0030Tests.A_removed_post_answers_the_very_same_404_bytes_as_one_that_never_existed [1 s] | [FAIL] | Com falha Squid.Tests.Posts.QaTask0023Tests.Ac05_three_answers_publish_the_fourth_is_422_and_out_of_sight_targets_share_the_404 [692 ms] | Squid.Tests.Posts.QaTask0023Tests.Ac04_reading_answers_the_post_or_one_404_for_invisible_and_absent [FAIL]
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE 814E4A5ACDC0 | editado backend\src\Squid.Api\Posts\PostEndpoints.cs | AC-01/AC-02: a linha da trilha sai com outra palavra e some das consultas
+M2 RUN wrapper=1 logExit=1 aprovado=26 falha=4 log=20261110-213736-test-filter.log
+M2 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...survives [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Posts.QaTask0030Tests.The_removal_persists_the_tombstone_the_delete_event_and_a_trail_line_that_survives [1 s] | Squid.Tests.Posts.QaTask0030Tests.A_literal_moderator_removes_a_third_party_post_only_with_a_reason [FAIL] | Com falha Squid.Tests.Posts.QaTask0030Tests.A_literal_moderator_removes_a_third_party_post_only_with_a_reason [1 s] | Squid.Tests.Posts.PostRemoveTests.Author_removing_own_post_writes_the_tombstone_the_event_and_the_trail_row [FAIL]
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE CB405189EB82 | editado backend\src\Squid.ReadModels\Projections\ActivityProjector.cs | AC-03: o alto-mar do pump cai sob o Create e ele e re-projetado (flicker)
+M3 RUN wrapper=1 logExit=1 aprovado=28 falha=2 log=20261110-213810-test-filter.log
+M3 RED-IN-LOG Squid.Tests.Posts.QaTask0030Tests.After_a_trailing_removal_the_pump_converges_and_the_post_never_flickers_back [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ers_back [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Posts.QaTask0030Tests.After_a_trailing_removal_the_pump_converges_and_the_post_never_flickers_back [1 s] | Squid.Tests.Posts.PostRemoveTests.The_removed_post_leaves_feed_timeline_and_delta_when_the_projector_runs [FAIL] | Com falha Squid.Tests.Posts.PostRemoveTests.The_removed_post_leaves_feed_timeline_and_delta_when_the_projector_runs [706 ms]
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE 814E4A5ACDC0 | editado backend\src\Squid.Api\Posts\PostEndpoints.cs | AC-02: remocao de terceiro com motivo vazio passa a ser aceita
+M4 RUN wrapper=1 logExit=1 aprovado=28 falha=2 log=20261110-213844-test-filter.log
+M4 RED-IN-LOG Squid.Tests.Posts.QaTask0030Tests.A_literal_moderator_removes_a_third_party_post_only_with_a_reason [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...a_reason [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Posts.QaTask0030Tests.A_literal_moderator_removes_a_third_party_post_only_with_a_reason [2 s] | Squid.Tests.Posts.PostRemoveTests.A_non_author_is_denied_and_a_moderator_owes_a_takedown_reason [FAIL] | Com falha Squid.Tests.Posts.PostRemoveTests.A_non_author_is_denied_and_a_moderator_owes_a_takedown_reason [573 ms]
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE AB09A78FCECB | editado backend\src\Squid.Service\SqliteObjectStore.cs | AC-03/AC-04: o post removido volta a ser lido (GET responde 200)
+M5 RUN wrapper=1 logExit=1 aprovado=24 falha=6 log=20261110-213918-test-filter.log
+M5 RED-IN-LOG Squid.Tests.Posts.QaTask0030Tests.After_a_trailing_removal_the_pump_converges_and_the_post_never_flickers_back [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ers_back [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Posts.QaTask0030Tests.After_a_trailing_removal_the_pump_converges_and_the_post_never_flickers_back [1 s] | Squid.Tests.Posts.QaTask0030Tests.A_literal_moderator_removes_a_third_party_post_only_with_a_reason [FAIL] | Com falha Squid.Tests.Posts.QaTask0030Tests.A_literal_moderator_removes_a_third_party_post_only_with_a_reason [2 s] | Squid.Tests.Posts.QaTask0030Tests.A_removed_post_answers_the_very_same_404_bytes_as_one_that_never_existed [FAIL]
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE CB405189EB82 | editado backend\src\Squid.ReadModels\Projections\ActivityProjector.cs | AC-03: o projetor ignora Activity: Delete e o post permanece no feed
+M6 RUN wrapper=1 logExit=1 aprovado=28 falha=2 log=20261110-213952-test-filter.log
+M6 RED-IN-LOG Squid.Tests.Posts.QaTask0030Tests.After_a_trailing_removal_the_pump_converges_and_the_post_never_flickers_back [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ers_back [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Posts.QaTask0030Tests.After_a_trailing_removal_the_pump_converges_and_the_post_never_flickers_back [1 s] | Squid.Tests.Posts.PostRemoveTests.The_removed_post_leaves_feed_timeline_and_delta_when_the_projector_runs [FAIL] | Com falha Squid.Tests.Posts.PostRemoveTests.The_removed_post_leaves_feed_timeline_and_delta_when_the_projector_runs [786 ms]
+M6 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=30 falha=0 log=20261110-214026-test-filter.log
+SUMMARY cycles=6 failed=0 residue-QA-MUTATION=0 temp-backups=0

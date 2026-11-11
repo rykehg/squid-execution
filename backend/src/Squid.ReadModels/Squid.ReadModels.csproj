@@ -6,4 +6,15 @@
     <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
   </ItemGroup>
 
+  <!-- Versions live in backend/Directory.Packages.props (ADR-25): no Version= here. Dapper is the
+       approved query package of the projections (human gate 2026-11-09); Microsoft.Data.Sqlite and
+       Microsoft.Orleans.Core are the same pins Squid.Persistence already restores — neither is a
+       new package for the repo, and GrainId is here only so a reader spells a row key exactly as
+       the store that wrote it does, never by hand. -->
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Orleans.Core" />
+  </ItemGroup>
+
 </Project>

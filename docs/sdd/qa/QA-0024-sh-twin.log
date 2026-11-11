@@ -1,0 +1,35 @@
+﻿# QA-0024 platform twin record — bash (WSL) — 2026-11-09 19:55:02
+## CMD: bash docs/sdd/_tools/sdd-test.sh probe
+bash docs/sdd/_tools/sdd-test.sh probe
+
+exit: 0
+dotnet: docs/sdd/_tools/sdd-test.sh: line 35: dotnet: command not found
+runtime: 
+docker: absent
+podman: /usr/sbin/podman
+wsl: absent
+git: /usr/sbin/git
+curl: /usr/sbin/curl
+docker daemon: docs/sdd/_tools/sdd-test.sh: line 40: docker: command not found
+note: a sandbox can block outbound HTTPS and process pipes; build/test failures are
+      not product failures until a normal shell reproduces them.
+
+## CMD: bash docs/sdd/_tools/sdd-test.sh test   (no target — default sln search)
+exit: 1
+bash : sdd-test: no *.sln found within depth 3; pass the path
+No linha:8 caractere:6
++ $t = bash docs/sdd/_tools/sdd-test.sh test 2>&1 | Out-String
++      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (sdd-test: no *....; pass the path:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+test: 
+docs/sdd/_tools/sdd-test.sh: line 64: dotnet: command not found
+test: exit 127 (real test failure)
+
+## CMD: bash docs/sdd/_tools/sdd-test.sh test backend/Squid.slnx   (explicit target)
+exit: 1
+test: backend/Squid.slnx
+docs/sdd/_tools/sdd-test.sh: line 64: dotnet: command not found
+test: exit 127 (real test failure)
+

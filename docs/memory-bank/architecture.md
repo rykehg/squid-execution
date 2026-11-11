@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the applicable index, 
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-09 04:55:35
+- lastVerified: 2026-11-11 20:00:27
 
 # Architecture — Squid
 
@@ -43,7 +43,7 @@ Never record here: secrets, literal connection strings, personal data, diagrams 
 - `Squid.Api` → `Squid.Grains` e `Squid.ReadModels` — source: docs/features/05-arquitetura-consolidada.md:623 — confidence: CONFIRMADO
 - Provedor de armazenamento escolhido por configuração (`sqlite` ou `oracle`) atrás da mesma interface — source: specs/001-squid-mvp/plan.md:142-L145 — confidence: CONFIRMADO
 - Federação externa por HTTP assinado; nenhuma operação local bloqueada por par remoto — source: specs/001-squid-mvp/plan.md:51 — confidence: CONFIRMADO
-- Pins de runtime do backend (todos via `Directory.Packages.props`, ADR-25): `Microsoft.Orleans.Core` 10.2.2, `Microsoft.Data.Sqlite` 10.0.14, `Microsoft.Orleans.Dashboard` 10.2.2, `Microsoft.Orleans.Server` 10.2.2, `OpenTelemetry.*` 1.20.1, `Serilog` 4.4.0 + `Serilog.AspNetCore` 10.0.0 — source: backend/Directory.Packages.props:12-L34 — confidence: CONFIRMADO
+- Pins de runtime do backend (todos via `Directory.Packages.props`, ADR-25): `Microsoft.Orleans.Core` 10.2.2, `Microsoft.Data.Sqlite` 10.0.14, `Microsoft.Orleans.Dashboard` 10.2.2, `Microsoft.Orleans.Server` 10.2.2, `OpenTelemetry.*` 1.20.1, `Serilog` 4.4.0 + `Serilog.AspNetCore` 10.0.0, `Dapper` 2.1.89 (P-04, gates 2026-11-09), `SkiaSharp` 4.155.0 + `SkiaSharp.NativeAssets.Linux` 4.155.0 (P-04, gates 2026-11-09/10) — source: backend/Directory.Packages.props:12-L34 — confidence: CONFIRMADO
 - CI executa o mesmo gate local: `.github/workflows/ci.yml` chama `pwsh sdd-test.ps1 build|test` em `ubuntu-latest`, SDK 10.0.403 pinado, cache NuGet por hash de `Directory.Packages.props` — nunca executado no GitHub (run é gate humano pós-push) — source: .github/workflows/ci.yml — confidence: CONFIRMADO
 
 ## Key decisions
@@ -57,3 +57,7 @@ Never record here: secrets, literal connection strings, personal data, diagrams 
 - Imagem final de container é `runtime` (nunca `sdk`) com usuário não-root 10001; `.dockerignore` na raiz é obrigatório porque o contexto de build é o repo inteiro — pointer: infra/Containerfile — source: doc 05 §4.7 #5 — confidence: CONFIRMADO
 - Falha de export OTLP nunca propaga exceção: wrapper converte em Warning com o endpoint (sem `catch {}` silencioso) — pointer: backend/src/Squid.Service/WarningOtlpExporter.cs — source: doc 05 §4.7 #7 — confidence: CONFIRMADO
 - OTLP exporta `url.query` redigido (`?qa=Redacted`, upstream OTel): marcador de teste em query nunca casa no trace; localizar span por janela de tempo + `user_agent` — pointer: docs/sdd/qa/QA-0007-containerfile-compose.md — confidence: CONFIRMADO
+- **Primeira migration versionada (P-04)**: scripts `NNNN_*.sql` em `Squid.Persistence/schema` aplicados no init do `SquidServiceHost` com `schema_version` + SHA-256 (reaplicar é idempotente, texto alterado sob versão registrada é recusado); migration liberada para dev/teste/CI, produção = gate humano (GAP-19); contador global `Activity.Seq` vive em tabela single-row com incremento atômico NA MESMA transação do append (nunca diverge do log) — pointer: backend/src/Squid.Persistence/schema/SchemaMigrator.cs:29 — source: docs/sdd/specs/SPEC-0009-publicacao-feed-postagem.md §B — confidence: CONFIRMADO
+- Projeções de leitura fora do caminho de escrita (R-18): `ActivityProjector` Dapper em `Squid.ReadModels` consumido por pump `BackgroundService` no `Squid.Worker`, retomando do próprio high-water; linhas de timeline só existem depois do evento — pointer: backend/src/Squid.ReadModels/Projections/ActivityProjector.cs — source: data-model §4 + SPEC-0009 §B — confidence: CONFIRMADO
+- **SSRF no unfurl (SEGURANCA, P-04)**: só `http/https`, guarda valida TODAS as respostas do resolver (A/AAAA) no literal e revalida a cada salto de redirect (máx. 3, auto-redirect off), corpo cortado em `Unfurl:MaxBytes`, timeout total `Unfurl:TimeoutMs`=3000, **fail-open** (falha = posta só com a URL, nunca bloqueia publicação); testes só com handlers falsos (AC-05: zero rede real no gate) — pointer: backend/src/Squid.Api/Posts/SsrfGuard.cs:12 — source: SPEC-0009 §G/GAP-26; QA-0029 — confidence: CONFIRMADO
+- **Cota de mídia (P-04, emenda GAP-20 ao data-model §5)**: ledger `quota_ledger` em SQL + Dapper na mesma migration (EF Core substituído por gate humano 2026-11-09), gate `507 quota_exceeded` otimista antes do blob (nada persistido na recusa) e **varredura diária de blobs como fonte da verdade** (reconcilia corrigiu drift nas duas direções em teste) — pointer: backend/src/Squid.ReadModels/Quota/SqliteQuotaLedger.cs:8 — source: data-model §2.13; SPEC-0009 §F — confidence: CONFIRMADO

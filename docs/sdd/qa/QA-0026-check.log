@@ -1,0 +1,101 @@
+=== run1 qa-check-task-0027.ps1 (when: 2026-11-10 09:40:56) exit=0
+CHECK GATE-BASELINE-EXIT OK   20261110-081456-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 330 / Total 330 (baseline do DEV)
+CHECK GATE-FINAL-EXISTS OK   20261110-092954-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261110-092954-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 335 (330 + 5 da QA)
+CHECK QACLASS-EXISTS OK   20261110-092543-test-filter.log
+CHECK QACLASS-EXIT OK   20261110-092543-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 5 / Total 5 (5 cenarios da QA)
+CHECK OBSERVATIONS-10 OK   as 10 observacoes da QA estao no artefato
+CHECK MUTATIONS-11-PROVEN OK   11/11 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=11 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   ExifStripper.cs=14013D3A737A PRE=14013D3A737A ; MediaEndpoints.cs=D8F40FF0BC68 PRE=D8F40FF0BC68 ; PostEndpoints.cs=5EBD7DF5E601 PRE=5EBD7DF5E601 ; SkiaMediaProcessor.cs=229107B71CD9 PRE=229107B71CD9
+CHECK PROBE-M11-RECORDED OK   M11 (ordem EXIF->blurHash) sondado: UNPROVEN mutante equivalente, restore HASH=PRE, residuo 0
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde 08:00:00: 5 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=12 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 18, evidence rows 24
+ (exit=0)
+CHECK TASK-ROWS OK   linhas de log do qa=6 (>=6), linhas de evidencia do qa=15 (>=12)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0027Tests.cs = 5
+CHECK QA-DOC OK   QA-0026-upload-midia-skia.md existe e verdict: FAILED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: dotnet ausente no WSL - plataforma Linux registrada como unverified (pre-existente re-confirmado)
+SUMMARY total=21 fails=0
+RESULT: PASS
+
+=== run2 bash qa-check-task-0027.sh (WSL, when: 2026-11-10 09:41:16) exit=0
+CHECK GATE-BASELINE-EXIT OK   20261110-081456-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 330 / Total 330 (baseline do DEV)
+CHECK GATE-FINAL-EXISTS OK   20261110-092954-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261110-092954-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 335 (330 + 5 da QA)
+CHECK QACLASS-EXISTS OK   20261110-092543-test-filter.log
+CHECK QACLASS-EXIT OK   20261110-092543-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 5 / Total 5 (5 cenarios da QA)
+CHECK OBSERVATIONS-10 OK   as 10 observacoes da QA estao no artefato
+CHECK MUTATIONS-11-PROVEN OK   11/11 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=11 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   ExifStripper.cs=14013D3A737A PRE=14013D3A737A; MediaEndpoints.cs=D8F40FF0BC68 PRE=D8F40FF0BC68; PostEndpoints.cs=5EBD7DF5E601 PRE=5EBD7DF5E601; SkiaMediaProcessor.cs=229107B71CD9 PRE=229107B71CD9; 
+CHECK PROBE-M11-RECORDED OK   M11 (ordem EXIF->blurHash) sondado: UNPROVEN mutante equivalente, restore HASH=PRE, residuo 0
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde 08:00:00: 5 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=13 fora do permitido=0
+CHECK TASK-LOG-ROWS OK   linhas de log do qa=6 (>=6)
+CHECK TASK-EVI-ROWS OK   linhas de evidencia do qa=15 (>=12)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0027Tests.cs = 5
+CHECK QA-DOC OK   QA-0026-upload-midia-skia.md existe e verdict: FAILED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: dotnet ausente no WSL - plataforma Linux registrada como unverified (pre-existente re-confirmado)
+SUMMARY total=21 fails=0
+RESULT: PASS
+
+
+=== run3+run4 confirmacao final apos a ultima linha de evidencia (when: 2026-11-10 09:42:13) ps1 exit=0 sh exit=0
+CHECK GATE-BASELINE-EXIT OK   20261110-081456-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 330 / Total 330 (baseline do DEV)
+CHECK GATE-FINAL-EXISTS OK   20261110-092954-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261110-092954-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 335 (330 + 5 da QA)
+CHECK QACLASS-EXISTS OK   20261110-092543-test-filter.log
+CHECK QACLASS-EXIT OK   20261110-092543-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 5 / Total 5 (5 cenarios da QA)
+CHECK OBSERVATIONS-10 OK   as 10 observacoes da QA estao no artefato
+CHECK MUTATIONS-11-PROVEN OK   11/11 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=11 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   ExifStripper.cs=14013D3A737A PRE=14013D3A737A ; MediaEndpoints.cs=D8F40FF0BC68 PRE=D8F40FF0BC68 ; PostEndpoints.cs=5EBD7DF5E601 PRE=5EBD7DF5E601 ; SkiaMediaProcessor.cs=229107B71CD9 PRE=229107B71CD9
+CHECK PROBE-M11-RECORDED OK   M11 (ordem EXIF->blurHash) sondado: UNPROVEN mutante equivalente, restore HASH=PRE, residuo 0
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde 08:00:00: 5 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=13 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 19, evidence rows 26
+ (exit=0)
+CHECK TASK-ROWS OK   linhas de log do qa=7 (>=6), linhas de evidencia do qa=17 (>=12)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0027Tests.cs = 5
+CHECK QA-DOC OK   QA-0026-upload-midia-skia.md existe e verdict: FAILED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: dotnet ausente no WSL - plataforma Linux registrada como unverified (pre-existente re-confirmado)
+SUMMARY total=21 fails=0
+RESULT: PASS
+CHECK GATE-BASELINE-EXIT OK   20261110-081456-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 330 / Total 330 (baseline do DEV)
+CHECK GATE-FINAL-EXISTS OK   20261110-092954-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261110-092954-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 335 (330 + 5 da QA)
+CHECK QACLASS-EXISTS OK   20261110-092543-test-filter.log
+CHECK QACLASS-EXIT OK   20261110-092543-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 5 / Total 5 (5 cenarios da QA)
+CHECK OBSERVATIONS-10 OK   as 10 observacoes da QA estao no artefato
+CHECK MUTATIONS-11-PROVEN OK   11/11 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=11 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   ExifStripper.cs=14013D3A737A PRE=14013D3A737A; MediaEndpoints.cs=D8F40FF0BC68 PRE=D8F40FF0BC68; PostEndpoints.cs=5EBD7DF5E601 PRE=5EBD7DF5E601; SkiaMediaProcessor.cs=229107B71CD9 PRE=229107B71CD9; 
+CHECK PROBE-M11-RECORDED OK   M11 (ordem EXIF->blurHash) sondado: UNPROVEN mutante equivalente, restore HASH=PRE, residuo 0
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde 08:00:00: 5 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=13 fora do permitido=0
+CHECK TASK-LOG-ROWS OK   linhas de log do qa=7 (>=6)
+CHECK TASK-EVI-ROWS OK   linhas de evidencia do qa=17 (>=12)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0027Tests.cs = 5
+CHECK QA-DOC OK   QA-0026-upload-midia-skia.md existe e verdict: FAILED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: dotnet ausente no WSL - plataforma Linux registrada como unverified (pre-existente re-confirmado)
+SUMMARY total=21 fails=0
+RESULT: PASS
+

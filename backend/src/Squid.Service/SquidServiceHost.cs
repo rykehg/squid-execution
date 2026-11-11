@@ -16,11 +16,15 @@ using Squid.Api.Admin;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
 using Squid.Api.Discovery;
+using Squid.Api.Media;
+using Squid.Api.Posts;
 using Squid.Api.Recovery;
 using Squid.Domain;
 using Squid.Grains.Actors;
 using Squid.Persistence;
 using Squid.Protocols.ActivityPub;
+using Squid.ReadModels.Projections;
+using Squid.ReadModels.Quota;
 
 namespace Squid.Service;
 
@@ -84,6 +88,11 @@ public static class SquidServiceHost
 
         // Created eagerly: the file and its schema exist before the first request is served.
         var storage = new SqliteGrainStorage(connectionString);
+        // SPEC-0009 section B: the first versioned migration lands here, at init, before anything
+        // reads or writes a projection table — the dev/test/CI path the human gate of 2026-11-09
+        // liberates (GAP-19); running the same scripts against PRODUCTION stays a human gate.
+        // It is idempotent (schema_version + checksum), so every host build re-apply is a no-op.
+        SchemaMigrations.Apply(connectionString);
 
         // Identity wiring (SPEC-0007): the actor aggregate resolves through the production
         // IActorEventStore adapter — it lives here because ADR-35 forbids Squid.Grains ->
@@ -103,6 +112,66 @@ public static class SquidServiceHost
         // same slice, so it lives beside the rows it describes.
         builder.Services.AddSingleton<IPolicyEvaluator, PolicyEvaluator>();
         builder.Services.AddSingleton<IPolicyAuditStore>(_ => new SqlitePolicyAuditStore(storage));
+        // Publish core (SPEC-0009 A): the object rows with their per-container Object.Seq, the
+        // append-only activity log (the source of the projections) and the §3.1 actor status the
+        // publish ladder refuses — same file, own store names. The global Activity.Seq counter of
+        // GAP-23 now lives in the migration's single-row table (TASK-0024) and is taken there by
+        // the store's atomic increment; the interface callers see did not change.
+        builder.Services.AddSingleton<IObjectStore>(_ => new SqliteObjectStore(storage));
+        builder.Services.AddSingleton<IActivityStore>(_ => new SqliteActivityStore(storage, connectionString));
+        builder.Services.AddSingleton<IActorStatusStore>(_ => new SqliteActorStatusStore(storage));
+        // Denunciation queue (SPEC-0009 section I, TASK-0031, FR-028): the operator's reports
+        // over the same SQLite file — one document, the ETag-guarded pattern of the trail, and
+        // the GAP-28 idempotency (post, reporter) enforced inside its critical section.
+        builder.Services.AddSingleton<IReportStore>(_ => new SqliteReportStore(storage));
+        // Media slice (SPEC-0009 section E, TASK-0027): the content-addressed blob volume and its
+        // upload record over the same SQLite file (data-model §5: Media:BlobRoot is a NAMED
+        // volume, never an external service), and the SkiaSharp pipeline whose order §2.6 fixes —
+        // EXIF stripped before blurHash and before the blob is written. The options read the
+        // configuration instance lazily (first resolution is after `configure` ran), so the test
+        // seam can still point Media:BlobRoot at a temp directory.
+        var configuration = builder.Configuration;
+        builder.Services.AddSingleton(_ => MediaOptions.From(configuration));
+        builder.Services.AddSingleton<IMediaStore>(provider =>
+            new SqliteMediaStore(storage, provider.GetRequiredService<MediaOptions>().BlobRoot));
+        builder.Services.AddSingleton<IMediaProcessor, SkiaMediaProcessor>();
+        // Link unfurl (SPEC-0009 section G, TASK-0029): a publish whose content is a single URL
+        // fetches its OpenGraph card synchronously inside the create path — Unfurl:TimeoutMs
+        // (default 3 s) bounds the WHOLE chain over the caller's token, Unfurl:MaxBytes (default
+        // 1 MB) caps the body. The handler never follows redirects on its own: LinkUnfurler walks
+        // Location by hand so every hop is re-validated by the SSRF guard, and the resolver seam
+        // is what the gate's tests replace — no test touches real DNS or sockets (AC-05).
+        builder.Services.AddSingleton(_ => UnfurlOptions.From(configuration));
+        builder.Services.AddSingleton<IUnfurlResolver, DnsUnfurlResolver>();
+        builder.Services.AddSingleton<HttpMessageHandler>(_ => new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false, // redirects are followed hop by hop, re-validated (GAP-26)
+            UseCookies = false,        // a link preview never carries a jar between hosts
+        });
+        builder.Services.AddSingleton(provider => new HttpClient(
+            provider.GetRequiredService<HttpMessageHandler>(), disposeHandler: false)
+        {
+            Timeout = Timeout.InfiniteTimeSpan, // LinkUnfurler owns the budget (Unfurl:TimeoutMs)
+        });
+        builder.Services.AddSingleton<LinkUnfurler>();
+        // Live channel of SPEC-0009 section D (TASK-0026): the in-process wake hub behind
+        // GET /api/stream — one instance for the whole host, beside the log its subscribers read,
+        // no broker (R-16). Publishing to it never blocks the publish path (AC-05).
+        builder.Services.AddSingleton<StreamHub>();
+        // Read side of SPEC-0009 section B (TASK-0024): the Dapper projector and its event source
+        // are registered so a test — or any composition that wants them — resolves exactly what
+        // the worker pump runs. Registered, never started: the projection stays off the write path
+        // (R-18), and the pump itself is the Squid.Worker hosted service.
+        builder.Services.AddSingleton(new SqliteActivityLog(connectionString));
+        builder.Services.AddSingleton<IActivityProjector>(_ => new ActivityProjector(connectionString));
+        // Read side of SPEC-0009 section C (TASK-0025): the feed/timeline windows over the same
+        // migrated file, registered beside the projector that fills it — read only, and never
+        // started: the routes of Squid.Api/Posts resolve it, R-18 keeps it off the write path.
+        builder.Services.AddSingleton(new SqliteFeedTimeline(connectionString));
+        // Instance quota of SPEC-0009 section F (TASK-0028): the Dapper ledger the upload gate
+        // reserves against, over the same migrated file. Registered, never started — the daily
+        // blob sweep that corrects it is a Squid.Worker hosted service, off this write path.
+        builder.Services.AddSingleton<IQuotaLedger>(_ => new SqliteQuotaLedger(connectionString));
         // GAP-17: one injectable clock for the section G timers — the succession inactivity and
         // the delete grace read it instead of the wall, so no test ever sleeps 90 days.
         builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
@@ -135,6 +204,22 @@ public static class SquidServiceHost
         // Container core (TASK-0017): create/read/edit plus the owner membership (SPEC-0008 A).
         // It maps after auth, so the session/CSRF middleware above already guards these routes.
         app.MapSquidContainers();
+        // Publish, read and reply (TASK-0023): it maps after auth, so the session/CSRF middleware
+        // above already guards these routes, and after the containers routes it shares visibility
+        // rules and the trail with.
+        app.MapSquidPosts();
+        // Media upload and serving (TASK-0027): it maps after auth, so the session/CSRF middleware
+        // above already guards both routes, and after posts, whose visibility ladder the media GET
+        // reuses for the byte-identical 404 (SPEC-0009 section E, GAP-25 — contract §5).
+        app.MapSquidMedia();
+        // Feed and personal timeline with the ?since= delta (TASK-0025): it maps after auth, so
+        // the session middleware above already guards the timeline, and after posts, whose
+        // visibility ladder it reuses for the byte-identical 404 (SPEC-0009 section C).
+        app.MapSquidFeed();
+        // Live SSE stream (TASK-0026): GET /api/stream, mapped after auth so the session
+        // middleware above already guards it, and after the publish routes whose writes wake it
+        // (SPEC-0009 section D, contract §5 — event: post, Last-Event-ID, ping).
+        app.MapSquidStream();
         // Policy, trail and operator (TASK-0018): PUT /policy rides with the container routes,
         // and GET /api/admin/audit sits on the same session pipeline behind the operator gate
         // (SPEC-0008 B/C/D). The operator list is configuration — Instance:Operators, GAP-14.

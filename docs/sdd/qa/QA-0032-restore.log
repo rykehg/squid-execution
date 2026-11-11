@@ -1,0 +1,9 @@
+﻿# QA-0032 restore proof (STEP ZERO) - 2026-11-11 19:00:37
+file: backend/tests/Squid.Tests/Load/FeedLoadTests.cs
+SHA256: 03ADE1779D4D580BD72A805B3B191D0B58539556A65EE84F5921E1BFFB44572A
+prefix12: 03ADE1779D4D (driver PRE M3/M4 = 03ADE1779D4D, match=True)
+line53: [        Assert.True(feed.P95 < 1000,]
+mtime: 2026-11-11 18:57:41 (bumped)
+QA-MUTATION residues in backend (src+tests, sem bin/obj): 0
+temp backups qa0032-*: 0
+product files restored by dead QA (verified by this QA): backend/src/Squid.Worker/Thumbnail/ThumbnailService.cs, backend/src/Squid.Api/Media/MediaEndpoints.cs - hash targets checked by driver M1/M2 PRE

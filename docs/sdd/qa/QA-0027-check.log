@@ -1,0 +1,55 @@
+qa-check-task-0027 run1 (ps1, Windows) exit=0
+---
+CHECK GATE-BASELINE-EXIT OK   20261110-113636-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 337 / Total 337 (baseline da QA-0027, arvore corrigida)
+CHECK GATE-FINAL-EXISTS OK   20261110-125712-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261110-125712-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 337 (330 base + 5 da QA + 2 MediaCeilingTests)
+CHECK QACLASS-EXISTS OK   20261110-125307-test-filter.log
+CHECK QACLASS-EXIT OK   20261110-125307-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 5 / Total 5 (5 cenarios da QA)
+CHECK OBSERVATIONS-10 OK   as 10 observacoes da QA estao no artefato
+CHECK MUTATIONS-13-PROVEN OK   13/13 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=13 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   ExifStripper.cs=14013D3A737A PRE=14013D3A737A ; MediaEndpoints.cs=449032345F9E PRE=449032345F9E ; PostEndpoints.cs=5EBD7DF5E601 PRE=5EBD7DF5E601 ; SkiaMediaProcessor.cs=229107B71CD9 PRE=229107B71CD9 ; MediaOptions.cs=3BA462816D85 PRE=3BA462816D85
+CHECK PROBE-M11-RECORDED OK   M11 (ordem EXIF->blurHash) sondado: UNPROVEN mutante equivalente, restore HASH=PRE, residuo 0
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde 08:00:00: 8 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=7 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 38, evidence rows 52
+ (exit=0)
+CHECK TASK-ROWS OK   linhas de log do qa=13 (>=6), linhas de evidencia do qa=30 (>=12)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0027Tests.cs = 5
+CHECK CEILING-PROBE-3 OK   sonda de teto: 3 facts exit 0 - streaming 413 com envelope, cru 69206017 com envelope, cru 53000000 esperado
+CHECK QA-DOC OK   QA-0027-upload-midia-skia.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: dotnet ausente no WSL - plataforma Linux registrada como unverified (pre-existente re-confirmado)
+SUMMARY total=22 fails=0
+RESULT: PASS
+
+
+qa-check-task-0027 run2 (bash, WSL) exit=0
+---
+CHECK GATE-BASELINE-EXIT OK   20261110-113636-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 337 / Total 337 (baseline da QA-0027)
+CHECK GATE-FINAL-EXISTS OK   20261110-125712-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261110-125712-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 337 (330 base + 5 da QA + 2 MediaCeilingTests)
+CHECK QACLASS-EXISTS OK   20261110-125307-test-filter.log
+CHECK QACLASS-EXIT OK   20261110-125307-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 5 / Total 5 (5 cenarios da QA)
+CHECK OBSERVATIONS-10 OK   as 10 observacoes da QA estao no artefato
+CHECK MUTATIONS-13-PROVEN OK   13/13 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=13 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   ExifStripper.cs=14013D3A737A PRE=14013D3A737A; MediaEndpoints.cs=449032345F9E PRE=449032345F9E; PostEndpoints.cs=5EBD7DF5E601 PRE=5EBD7DF5E601; SkiaMediaProcessor.cs=229107B71CD9 PRE=229107B71CD9; MediaOptions.cs=3BA462816D85 PRE=3BA462816D85; 
+CHECK PROBE-M11-RECORDED OK   M11 (ordem EXIF->blurHash) sondado: UNPROVEN mutante equivalente, restore HASH=PRE, residuo 0
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde 08:00:00: 8 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=7 fora do permitido=0
+CHECK TASK-LOG-ROWS OK   linhas de log do qa=13 (>=6)
+CHECK TASK-EVI-ROWS OK   linhas de evidencia do qa=30 (>=12)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0027Tests.cs = 5
+CHECK CEILING-PROBE-3 OK   sonda de teto: 3 facts exit 0 - streaming 413 com envelope, cru 69206017 com envelope, cru 53000000 esperado
+CHECK QA-DOC OK   QA-0027-upload-midia-skia.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: dotnet ausente no WSL - plataforma Linux registrada como unverified (pre-existente re-confirmado)
+SUMMARY total=22 fails=0
+RESULT: PASS

@@ -1,0 +1,9 @@
+﻿M1 PRE 245FF00B64F2 | editado backend\src\Squid.Worker\Thumbnail\ThumbnailService.cs | AC-01: todo registro vira o placeholder de 256x144 - o thumbnail gerado some
+M1 RUN wrapper=1 logExit=1 aprovado=3 falha=1 log=20261111-160516-test-filter.log
+M1 RED-IN-LOG Squid.Tests.Load.QaTask0032Tests.Ac01_image_thumbnails_are_generated_skia_bytes_and_never_the_placeholder [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ceholder [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Load.QaTask0032Tests.Ac01_image_thumbnails_are_generated_skia_bytes_and_never_the_placeholder [2 s]
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE 2BC78140D6CC | editado backend\src\Squid.Api\Media\MediaEndpoints.cs | AC-01: o nao-membro lÃª o thumb que esta fora da vista (404 da TASK-0027 vira 200)
+M2 RUN wrapper=1 logExit=1 aprovado=3 falha=1 log=20261111-160619-test-filter.log
+M2 RED-IN-LOG l_for_images_and_the_placeholders_for_video_and_audio [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...nd_audio [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Load.ThumbnailTests.Ac01_the_worker_pass_registers_a_skia_thumbnail_for_images_and_the_placeholders_for_video_and_audio [9 s]
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE 03ADE1779D4D | editado backend\tests\Squid.Tests\Load\FeedLoadTests.cs | AC-02: a assercao de P95 do feed deixa de poder falhar (prova que ela e avaliada)

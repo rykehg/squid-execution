@@ -1,0 +1,6 @@
+command: qa-mutate-task-0027.ps1 -Only M11 (probe da ordem EXIF->blurHash)
+exit:    1
+when:    2026-11-10 08:49:39
+---
+CYCLE M11-AC05-order-swap: UNPROVEN PRE=229107B71CD9 red(log exit=0 wrapper=0 fails=[] compileErr=False) restore=HASH=PRE green(log exit=0 wrapper=0 Aprovado!  – Com falha:     0, Aprovado:     1, Ignorado:     0, Total:     1, Duração: 1 s - Squid.Tests.dll (net10.0)) => CHECK MANUALLY: C:\dev\squid-squad-net\squid-execution\docs\sdd\runs\test-runs\20261110-084924-test-filter.log
+SUMMARY cycles=1 failed=1 residue-QA-MUTATION=0 temp-backups=0

@@ -11,10 +11,24 @@
     <ProjectReference Include="..\Squid.ReadModels\Squid.ReadModels.csproj" />
   </ItemGroup>
 
+  <!-- The versioned schema scripts (SPEC-0009 section B) keep their canonical home in
+       Squid.Persistence/schema/**; they are embedded here, in the init root, so the migration can
+       run from any working directory (Squid.Persistence.csproj stays untouched by TASK-0024). -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\Squid.Persistence\schema\*.sql"
+                      LogicalName="schema.%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <!-- Versions live in backend/Directory.Packages.props (ADR-25): no Version= here. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Orleans.Dashboard" />
     <PackageReference Include="Microsoft.Orleans.Server" />
+    <!-- The decode step of the media pipeline (SPEC-0009 section E, human gate 2026-11-09):
+         SkiaSharp is referenced where the implementation lives, never in Squid.Domain. -->
+    <PackageReference Include="SkiaSharp" />
+    <!-- The Linux natives of that same decode step (human gate 2026-11-10 08:00:15, AC-06 of
+         TASK-0028): without them CI ubuntu and compose fail with DllNotFoundException. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
   </ItemGroup>
 
   <!-- Observability (SPEC-0002 GAP-09/GAP-10): OTLP tracing + Serilog console JSON. -->

@@ -1,0 +1,203 @@
+﻿=== qa-check-task-0025.ps1 run1 (2026-11-09 20:06:13) exit=0 ===
+CHECK GATE-BASELINE-EXIT OK   20261109-192511-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 285 / Total 285
+CHECK GATE-FINAL-EXISTS OK   20261109-195855-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-195855-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 293 (285 + 8 da QA)
+CHECK QACLASS-EXIT OK   20261109-194058-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 8 / Total 8
+CHECK OBSERVATIONS OK   as duas observacoes da QA registradas no artefato
+CHECK SC005-100 OK   SC-005: 100 tentativas / 0 vazamentos
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   SqliteFeedTimeline.cs=BBAB3FDC25DA PRE=BBAB3FDC25DA ; FeedEndpoints.cs=894AB7CEB5DD PRE=894AB7CEB5DD ; PostEndpoints.cs=A80E83B345F1 PRE=A80E83B345F1
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 17:15:32: 9 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=4 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 17, evidence rows 17
+ (exit=0)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0025Tests.cs = 8
+CHECK QA-DOC OK   QA-0024-feed-timeline-delta.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh sem alvo = exit 1 (achado pre-existente re-confirmado; dotnet ausente no WSL)
+SUMMARY total=19 fails=0
+RESULT: PASS
+
+=== qa-check-task-0025.sh run1 (2026-11-09 20:06:13) exit=1 ===
+CHECK GATE-BASELINE-EXIT FAIL 20261109-192511-test-gate.log exit=-1
+CHECK GATE-BASELINE-SUMMARY FAIL Com falha 0 / Aprovado 285 / Total 285
+CHECK GATE-FINAL-EXISTS FAIL nenhum log de gate
+CHECK GATE-FINAL-EXIT FAIL  exit=-1
+CHECK GATE-FINAL-SUMMARY FAIL Com falha 0 / Aprovado 293 (285 + 8 da QA)
+CHECK QACLASS-EXIT FAIL 20261109-194058-test-filter.log exit=-1
+CHECK QACLASS-SUMMARY FAIL Com falha 0 / Aprovado 8 / Total 8
+CHECK OBSERVATIONS FAIL as duas observacoes da QA registradas no artefato
+CHECK SC005-100 FAIL SC-005: 100 tentativas / 0 vazamentos
+CHECK MUTATIONS-7-PROVEN FAIL 0/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY FAIL cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+bash : grep: /mnt/c/dev/squid-squad-net/squid-execution/docs/docs/sdd/qa/QA-0024-mutations.log: No such file or 
+directory
+No linha:3 caractere:9
++ $out2 = bash docs/sdd/qa/qa-check-task-0025.sh 2>&1 | Out-String
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (grep: /mnt/c/de...le or directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+sha256sum: backend/src/Squid.ReadModels/Projections/SqliteFeedTimeline.cs: No such file or directory
+sha256sum: backend/src/Squid.Api/Posts/FeedEndpoints.cs: No such file or directory
+sha256sum: backend/src/Squid.Api/Posts/PostEndpoints.cs: No such file or directory
+CHECK RESTORE-SHA256 OK   SqliteFeedTimeline.cs= PRE=?; FeedEndpoints.cs= PRE=?; PostEndpoints.cs= PRE=?; 
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 17:15:32: 0 arquivos, fora dos toques: 0
+sort: cannot read: /mnt/c/dev/squid-squad-net/squid-execution/docs/docs/sdd/qa/QA-0024-git-baseline.txt: No such file 
+or directory
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES FAIL novas entradas=73 fora do permitido=57
+CHECK TASK-LOG-EVIDENCE FAIL linhas de log do qa=0, linhas de evidencia do qa=0 (>=1 e >=8)
+CHECK QA-TEST-FACTS FAIL [Fact] em QaTask0025Tests.cs = 0
+CHECK QA-DOC FAIL QA-0024-feed-timeline-delta.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED FAIL sdd-test.sh sem alvo = exit 1 (achado pre-existente re-confirmado; dotnet ausente no WSL)
+SUMMARY total=19 fails=16
+RESULT: FAIL
+
+
+=== qa-check-task-0025.ps1 run2 (2026-11-09 20:07:45) exit=0 ===
+CHECK GATE-BASELINE-EXIT OK   20261109-192511-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 285 / Total 285
+CHECK GATE-FINAL-EXISTS OK   20261109-195855-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-195855-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 293 (285 + 8 da QA)
+CHECK QACLASS-EXIT OK   20261109-194058-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 8 / Total 8
+CHECK OBSERVATIONS OK   as duas observacoes da QA registradas no artefato
+CHECK SC005-100 OK   SC-005: 100 tentativas / 0 vazamentos
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   SqliteFeedTimeline.cs=BBAB3FDC25DA PRE=BBAB3FDC25DA ; FeedEndpoints.cs=894AB7CEB5DD PRE=894AB7CEB5DD ; PostEndpoints.cs=A80E83B345F1 PRE=A80E83B345F1
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 17:15:32: 9 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=5 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 17, evidence rows 19
+ (exit=0)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0025Tests.cs = 8
+CHECK QA-DOC OK   QA-0024-feed-timeline-delta.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh sem alvo = exit 1 (achado pre-existente re-confirmado; dotnet ausente no WSL)
+SUMMARY total=19 fails=0
+RESULT: PASS
+
+=== qa-check-task-0025.sh run2 (2026-11-09 20:07:45) exit=1 ===
+CHECK GATE-BASELINE-EXIT OK   20261109-192511-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 285 / Total 285
+CHECK GATE-FINAL-EXISTS OK   20261109-195855-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-195855-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 293 (285 + 8 da QA)
+CHECK QACLASS-EXIT OK   20261109-194058-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 8 / Total 8
+CHECK OBSERVATIONS OK   as duas observacoes da QA registradas no artefato
+CHECK SC005-100 OK   SC-005: 100 tentativas / 0 vazamentos
+CHECK MUTATIONS-7-PROVEN FAIL 0
+0/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY FAIL cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 FAIL SqliteFeedTimeline.cs=bbab3fdc25da PRE=?; FeedEndpoints.cs=894ab7ceb5dd PRE=?; PostEndpoints.cs=a80e83b345f1 PRE=?; 
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 17:15:32: 9 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES FAIL novas entradas=74 fora do permitido=57
+CHECK TASK-LOG-EVIDENCE OK   linhas de log do qa=2, linhas de evidencia do qa=11 (>=1 e >=8)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0025Tests.cs = 8
+CHECK QA-DOC OK   QA-0024-feed-timeline-delta.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh sem alvo = exit 1 (achado pre-existente re-confirmado; dotnet ausente no WSL)
+SUMMARY total=19 fails=4
+RESULT: FAIL
+
+
+=== qa-check-task-0025.ps1 run3 (2026-11-09 20:13:32) exit=0 ===
+CHECK GATE-BASELINE-EXIT OK   20261109-192511-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 285 / Total 285
+CHECK GATE-FINAL-EXISTS OK   20261109-195855-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-195855-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 293 (285 + 8 da QA)
+CHECK QACLASS-EXIT OK   20261109-194058-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 8 / Total 8
+CHECK OBSERVATIONS OK   as duas observacoes da QA registradas no artefato
+CHECK SC005-100 OK   SC-005: 100 tentativas / 0 vazamentos
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   SqliteFeedTimeline.cs=BBAB3FDC25DA PRE=BBAB3FDC25DA ; FeedEndpoints.cs=894AB7CEB5DD PRE=894AB7CEB5DD ; PostEndpoints.cs=A80E83B345F1 PRE=A80E83B345F1
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 17:15:32: 9 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=5 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 17, evidence rows 21
+ (exit=0)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0025Tests.cs = 8
+CHECK QA-DOC OK   QA-0024-feed-timeline-delta.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh sem alvo = exit 1 (achado pre-existente re-confirmado; dotnet ausente no WSL)
+SUMMARY total=19 fails=0
+RESULT: PASS
+
+=== qa-check-task-0025.sh run3 (2026-11-09 20:13:32) exit=0 ===
+CHECK GATE-BASELINE-EXIT OK   20261109-192511-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 285 / Total 285
+CHECK GATE-FINAL-EXISTS OK   20261109-195855-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-195855-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 293 (285 + 8 da QA)
+CHECK QACLASS-EXIT OK   20261109-194058-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 8 / Total 8
+CHECK OBSERVATIONS OK   as duas observacoes da QA registradas no artefato
+CHECK SC005-100 OK   SC-005: 100 tentativas / 0 vazamentos
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   SqliteFeedTimeline.cs=BBAB3FDC25DA PRE=BBAB3FDC25DA; FeedEndpoints.cs=894AB7CEB5DD PRE=894AB7CEB5DD; PostEndpoints.cs=A80E83B345F1 PRE=A80E83B345F1; 
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 17:15:32: 9 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=5 fora do permitido=0
+CHECK TASK-LOG-EVIDENCE OK   linhas de log do qa=2, linhas de evidencia do qa=13 (>=1 e >=8)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0025Tests.cs = 8
+CHECK QA-DOC OK   QA-0024-feed-timeline-delta.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh sem alvo = exit 1 (achado pre-existente re-confirmado; dotnet ausente no WSL)
+SUMMARY total=19 fails=0
+RESULT: PASS
+
+=== qa-check-task-0025.ps1 run4 final (2026-11-09 20:14:24) exit=0 ===
+CHECK GATE-BASELINE-EXIT OK   20261109-192511-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 285 / Total 285
+CHECK GATE-FINAL-EXISTS OK   20261109-195855-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-195855-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 293 (285 + 8 da QA)
+CHECK QACLASS-EXIT OK   20261109-194058-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 8 / Total 8
+CHECK OBSERVATIONS OK   as duas observacoes da QA registradas no artefato
+CHECK SC005-100 OK   SC-005: 100 tentativas / 0 vazamentos
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   SqliteFeedTimeline.cs=BBAB3FDC25DA PRE=BBAB3FDC25DA ; FeedEndpoints.cs=894AB7CEB5DD PRE=894AB7CEB5DD ; PostEndpoints.cs=A80E83B345F1 PRE=A80E83B345F1
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 17:15:32: 9 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=5 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 17, evidence rows 23
+ (exit=0)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0025Tests.cs = 8
+CHECK QA-DOC OK   QA-0024-feed-timeline-delta.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh sem alvo = exit 1 (achado pre-existente re-confirmado; dotnet ausente no WSL)
+SUMMARY total=19 fails=0
+RESULT: PASS
+
+=== qa-check-task-0025.sh run4 final (2026-11-09 20:14:24) exit=0 ===
+CHECK GATE-BASELINE-EXIT OK   20261109-192511-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 285 / Total 285
+CHECK GATE-FINAL-EXISTS OK   20261109-195855-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-195855-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 293 (285 + 8 da QA)
+CHECK QACLASS-EXIT OK   20261109-194058-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 8 / Total 8
+CHECK OBSERVATIONS OK   as duas observacoes da QA registradas no artefato
+CHECK SC005-100 OK   SC-005: 100 tentativas / 0 vazamentos
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   SqliteFeedTimeline.cs=BBAB3FDC25DA PRE=BBAB3FDC25DA; FeedEndpoints.cs=894AB7CEB5DD PRE=894AB7CEB5DD; PostEndpoints.cs=A80E83B345F1 PRE=A80E83B345F1; 
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 17:15:32: 9 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=5 fora do permitido=0
+CHECK TASK-LOG-EVIDENCE OK   linhas de log do qa=2, linhas de evidencia do qa=15 (>=1 e >=8)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0025Tests.cs = 8
+CHECK QA-DOC OK   QA-0024-feed-timeline-delta.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh sem alvo = exit 1 (achado pre-existente re-confirmado; dotnet ausente no WSL)
+SUMMARY total=19 fails=0
+RESULT: PASS

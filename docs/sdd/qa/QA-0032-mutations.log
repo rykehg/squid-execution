@@ -1,0 +1,27 @@
+﻿# QA-0032 mutations - 2026-11-11 18:55:15
+M1 PRE 245FF00B64F2 | editado backend\src\Squid.Worker\Thumbnail\ThumbnailService.cs | AC-01: todo registro vira o placeholder de 256x144 - o thumbnail gerado some
+M1 RUN wrapper=1 logExit=1 aprovado=3 falha=1 log=20261111-185558-test-filter.log
+M1 RED-IN-LOG Squid.Tests.Load.QaTask0032Tests.Ac01_image_thumbnails_are_generated_skia_bytes_and_never_the_placeholder [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ceholder [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Load.QaTask0032Tests.Ac01_image_thumbnails_are_generated_skia_bytes_and_never_the_placeholder [2 s]
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE 2BC78140D6CC | editado backend\src\Squid.Api\Media\MediaEndpoints.cs | AC-01: o nao-membro lÃª o thumb que esta fora da vista (404 da TASK-0027 vira 200)
+M2 RUN wrapper=1 logExit=1 aprovado=3 falha=1 log=20261111-185632-test-filter.log
+M2 RED-IN-LOG l_for_images_and_the_placeholders_for_video_and_audio [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...nd_audio [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Load.ThumbnailTests.Ac01_the_worker_pass_registers_a_skia_thumbnail_for_images_and_the_placeholders_for_video_and_audio [3 s]
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE 03ADE1779D4D | editado backend\tests\Squid.Tests\Load\FeedLoadTests.cs | AC-02: a assercao de P95 do feed deixa de poder falhar (prova que ela e avaliada)
+M3 RUN wrapper=1 logExit=1 aprovado=3 falha=1 log=20261111-185709-test-filter.log
+M3 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._printed [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Load.FeedLoadTests.Ac02_ten_thousand_items_first_pages_answer_p95_under_a_second_with_p50_p99_printed [5 s]
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE 03ADE1779D4D | editado backend\tests\Squid.Tests\Load\FeedLoadTests.cs | AC-02: a conferencia COUNT(*)=10000 em timeline_item e trocada (prova que ela e avaliada)
+M4 RUN wrapper=1 logExit=1 aprovado=3 falha=1 log=20261111-185740-test-filter.log
+M4 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._printed [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Load.FeedLoadTests.Ac02_ten_thousand_items_first_pages_answer_p95_under_a_second_with_p50_p99_printed [554 ms]
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE B44E2DA5F1FF | editado backend\tests\Squid.Tests\Load\Sprint3ClosingFacetTests.cs | AC-03(c): a assercao do 404 pos-politica e trocada (prova que ela e avaliada)
+M5 RUN wrapper=1 logExit=1 aprovado=3 falha=1 log=20261111-185815-test-filter.log
+M5 RED-IN-LOG _under_a_second_since_answers_only_the_delta_and_unlisted_never_reaches_a_non_member [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...n_member [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Load.Sprint3ClosingFacetTests.Ac03_the_post_reaches_the_subscriber_under_a_second_since_answers_only_the_delta_and_unlisted_never_reaches_a_non_member [3 s]
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE B44E2DA5F1FF | editado backend\tests\Squid.Tests\Load\Sprint3ClosingFacetTests.cs | AC-03(c): a pre-condicao de leitura publica ANTES do unlisted e trocada (prova que ela e avaliada)
+M6 RUN wrapper=1 logExit=1 aprovado=3 falha=1 log=20261111-185849-test-filter.log
+M6 RED-IN-LOG _under_a_second_since_answers_only_the_delta_and_unlisted_never_reaches_a_non_member [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...n_member [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Load.Sprint3ClosingFacetTests.Ac03_the_post_reaches_the_subscriber_under_a_second_since_answers_only_the_delta_and_unlisted_never_reaches_a_non_member [2 s]
+M6 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=4 falha=0 log=20261111-185927-test-filter.log
+SUMMARY cycles=6 failed=0 residue-QA-MUTATION=0 temp-backups=0

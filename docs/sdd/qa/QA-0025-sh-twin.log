@@ -1,0 +1,29 @@
+when:    2026-11-09 21:52:45 (WSL: podman-machine-default; o gêmeo bash do gate, executado no Linux)
+=== bash docs/sdd/_tools/sdd-test.sh probe
+dotnet: docs/sdd/_tools/sdd-test.sh: line 35: dotnet: command not found
+runtime:
+docker: absent
+podman: /usr/sbin/podman
+wsl: absent
+git: /usr/sbin/git
+curl: /usr/sbin/curl
+docker daemon: docs/sdd/_tools/sdd-test.sh: line 40: docker: command not found
+note: a sandbox can block outbound HTTPS and process pipes; build/test failures are
+      not product failures until a normal shell reproduces them.
+exit: 0
+=== bash docs/sdd/_tools/sdd-test.sh test
+wsl.exe : sdd-test: no *.sln found within depth 3; pass the path
+No linha:6 caractere:10
++   $out = & wsl.exe -e bash -lc "cd $wsl && $Script" 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (sdd-test: no *....; pass the path:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+test:
+docs/sdd/_tools/sdd-test.sh: line 64: dotnet: command not found
+test: exit 127 (real test failure)
+exit: 1
+=== bash docs/sdd/_tools/sdd-test.sh test backend/Squid.slnx
+test: backend/Squid.slnx
+docs/sdd/_tools/sdd-test.sh: line 64: dotnet: command not found
+test: exit 127 (real test failure)
+exit: 1

@@ -1,0 +1,27 @@
+﻿# QA-0029 mutations - 2026-11-10 17:34:34
+M1 PRE 69A320484467 | editado backend\src\Squid.Api\Posts\SsrfGuard.cs | AC-03: 100.64.0.0/10 deixa de ser recusada
+M1 RUN wrapper=1 logExit=1 aprovado=59 falha=4 log=20261110-173501-test-filter.log
+M1 RED-IN-LOG Squid.Tests.Unfurl.UnfurlUnitTests.The_perimeter_refuses_every_address_inside_it(address: "100.64.0.1") [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...64.0.1") [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Unfurl.UnfurlUnitTests.The_perimeter_refuses_every_address_inside_it(address: "100.64.0.1") [5 ms] | "100.127.255.255") [FAIL] | Com falha Squid.Tests.Unfurl.UnfurlUnitTests.The_perimeter_refuses_every_address_inside_it(address: "100.127.255.255") [< 1 ms] | "http://100.64.0.1/") [FAIL]
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE 818B60E9A866 | editado backend\src\Squid.Api\Posts\LinkUnfurler.cs | AC-03: IP privado RESOLVIDO deixa de recusar o hop
+M2 RUN wrapper=1 logExit=1 aprovado=54 falha=9 log=20261110-173526-test-filter.log
+M2 RED-IN-LOG Squid.Tests.Unfurl.UnfurlPublishTests.A_host_with_even_one_private_answer_never_fetches [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._fetches [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Unfurl.UnfurlPublishTests.A_host_with_even_one_private_answer_never_fetches [173 ms] | [FAIL] | Squid.Tests.Unfurl.QaTask0029Tests.A_name_that_resolves_only_to_private_answers_never_fetches(answer: "::1") [FAIL] | [FAIL]
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE 818B60E9A866 | editado backend\src\Squid.Api\Posts\LinkUnfurler.cs | AC-03: redirecionamento para IP privado nao e revalidado no meio da cadeia
+M3 RUN wrapper=1 logExit=1 aprovado=60 falha=3 log=20261110-173552-test-filter.log
+M3 RED-IN-LOG "http://[::1]/second") [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...second") [FAIL]:String) [], RemoteException | "http://192.168.0.10/second") [FAIL] | Com falha Squid.Tests.Unfurl.UnfurlPublishTests.A_redirect_outside_the_perimeter_is_never_followed(location: "http://[::1]/second") [1 s] | Com falha Squid.Tests.Unfurl.UnfurlPublishTests.A_redirect_outside_the_perimeter_is_never_followed(location: "http://192.168.0.10/second") [523 ms] | Squid.Tests.Unfurl.QaTask0029Tests.A_redirect_to_a_name_that_resolves_private_is_refused_mid_chain [FAIL]
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE 818B60E9A866 | editado backend\src\Squid.Api\Posts\LinkUnfurler.cs | AC-02: timeout/erro estoura no publish em vez de falhar aberto
+M4 RUN wrapper=1 logExit=1 aprovado=62 falha=1 log=20261110-173617-test-filter.log
+M4 RED-IN-LOG Squid.Tests.Unfurl.UnfurlPublishTests.A_fetch_that_never_answers_publishes_the_url_alone [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...rl_alone [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Unfurl.UnfurlPublishTests.A_fetch_that_never_answers_publishes_the_url_alone [698 ms]
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE 818B60E9A866 | editado backend\src\Squid.Api\Posts\LinkUnfurler.cs | AC-04: corpo declarado acima do teto passa a ser lido
+M5 RUN wrapper=1 logExit=1 aprovado=62 falha=1 log=20261110-173643-test-filter.log
+M5 RED-IN-LOG Squid.Tests.Unfurl.UnfurlPublishTests.A_declared_body_above_the_cap_is_never_read [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ver_read [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Unfurl.UnfurlPublishTests.A_declared_body_above_the_cap_is_never_read [200 ms]
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE 818B60E9A866 | editado backend\src\Squid.Api\Posts\LinkUnfurler.cs | AC-01: og:title deixa de chegar no attachment
+M6 RUN wrapper=1 logExit=1 aprovado=61 falha=2 log=20261110-173710-test-filter.log
+M6 RED-IN-LOG Squid.Tests.Unfurl.UnfurlPublishTests.A_post_whose_content_is_one_url_publishes_the_opengraph_card [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...aph_card [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Unfurl.UnfurlPublishTests.A_post_whose_content_is_one_url_publishes_the_opengraph_card [535 ms] | Squid.Tests.Unfurl.QaTask0029Tests.A_public_redirect_chain_is_followed_and_the_card_comes_out [FAIL] | Com falha Squid.Tests.Unfurl.QaTask0029Tests.A_public_redirect_chain_is_followed_and_the_card_comes_out [188 ms]
+M6 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=63 falha=0 log=20261110-173737-test-filter.log
+SUMMARY cycles=6 failed=0 residue-QA-MUTATION=0 temp-backups=0

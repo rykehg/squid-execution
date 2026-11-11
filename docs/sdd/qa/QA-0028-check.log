@@ -1,0 +1,66 @@
+command: powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/qa/qa-check-task-0028.ps1
+exit:    0
+when:    2026-11-10 15:22:51
+---
+CHECK GATE-BASELINE-EXIT OK   20261110-142613-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 343 / Total 343 (baseline DEV, antes da QA escrever)
+CHECK GATE-FINAL-EXISTS OK   20261110-150722-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261110-150722-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 348 / Total 348 (343 DEV + 5 da QA)
+CHECK QACLASS-EXIT OK   20261110-144402-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 5 / Total 5 (5 cenarios da QA)
+CHECK QUOTA-SLICE-EXIT OK   20261110-144447-test-filter.log exit=0
+CHECK QUOTA-SLICE-SUMMARY OK   Com falha 0 / Aprovado 11 / Total 11 (6 DEV + 5 QA)
+CHECK OBSERVATIONS-9 OK   as 9 observacoes da QA estao no artefato
+CHECK MUTATIONS-9-PROVEN OK   9/9 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=9 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   SqliteQuotaLedger.cs=8B7ACE561ADE PRE=8B7ACE561ADE ; MediaEndpoints.cs=161721C674C7 PRE=161721C674C7 ; QuotaReconciler.cs=F3799B2CF0CA PRE=F3799B2CF0CA ; QuotaReconcileService.cs=A9CE3D45C156 PRE=A9CE3D45C156 ; MediaOptions.cs=C8DAD041088F PRE=C8DAD041088F ; Squid.Service.csproj=4652987695A3 PRE=4652987695A3 ; Directory.Packages.props=5376767C0F5D PRE=5376767C0F5D ; MediaEndpoints.cs=161721C674C7 PRE=161721C674C7 ; SqliteQuotaLedger.cs=8B7ACE561ADE PRE=8B7ACE561ADE
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde 13:11:00: 15 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=9 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 17, evidence rows 21
+ (exit=0)
+CHECK TASK-ROWS OK   linhas de log do qa=6 (>=4), linhas de evidencia do qa=14 (>=8)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0028Tests.cs = 5
+CHECK QA-DOC OK   QA-0028-cota-midia.md existe e verdict: PASSED
+CHECK AC06-DECLARATION OK   SkiaSharp e NativeAssets.Linux ambos em 4.155.0 no props + PackageReference no csproj
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: dotnet ausente no WSL - plataforma Linux registrada como unverified
+SUMMARY total=22 fails=0
+RESULT: PASS
+
+command: bash docs/sdd/qa/qa-check-task-0028.sh (WSL)
+exit:    0
+---
+wsl : time="2026-11-10T15:22:43-03:00" level=warning msg="RunRoot is pointing to a path (/run/user/1000/containers) 
+which is not writable. Most likely podman will fail."
+No linha:14 caractere:7
++ $sh = wsl bash -lc 'cd /mnt/c/dev/squid-squad-net/squid-execution &&  ...
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (time="2026-11-1...man will fail.":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error: creating events dirs: mkdir /run/user/1000: permission denied
+CHECK GATE-BASELINE-EXIT OK   20261110-142613-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 343 / Total 343 (baseline DEV)
+CHECK GATE-FINAL-EXISTS OK   20261110-150722-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261110-150722-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 348 / Total 348 (343 DEV + 5 da QA)
+CHECK QACLASS-EXIT OK   20261110-144402-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 5 / Total 5 (5 cenarios da QA)
+CHECK QUOTA-SLICE-EXIT OK   20261110-144447-test-filter.log exit=0
+CHECK QUOTA-SLICE-SUMMARY OK   Com falha 0 / Aprovado 11 / Total 11 (6 DEV + 5 QA)
+CHECK OBSERVATIONS-9 OK   as 9 observacoes da QA estao no artefato
+CHECK MUTATIONS-9-PROVEN OK   9/9 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=9 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   SqliteQuotaLedger.cs=8B7ACE561ADE PRE=8B7ACE561ADE; MediaEndpoints.cs=161721C674C7 PRE=161721C674C7; QuotaReconciler.cs=F3799B2CF0CA PRE=F3799B2CF0CA; QuotaReconcileService.cs=A9CE3D45C156 PRE=A9CE3D45C156; MediaOptions.cs=C8DAD041088F PRE=C8DAD041088F; Squid.Service.csproj=4652987695A3 PRE=4652987695A3; Directory.Packages.props=5376767C0F5D PRE=5376767C0F5D; MediaEndpoints.cs#M8=161721C674C7 PRE=161721C674C7; SqliteQuotaLedger.cs#M9=8B7ACE561ADE PRE=8B7ACE561ADE; 
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde 13:11:00: 15 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=9 fora do permitido=0
+CHECK TASK-LOG-ROWS OK   linhas de log do qa=6 (>=4)
+CHECK TASK-EVI-ROWS OK   linhas de evidencia do qa=14 (>=8)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0028Tests.cs = 5
+CHECK QA-DOC OK   QA-0028-cota-midia.md existe e verdict: PASSED
+CHECK AC06-DECLARATION OK   SkiaSharp e NativeAssets.Linux ambos em 4.155.0 no props + PackageReference no csproj
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: dotnet ausente no WSL - plataforma Linux registrada como unverified (pre-existente re-confirmado)
+SUMMARY total=22 fails=0
+RESULT: PASS

@@ -1,0 +1,11 @@
+C1 PASS gate 20261111-190626-test-gate.log exit=0 falha=0 aprovado=432
+C2 PASS filter 20261111-185927-test-filter.log exit=0 aprovado=4
+C2b PASS load-run2: feed e timeline com P50/P95/P99, aprovados=4
+C3 PASS SUMMARY cycles=6 failed=0 residue-QA-MUTATION=0 temp-backups=0
+C4 PASS residuo QA-MUTATION=0
+C5 PASS adicionadas=16 removidas=0 fora-do-escopo=0
+  adicionadas: ?? docs/sdd/qa/QA-0032-check-sh.log|?? docs/sdd/qa/QA-0032-check.log|?? docs/sdd/qa/QA-0032-load-run1.log|?? docs/sdd/qa/QA-0032-load-run2.log|?? docs/sdd/qa/QA-0032-load-run3.log|?? docs/sdd/qa/QA-0032-load-run4.log|?? docs/sdd/qa/QA-0032-loadtest-p50p99.log|?? docs/sdd/qa/QA-0032-mutations-run.log|?? docs/sdd/qa/QA-0032-mutations-run2.log|?? docs/sdd/qa/QA-0032-mutations.log|?? docs/sdd/qa/QA-0032-restore.log|?? docs/sdd/qa/QA-0032-scope.log|?? docs/sdd/qa/QA-0032-thumbnail-loadtest-facet.md|?? docs/sdd/qa/qa-check-task-0032.ps1|?? docs/sdd/qa/qa-check-task-0032.sh|?? docs/sdd/qa/qa-mutate-task-0032.ps1|
+C6 PASS status=AWAITING_QA qaAttempts=0/2 AC-04 presente
+C7 PASS docs: QA-0032-thumbnail-loadtest-facet.md 
+C8 PASS backups temporarios=0
+SUMMARY total=9 fails=0

@@ -1,0 +1,11 @@
+CHECK C1 PASS gate final 20261110-174218-test-gate.log: exit 0 e 411/411
+CHECK C2 PASS gate baseline da QA: 398/398 exit 0
+CHECK C3 PASS SUMMARY cycles=6 failed=0 residue=0 backups=0
+CHECK C4 PASS 6 PRE + 6 vermelhos classificados no log + 6 restores byte-exact + GREEN 63/63
+CHECK C5 PASS residuos QA-MUTATION em backend = 0
+CHECK C6 PASS git: +10 entradas todas QA-0029, removidas=0, fora do padrao=0
+CHECK C7 PASS control block intacto: status AWAITING_QA, qaAttempts 0/2
+CHECK C8 PASS sem rede real nos testes da task (achados=0)
+CHECK C9 PASS GREEN pos-restores: 20261110-173737-test-filter.log exit 0 63/63
+CHECK C10 PASS doc QA-0029-unfurl-ssrf.md
+SUMMARY total=10 fails=0

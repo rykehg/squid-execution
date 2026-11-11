@@ -6,8 +6,8 @@ Write responsibility: ODEV. Every other role reads it and never edits it.
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-09 05:04:22
-- snapshot: plan/history/0004-plan.md (fecho da P-03; 0003 é a P-02, 0002 é a P-01, 0001 é o bootstrap)
+- lastVerified: 2026-11-11 20:00:27
+- snapshot: plan/history/0005-plan.md (fecho da P-04; 0004 é a P-03, 0003 é a P-02, 0002 é a P-01, 0001 é o bootstrap)
 
 # Plan — Squid
 
@@ -44,7 +44,7 @@ adotado) — a fase muda de nome, não de conteúdo.
 | P-01 | Fundação verificável: a instância nasce com estrutura, regra de dependência no build e storage que impõe ETag | TASK-0001..TASK-0010 — todas DONE com QA PASSED (detalhe em `plan/history/0002-plan.md`) | **CLOSED** | 2026-11-07 08:30:00 |
 | P-02 | Identidade: ator local com perfil, chaves e descoberta | TASK-0012..TASK-0016 (SPEC-0007) — **5/5 DONE com QA PASSED** (QA-0011..QA-0015); gate da casa 167/167; detalhe em `plan/history/0003-plan.md` | **CLOSED** | 2026-11-08 09:45:19 |
 | P-03 | Contêineres sociais: grupo/comunidade com papéis, política versada e sucessão de propriedade | TASK-0017..TASK-0022 (SPEC-0008) — **6/6 DONE com QA PASSED** (QA-0016..QA-0021); gate da casa 244/244; detalhe em `plan/history/0004-plan.md` | **CLOSED** | 2026-11-09 04:55:35 |
-| P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | a cortar | NOT_STARTED | — |
+| P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
 | P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | a cortar | NOT_STARTED | — |
 | P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | a cortar | NOT_STARTED | — |
 | P-07 | Backup cifrado e restore drill no CI | a cortar | NOT_STARTED | — |
@@ -101,27 +101,52 @@ só entra por convite; `singlePublisher` bloqueia `Member` e permite o publisher
 contêiner nunca fica órfão (sucessão e override cobertos por teste).
 Spec: `specs/SPEC-0008-containers-sociais-p03.md`.
 
+### P-04 — entregas
+
+| Task | Entrega | Touches | Parallel-safe |
+| --- | --- | --- | --- |
+| TASK-0023 | Núcleo: `POST /api/containers/{slug}/posts` (texto) + `GET /api/posts/{id}` + replies ≤3 + `Object.Seq` por contêiner + evento `Activity` + suspenso negado | `backend/src/Squid.Domain/Objects/**`, `backend/src/Squid.Api/Posts/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Posts/**` | no (base da fase) |
+| TASK-0024 | Migration versionada idempotente (`timeline_item`, `home_timeline`, contador global, `quota_ledger`) + projetor Dapper + pump no Worker | `backend/src/Squid.Persistence/schema/**`, `backend/src/Squid.ReadModels/**`, `backend/src/Squid.Worker/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Projections/**` | no (serial) |
+| TASK-0025 | Feed e timeline com `?since=` delta exato + visibilidade corrente (FR-023/025/026) | `backend/src/Squid.ReadModels/**`, `backend/src/Squid.Api/Posts/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Feed/**` | no (serial) |
+| TASK-0026 | SSE `GET /api/stream` (Channel, `Last-Event-ID`, ping 15 s, visibilidade do assinante) | `backend/src/Squid.Api/Posts/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Stream/**` | no (serial) |
+| TASK-0027 | Upload `POST /api/media` (SkiaSharp, EXIF→blurHash, magic bytes 415/413, blob SHA-256) + `GET /api/media/{hash}` + anexos ≤10 | `backend/src/Squid.Api/Media/**`, `backend/src/Squid.Api/Posts/**`, `backend/src/Squid.Domain/Objects/**`, `backend/Directory.Packages.props`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Media/**` | no (serial) |
+| TASK-0028 | Cota: gate `507`, ledger inteiro, reconciliação diária por varredura | `backend/src/Squid.Api/Media/**`, `backend/src/Squid.ReadModels/**`, `backend/src/Squid.Worker/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Quota/**` | no (serial) |
+| TASK-0029 | Link unfurl (OpenGraph, timeout 3 s, fail-open, guarda SSRF) | `backend/src/Squid.Api/Posts/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Unfurl/**` | no (serial) |
+| TASK-0030 | Remoção `DELETE /posts` (tombstone + `RemoveContent` + projeção) — FR-027 | `backend/src/Squid.Api/Posts/**`, `backend/src/Squid.ReadModels/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Posts/**` | no (serial) |
+| TASK-0031 | Denúncia + fila `/api/admin/reports` + resolve keep/remove/ban + `suspend` — FR-028/FR-008 | `backend/src/Squid.Api/Posts/**`, `backend/src/Squid.Api/Admin/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Moderation/**` | no (serial) |
+| TASK-0032 | Thumbnail no Worker + load test P50/P99 (SC-004) + facet de fecho do DoD do Sprint 3 | `backend/src/Squid.Worker/**`, `backend/src/Squid.Api/Media/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Load/**` | no (serial; última) |
+
+Escopo da P-04: **Sprint 3 inteiro + remoção (FR-027) + denúncia (FR-028) + cota (FR-029)**
+(decisão humana 2026-11-09, entrevista de abertura em 3 rodadas: migration/banco do SQLite
+liberados para teste/dev/CI com script versionado — produção segue gate; `SkiaSharp` como pacote
+único de imagem; ledger de cota em SQL+Dapper com emenda ao data-model §5; `Dapper` aprovado).
+Gate de saída (DoD Sprint 3): post em comunidade aparece no feed em < 1 s via SSE; `since`
+entrega só o delta; unlisted não aparece para não-membro. Gate adicional: SC-004 (10k posts,
+P95 < 1 s) no load test. Spec: `specs/SPEC-0009-publicacao-feed-postagem.md`.
+
 ## Current state
 
-- phase: **P-03 (Contêineres sociais) CLOSED** (2026-11-09 04:55:35) — 6/6 entregas DONE com
-  QA PASSED (QA-0016..QA-0021), gate final 244/244, consolidação do memory bank feita
-  (`FEATURE_CONCLUIDA` em `progress/0001.md`); snapshot congelado em `plan/history/0004-plan.md`.
-  A partir do fecho de cada fase o **código é a fonte real** daquela fase (divergência =
-  `[DIVERGENCIA]`, código vence); P-01 fecha no 0002, P-02 no 0003, P-03 no 0004.
-- authority: **CODE** para P-01, P-02 e P-03 (fechadas); a P-04, quando aberta, nasce com
-  authority SPEC até o próprio fecho.
+- phase: **P-04 (Publicação e feed) CLOSED** (2026-11-11 20:00:27) — 10/10 entregas DONE com
+  QA PASSED (QA-0022..QA-0032), gate final **432/432**, DoD do Sprint 3 + SC-004 provados em
+  cadeia; consolidação do memory bank feita (`FEATURE_CONCLUIDA` em `progress/0001.md`);
+  snapshot congelado em `plan/history/0005-plan.md`. A partir do fecho de cada fase o **código
+  é a fonte real** daquela fase (divergência = `[DIVERGENCIA]`, código vence); P-01 fecha no
+  0002, P-02 no 0003, P-03 no 0004, P-04 no 0005.
+- authority: **CODE** para P-01, P-02, P-03 e P-04 (fechadas); a P-05, quando aberta, nasce
+  com authority SPEC até o próprio fecho.
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **PARADO no fecho da P-03** — não inicio a P-04 por conta própria. Próximo passo
-  humano: `/odev` para abrir a **P-04 (Publicação e feed)** com entrevista/corte de spec
-  (insumos: doc 05 §Sprint 3, data-model §2.5 `Object`, contrato §5, FR-020+, e checar S-26 ao
-  cortar). Nada de deploy (nenhum push é meu de fazer — a CI só roda pós-push, gate humano).
-- blocking gaps: NENHUM — decisões registradas no fecho: emenda `ChangePolicy` na trilha
-  (2026-11-08 17:38:56) e origem scheme+Host no `Id` de contêiner (2026-11-08 15:57:34).
-  Abertos e carregados: GAP-02, GAP-04/05/06, GAP-09 (P-06), GAP-13..GAP-18 assumidos
-  (SPEC-0008), S-11/S-12/S-19/S-22..S-33 (backlog — saneamento S-29/S-32/S-33 exige migration
-  com gate humano), suite Linux nativa (CI é o executor), I-11/S-26 (P-06/P-08).
+- nextAction: **PARADO no fecho da P-04** — não inicio a P-05 por conta própria. Próximo passo
+  humano: `/odev` para abrir a **P-05 (Mensageria)** com entrevista/corte de spec (insumos:
+  doc 05 §Sprint 4, FR-030..FR-033/FR-057, data-model §2.7 Thread/§2.5.1 Message/§2.14 Reaction,
+  contrato §6, e o aviso de não-E2EE do §2.5). Nada de deploy (nenhum push é meu de fazer —
+  a CI só roda pós-push, gate humano; último run verde 98/98 de 07/11, anterior à P-04 —
+  considere um push para revalidar a CI com os testes novos).
+- blocking gaps: NENHUM — decisões da abertura e dos gates registradas abaixo; abertos e
+  carregados: GAP-02, GAP-04/05/06, GAP-09 (P-06), GAP-13..GAP-18 (SPEC-0008),
+  GAP-21..GAP-28 (SPEC-0009), S-11/S-12/S-19/S-22..S-38 (backlog — S-34/S-36/S-38 novos),
+  suite Linux nativa unverified (CI é o executor), I-11/S-26 (P-06/P-08).
 
 ## Adopted legacy documentation
 
@@ -177,3 +202,12 @@ nomes** — nenhum arquivo deles é copiado, nem como trecho.
 | 2026-11-08 10:57:14 | Operador da instância em P-03 = `Instance:Operators` (lista na config), rotas `/api/admin` de P-03 já exigindo operador; gestão de operadores fica para a fase de admin | PHASE | Henrique |
 | 2026-11-08 15:57:34 | Origem do `Id` de contêiner alinhada à regra scheme+Host da P-02 (gate do achado MINOR QA-0016, S-28): SPEC-0008 §A emendada e a correção + teste entram na TASK-0019 como AC-07; em produção atrás de TLS continua `https://` | TASK | Henrique |
 | 2026-11-08 17:38:56 | Emenda ao `data-model.md` §2.11 aceitando `ChangePolicy` como valor do enum `Action` da trilha de auditoria (flag CONTRATO da TASK-0018; precedente da emenda S-27 — original mantido sem reescrita, emenda viva aqui + `memory-bank/contracts.md` na consolidação + `ideas/BACKLOG.md`); código da TASK-0018 permanece como está | TASK | Henrique |
+| 2026-11-09 11:19:12 | Escopo da P-04 = Sprint 3 inteiro (7 itens + DoD) **+** remoção FR-027 **+** denúncia FR-028 **+** cota FR-029 — ~10 entregas | PHASE | Henrique |
+| 2026-11-09 11:19:12 | Migration + criação de banco do SQLite **liberados para teste/dev/CI** com script SQL versionado e idempotente no repositório; produção segue sendo gate humano (resposta à pergunta "o que impede o agente de criar banco e migration?") | PHASE | Henrique |
+| 2026-11-09 11:19:12 | `SkiaSharp` aprovado como pacote único de imagem (Apache-2.0), versão só em `Directory.Packages.props` (ADR-25); EXIF stripping e blurHash em código próprio | PHASE | Henrique |
+| 2026-11-09 11:19:12 | Ledger de cota em SQL puro + Dapper na mesma migration versionada — emenda ao `data-model.md` §5 (`EF Core (migrations)` → `script SQL versionado + Dapper`) | PHASE | Henrique |
+| 2026-11-09 11:30:01 | `Dapper` aprovado como pacote de leitura das projeções (data-model §4 já adotado), versão em `Directory.Packages.props` | PHASE | Henrique |
+| 2026-11-10 08:00:15 | `SkiaSharp.NativeAssets.Linux` aprovado (natives Linux do SkiaSharp 4.155.0) — sem ele a CI ubuntu e o compose não decodificam imagem (`DllNotFoundException`); entra como AC da TASK-0028 | TASK | Henrique |
+| 2026-11-10 23:53:57 | Parar o desenvolvimento da P-04 **após o fecho da TASK-0031**; a TASK-0032 (entrega 10/10 — thumbnail + load test + facet do DoD) **não é dispatchada sem nova ordem**; a fase fica 9/10 com authority SPEC e sem consolidação (fecho exige a última entrega DONE) | PHASE | Henrique |
+| 2026-11-11 08:19:47 | **Ordem de retomada**: continuar a P-04 — parada levantada, TASK-0032 liberada para dispatch; ao fechar a última entrega segue o fluxo normal (consolidação + snapshot + authority CODE) | PHASE | Henrique |
+| 2026-11-11 18:34:06 | **Gate do BLOCKED da QA-0032**: autorizado o 3º dispatch da QA da TASK-0032 (após 2 mortes de harness, uma delas deixando mutação M3 ativa) com instrução de restauração primeiro — a decisão humana sobrepõe o limite do redispatch único da política de falha; a subagente restaurou, provou 432/432 e fechou PASSED | TASK | Henrique |

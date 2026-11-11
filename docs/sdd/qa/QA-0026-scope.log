@@ -1,0 +1,47 @@
+when: 2026-11-10 09:30:49 - varredura de escopo AC-06
+
+=== S-22: exit: linha DENTRO dos logs de gate
+20261110-081456-test-gate.log -> exit: 0 | Aprovado!  – Com falha:     0, Aprovado:   330, Ignorado:     0, Total:   330, Duração: 3 m 35 s - Squid.Tests.dll (net10.0)
+20261110-092954-test-gate.log -> exit: 0 | Aprovado!  – Com falha:     0, Aprovado:   335, Ignorado:     0, Total:   335, Duração: 3 m 43 s - Squid.Tests.dll (net10.0)
+
+=== git status vs QA-0026-git-baseline.txt
+novas entradas (10):
+  ?? backend/tests/Squid.Tests/Media/QaTask0027Tests.cs
+  ?? docs/sdd/qa/QA-0026-ceiling-probe.log
+  ?? docs/sdd/qa/QA-0026-mutation-probe-m11.log
+  ?? docs/sdd/qa/QA-0026-mutations-run1.log
+  ?? docs/sdd/qa/QA-0026-mutations.log
+  ?? docs/sdd/qa/QA-0026-observations.log
+  ?? docs/sdd/qa/QA-0026-sh-twin.log
+  ?? docs/sdd/qa/qa-check-task-0027.ps1
+  ?? docs/sdd/qa/qa-check-task-0027.sh
+  ?? docs/sdd/qa/qa-mutate-task-0027.ps1
+fora do permitido: 0
+
+=== mtime desde 08:00:00 (sem bin/obj) em backend/src + backend/tests
+arquivos com mtime posterior: 5
+  backend\src\Squid.Api\Media\MediaEndpoints.cs  09:06:42
+  backend\src\Squid.Api\Posts\PostEndpoints.cs  09:05:45
+  backend\src\Squid.Service\ExifStripper.cs  09:02:33
+  backend\src\Squid.Service\SkiaMediaProcessor.cs  09:07:09
+  backend\tests\Squid.Tests\Media\QaTask0027Tests.cs  08:45:33
+fora dos touches: 0
+
+=== residuo QA-MUTATION em backend (sem bin/obj)
+residuos: 0
+
+=== SHA256 final dos 4 arquivos mutados vs PRE
+PostEndpoints.cs = 5EBD7DF5E601 PRE=5EBD7DF5E601 iguais=True
+SkiaMediaProcessor.cs = 229107B71CD9 PRE=229107B71CD9 iguais=True
+ExifStripper.cs = 14013D3A737A PRE=14013D3A737A iguais=True
+MediaEndpoints.cs = D8F40FF0BC68 PRE=D8F40FF0BC68 iguais=True
+
+=== SkiaSharp: versao so em Directory.Packages.props, PackageReference so no consumidor
+props: <!-- Image pipeline of the media slice (SPEC-0009 section E, decision 3): SkiaSharp is the
+props: SkiaSharp's transitive dependency, so this stays the only declared image package.
+props: <PackageVersion Include="SkiaSharp" Version="4.155.0" />
+backend\src\Squid.Service\Squid.Service.csproj: SkiaSharp is referenced where the implementation lives, never in Squid.Domain. -->
+backend\src\Squid.Service\Squid.Service.csproj: <PackageReference Include="SkiaSharp" />
+
+=== backups temporarios qa0026-* no TEMP
+backups: 0

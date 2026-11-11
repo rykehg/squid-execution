@@ -1,0 +1,23 @@
+﻿# QA-0031 mutations - 2026-11-10 23:39:06
+M1 PRE BAFDA5773615 | editado backend\src\Squid.Service\SqliteReportStore.cs | AC-01: a repeticao do mesmo par cria uma segunda denuncia (201 + fila duplicada)
+M1 RUN wrapper=1 logExit=1 aprovado=7 falha=2 log=20261110-233932-test-filter.log
+M1 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...same_row [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Moderation.ReportRouteTests.The_first_report_is_201_and_the_repeat_of_the_same_pair_answers_the_same_row [1 s] | the_pair_key_stops_a_duplicate [FAIL] | Com falha Squid.Tests.Moderation.QaTask0031Tests.The_repeat_of_a_denunciation_is_the_same_report_and_the_pair_key_stops_a_duplicate [695 ms]
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE 56C976366CD4 | editado backend\src\Squid.Api\Admin\AdminEndpoints.cs | AC-02: a nao-operador a fila responde 200 em vez de 403 policy_denied
+M2 RUN wrapper=1 logExit=1 aprovado=6 falha=3 log=20261110-233958-test-filter.log
+M2 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...a_repeat [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Moderation.ReportResolveTests.Keep_closes_the_report_with_one_resolve_trail_row_and_wins_over_a_repeat [1 s] | Squid.Tests.Moderation.AdminReportsQueueTests.The_queue_is_operator_only_and_its_filters_and_paging_answer [FAIL] | sable_both_ways_and_leaves_the_actor_suspended [FAIL] | Com falha Squid.Tests.Moderation.AdminReportsQueueTests.The_queue_is_operator_only_and_its_filters_and_paging_answer [168 ms]
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE 56C976366CD4 | editado backend\src\Squid.Api\Admin\AdminEndpoints.cs | AC-03: a linha Resolve some da trilha (FR-008, GAP-27)
+M3 RUN wrapper=1 logExit=1 aprovado=6 falha=3 log=20261110-234028-test-filter.log
+M3 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...a_repeat [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Moderation.ReportResolveTests.Keep_closes_the_report_with_one_resolve_trail_row_and_wins_over_a_repeat [2 s] | Squid.Tests.Moderation.ReportResolveTests.Ban_suspends_the_author_who_cannot_publish_but_keeps_reading [FAIL] | Com falha Squid.Tests.Moderation.ReportResolveTests.Ban_suspends_the_author_who_cannot_publish_but_keeps_reading [1 s] | with_tombstone_event_and_projection [FAIL]
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE 56C976366CD4 | editado backend\src\Squid.Api\Admin\AdminEndpoints.cs | AC-03: o resolve remove fecha a denuncia sem tombstone - o post continua lido
+M4 RUN wrapper=1 logExit=1 aprovado=7 falha=2 log=20261110-234057-test-filter.log
+M4 RED-IN-LOG tors_removal_with_tombstone_event_and_projection [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ojection [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Moderation.ReportResolveTests.Remove_resolution_executes_the_operators_removal_with_tombstone_event_and_projection [1 s] | [FAIL] | Com falha Squid.Tests.Moderation.QaTask0031Tests.Resolve_remove_leaves_the_very_same_tombstone_effects_as_the_authors_own_delete [881 ms]
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE 56C976366CD4 | editado backend\src\Squid.Api\Admin\AdminEndpoints.cs | AC-04: resolve ban nao muda o estado - a proxima publicacao do autor passa
+M5 RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261110-234125-test-filter.log
+M5 RED-IN-LOG Squid.Tests.Moderation.ReportResolveTests.Ban_suspends_the_author_who_cannot_publish_but_keeps_reading [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._reading [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Moderation.ReportResolveTests.Ban_suspends_the_author_who_cannot_publish_but_keeps_reading [1 s]
+M5 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=9 falha=0 log=20261110-234152-test-filter.log
+SUMMARY cycles=5 failed=0 residue-QA-MUTATION=0 temp-backups=0

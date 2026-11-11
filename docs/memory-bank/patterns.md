@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the applicable index, 
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-09 04:55:35
+- lastVerified: 2026-11-11 20:00:27
 
 # Patterns — Squid
 
@@ -33,6 +33,10 @@ Never record here: code snippets or blocks, real test data, secrets.
 - Trilha/estado append-only em documento único do `IGrainStorage` com porta mínima (`Append` + `Query`), desempate estável por linha e leitura mais recente primeiro — evidence: backend/src/Squid.Service/SqlitePolicyAuditStore.cs:15; backend/src/Squid.Service/SqliteActorEventStore.cs — abandoned at: N/A — source: TASK-0018 (flag PADRAO_NOVO), precedente TASK-0013 — confidence: CONFIRMADO
 - Relógio injetável `TimeProvider` nos timers de domínio (claim de 90 dias, carência de 30) registrado na raiz de composição, para o teste mover dias sem dormir — evidence: backend/src/Squid.Service/SquidServiceHost.cs:42; backend/src/Squid.Service/SquidServiceHost.cs:108 — abandoned at: N/A — source: TASK-0021 / GAP-17 — confidence: CONFIRMADO
 - `shortcut:` com o limite declarado em comentário quando o código aceita uma simplificação de propósito (dois writes sem transação, scan sem índice, guard de recurso): dívida visível para o ledger, nunca escondida — evidence: backend/src/Squid.Api/Containers/Ownership.cs:28; backend/src/Squid.Service/SqliteContainerStore.cs:231; backend/src/Squid.Api/Auth/AuthEndpoints.cs:102 — abandoned at: N/A — source: house style das fases P-02/P-03 (S-32) — confidence: CONFIRMADO
+- **Duas sequências (P-04)**: `Object.Seq` por contêiner (incremento no estado com CAS ETag — concorrência serializa) × `Activity.Seq` global (contador `activity_counter` na migration, incremento atômico no append) — a primeira ordena o feed do contêiner, a segunda alimenta `?since=` da timeline, o `id` do SSE e o alto-mar do pump — evidence: backend/src/Squid.Service/SqliteActivityStore.cs:17; backend/src/Squid.Api/Posts/PostEndpoints.cs — abandoned at: N/A — source: TASK-0023/0024 / GAP-23 — confidence: CONFIRMADO
+- Status de ator sem tabela: documento por handle na store, **linha ausente = `Active`** (`Suspended` grava linha) — porta única `IActorStatusStore` consumida pela rota `suspend` e pelo gate de publicação — evidence: backend/src/Squid.Service/SqliteActorStatusStore.cs; backend/src/Squid.Api/Posts/IActorStatusStore.cs — abandoned at: N/A — source: TASK-0023 (D-02), rota suspend da TASK-0031 — confidence: CONFIRMADO
+- **Linha de posição neutra anti-flicker**: o braço `Delete` do projetor grava uma linha `urn:squid:projection` no `seq` do evento para segurar o alto-mar `MAX(seq)` do pump — sem ela, uma remoção trailing re-projetaria o `Create` e o post reapareceria a cada passada (provado por mutação M3 da QA-0030) — evidence: backend/src/Squid.ReadModels/Projections/ActivityProjector.cs:31 — abandoned at: N/A — source: TASK-0030 / flag PADRAO_NOVO QA-0030 — confidence: CONFIRMADO
+- Colunas `INTEGER` do SQLite sempre como `long` em linhas Dapper (assinatura de construtor exata do Dapper exige `Int64` — `int` quebra a materialização com `InvalidOperationException`); qualificar colunas de JOIN com prefixo de tabela — evidence: backend/src/Squid.ReadModels/Projections/SqliteFeedTimeline.cs:15 — abandoned at: N/A — source: TASK-0025 (bug herdado corrigido na retomada) — confidence: CONFIRMADO
 
 ## Anti-patterns
 - Nome do store interpolado no SQL: faz stores distintos colapsarem na mesma partição lógica — evidence: docs/features/05-arquitetura-consolidada.md:401 — source: doc 05 §4.7 #2 — confidence: CONFIRMADO

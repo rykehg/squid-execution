@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the applicable index, 
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-08 09:45:19
+- lastVerified: 2026-11-11 20:00:27
 
 # Build, run and tests — Squid
 
@@ -28,7 +28,7 @@ Never record here: values of secret variables, commands with credentials, litera
 
 ## Commands
 - build: `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 build` — separa falha de ambiente (exit 3) de falha de produto — source: docs/sdd/_tools/sdd-test.ps1 — confidence: CONFIRMADO
-- gate de testes: `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test` — suite completa com as provas de build; última execução local **167/167 exit 0** (2026-11-08, fecho da P-02); no CI 98/98 (2026-11-07, run anterior) — source: docs/sdd/runs/test-runs/20261108-010157-test-gate.log — confidence: CONFIRMADO
+- gate de testes: `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test` — suite completa com as provas de build; última execução local **432/432 exit 0** (2026-11-11, fecho da P-04); no CI 98/98 (2026-11-07, run anterior) — source: docs/sdd/runs/test-runs/20261111-190626-test-gate.log — confidence: CONFIRMADO
 - run em contêiner (DoD da P-01): `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 compose` — build da imagem, `/health` `/ready` `/dashboard` 200, span no coletor, volume persistente; sem podman/provider classifica como ambiente exit 3 — source: docs/sdd/_tools/sdd-test.ps1 — confidence: CONFIRMADO
 - stack dev manual: `podman compose -f infra/compose.yaml up -d` / `down` (nunca `-v` em rotina); porta 8080 (API) e 16686 (Jaeger) — source: infra/compose.yaml — confidence: CONFIRMADO
 - run: `dotnet run --project backend/src/Squid.Service` sobe silo + API (composition root) — source: backend/src/Squid.Service/SquidServiceHost.cs — confidence: CONFIRMADO
@@ -39,7 +39,7 @@ Never record here: values of secret variables, commands with credentials, litera
 ## CI
 - Workflow `.github/workflows/ci.yml` executado e **VERDE** no primeiro run (2026-11-07, push humano): gatilhos push em develop/main + pull_request, runner `ubuntu-26.04`, `permissions: contents: read`, SDK 10.0.403 pinado, cache NuGet por hash de `Directory.Packages.props`, passos `pwsh -NoProfile -File docs/sdd/_tools/sdd-test.ps1 build|test` — build 0 warnings/0 erros, gate **98/98 exit 0** em 17 s, nenhum `##[error]` (só deprecation upstream de Node.js nas actions oficiais) — source: C:\dev\squid-squad-net\logs_114873942112.zip (actions de github.com/rykehg/squid-execution) — confidence: CONFIRMADO
 - **Suite em Linux executada pela primeira vez no run do CI** (98/98 no ubuntu): fecha o unverified recorrente das QAs de que a suite só rodava no Windows; o gêmeo `sdd-test.sh` (S-11) segue não executado no run (o workflow usa o `.ps1` via pwsh) — source: mesmo zip, build-and-test\6_Gate de testes.txt — confidence: CONFIRMADO
-- O gêmeo `docs/sdd/_tools/sdd-test.sh` NÃO roda neste repo (procura `*.sln`, o solution é `*.slnx` → exit 3); o gate é o `.ps1` — source: docs/sdd/tasks/TASK-0009-ci-github-actions.md — confidence: CONFIRMADO
+- O gêmeo `docs/sdd/_tools/sdd-test.sh` NÃO roda neste repo: procura `*.sln` (o solution é `*.slnx`) → **`exit 1` com "no *.sln found"** observado ao vivo (corrigido em relação à linha antiga que dizia exit 3 — a ferramenta venceu o registro), e sem `dotnet` no WSL ele segue para o `dotnet test` e imprime **`exit 127` rotulado como "real test failure"** (sem a guarda de ambiente do `.ps1`) — conserto em task própria (backlog S-11/S-12); o gate é o `.ps1` — source: docs/sdd/qa/QA-0029-sh-twin.log; docs/sdd/qa/QA-0030-sh-twin.log; docs/sdd/tasks/TASK-0009-ci-github-actions.md — confidence: CONFIRMADO
 
 ## Container tooling (esta máquina)
 - podman 6.1.4 + provider `podman-compose` 1.4.1 via pip (Python 3.13 uv, shim no PATH); a versão 1.6.0 tem bug de Windows (`is_context_git_url` lê `C:` como URL e derruba o `-f` do build) — source: docs/sdd/tasks/TASK-0008-containerfile-compose.md — confidence: CONFIRMADO

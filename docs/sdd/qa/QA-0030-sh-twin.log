@@ -1,0 +1,19 @@
+# QA-0030 sh twin (bash) - 2026-11-10 21:53:19
+== sdd-test.sh probe ==
+dotnet: /mnt/c/dev/squid-squad-net/squid-execution/docs/sdd/_tools/sdd-test.sh: line 35: dotnet: command not found
+runtime: 
+docker: absent
+podman: /usr/sbin/podman
+wsl: absent
+git: /usr/sbin/git
+curl: /usr/sbin/curl
+docker daemon: /mnt/c/dev/squid-squad-net/squid-execution/docs/sdd/_tools/sdd-test.sh: line 40: docker: command not found
+note: a sandbox can block outbound HTTPS and process pipes; build/test failures are
+      not product failures until a normal shell reproduces them.
+probe exit: 0
+== sdd-test.sh test ==
+sdd-test: no *.sln found within depth 3; pass the path
+test: 
+/mnt/c/dev/squid-squad-net/squid-execution/docs/sdd/_tools/sdd-test.sh: line 64: dotnet: command not found
+test: exit 127 (real test failure)
+test exit: 1

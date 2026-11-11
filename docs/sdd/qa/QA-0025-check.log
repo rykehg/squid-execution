@@ -1,0 +1,94 @@
+
+=== run1 (WSL bash qa-check-task-0026.sh) when: 2026-11-09 22:19:56 exit: 0
+CHECK GATE-BASELINE-EXIT OK   20261109-213326-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 304 / Total 304 (baseline do DEV)
+CHECK GATE-FINAL-EXISTS OK   20261109-221654-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-221654-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 310 (304 + 6 da QA)
+CHECK QACLASS-EXIT OK   20261109-220026-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 6 / Total 6
+CHECK OBSERVATIONS-6 OK   as 6 observacoes da QA estao no artefato
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   StreamSession.cs=32B12C6C036C PRE=32B12C6C036C; StreamEndpoints.cs=24ECB9ECE15F PRE=24ECB9ECE15F; StreamHub.cs=A20AFBE3A632 PRE=A20AFBE3A632; 
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 20:19:00: 12 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=9 fora do permitido=0
+CHECK TASK-LOG-ROWS OK   linhas de log do qa=8 (>=8)
+CHECK TASK-EVI-ROWS OK   linhas de evidencia do qa=9 (>=8)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0026Tests.cs = 6
+CHECK QA-DOC OK   QA-0025-sse-stream-ao-vivo.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: sem *.sln dentro do repo e sem dotnet no WSL (achado pre-existente re-confirmado)
+SUMMARY total=19 fails=0
+RESULT: PASS
+
+=== run2 (pwsh qa-check-task-0026.ps1) when: 2026-11-09 22:20:30 exit: 0
+CHECK GATE-BASELINE-EXIT OK   20261109-213326-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 304 / Total 304 (baseline do DEV)
+CHECK GATE-FINAL-EXISTS OK   20261109-221654-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-221654-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 310 (304 + 6 da QA)
+CHECK QACLASS-EXIT OK   20261109-220026-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 6 / Total 6
+CHECK OBSERVATIONS-6 OK   as 6 observacoes da QA estao no artefato
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   StreamSession.cs=32B12C6C036C PRE=32B12C6C036C ; StreamEndpoints.cs=24ECB9ECE15F PRE=24ECB9ECE15F ; StreamHub.cs=A20AFBE3A632 PRE=A20AFBE3A632
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 20:19:00: 12 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=10 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 17, evidence rows 17
+ (exit=0)
+CHECK TASK-ROWS OK   linhas de log do qa=9, linhas de evidencia do qa=10 (>=8 cada)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0026Tests.cs = 6
+CHECK QA-DOC OK   QA-0025-sse-stream-ao-vivo.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: sem *.sln dentro do repo e sem dotnet no WSL (achado pre-existente re-confirmado)
+SUMMARY total=19 fails=0
+RESULT: PASS
+
+=== run3 (WSL bash qa-check-task-0026.sh) when: 2026-11-09 22:21:57 exit: 0
+CHECK GATE-BASELINE-EXIT OK   20261109-213326-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 304 / Total 304 (baseline do DEV)
+CHECK GATE-FINAL-EXISTS OK   20261109-221654-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-221654-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 310 (304 + 6 da QA)
+CHECK QACLASS-EXIT OK   20261109-220026-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 6 / Total 6
+CHECK OBSERVATIONS-6 OK   as 6 observacoes da QA estao no artefato
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   StreamSession.cs=32B12C6C036C PRE=32B12C6C036C; StreamEndpoints.cs=24ECB9ECE15F PRE=24ECB9ECE15F; StreamHub.cs=A20AFBE3A632 PRE=A20AFBE3A632; 
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 20:19:00: 12 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=10 fora do permitido=0
+CHECK TASK-LOG-ROWS OK   linhas de log do qa=10 (>=8)
+CHECK TASK-EVI-ROWS OK   linhas de evidencia do qa=11 (>=8)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0026Tests.cs = 6
+CHECK QA-DOC OK   QA-0025-sse-stream-ao-vivo.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: sem *.sln dentro do repo e sem dotnet no WSL (achado pre-existente re-confirmado)
+SUMMARY total=19 fails=0
+RESULT: PASS
+
+=== run4 (pwsh qa-check-task-0026.ps1) when: 2026-11-09 22:22:01 exit: 0
+CHECK GATE-BASELINE-EXIT OK   20261109-213326-test-gate.log exit=0
+CHECK GATE-BASELINE-SUMMARY OK   Com falha 0 / Aprovado 304 / Total 304 (baseline do DEV)
+CHECK GATE-FINAL-EXISTS OK   20261109-221654-test-gate.log
+CHECK GATE-FINAL-EXIT OK   20261109-221654-test-gate.log exit=0
+CHECK GATE-FINAL-SUMMARY OK   Com falha 0 / Aprovado 310 (304 + 6 da QA)
+CHECK QACLASS-EXIT OK   20261109-220026-test-filter.log exit=0
+CHECK QACLASS-SUMMARY OK   Com falha 0 / Aprovado 6 / Total 6
+CHECK OBSERVATIONS-6 OK   as 6 observacoes da QA estao no artefato
+CHECK MUTATIONS-7-PROVEN OK   7/7 ciclos PROVEN
+CHECK MUTATIONS-SUMMARY OK   cycles=7 failed=0 residue=0 temp-backups=0
+CHECK MUTATION-RESIDUE OK   QA-MUTATION hits under backend/ = 0
+CHECK RESTORE-SHA256 OK   StreamSession.cs=32B12C6C036C PRE=32B12C6C036C ; StreamEndpoints.cs=24ECB9ECE15F PRE=24ECB9ECE15F ; StreamHub.cs=A20AFBE3A632 PRE=A20AFBE3A632
+CHECK TOUCHES-NO-OUTSIDE OK   mtime desde o dispatch 20:19:00: 12 arquivos, fora dos toques: 0
+CHECK GIT-NEW-ONLY-QA-AND-TOUCHES OK   novas entradas=10 fora do permitido=0
+CHECK SDD-STATE-CHECK OK   check: OK - log entries 18, evidence rows 18
+ (exit=0)
+CHECK TASK-ROWS OK   linhas de log do qa=10, linhas de evidencia do qa=11 (>=8 cada)
+CHECK QA-TEST-FACTS OK   [Fact] em QaTask0026Tests.cs = 6
+CHECK QA-DOC OK   QA-0025-sse-stream-ao-vivo.md existe e verdict: PASSED
+CHECK SH-TWIN-RECORDED OK   sdd-test.sh: sem *.sln dentro do repo e sem dotnet no WSL (achado pre-existente re-confirmado)
+SUMMARY total=19 fails=0
+RESULT: PASS
