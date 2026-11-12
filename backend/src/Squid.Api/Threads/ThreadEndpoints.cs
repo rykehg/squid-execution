@@ -17,10 +17,10 @@ public sealed record CreateThreadRequest(string? Kind, IReadOnlyList<string>? Pa
 /// message route, <c>{actorId}</c> for adding a participant, <c>{seq}</c> for the read marker of
 /// section D. ONE record because the catch-all dispatcher binds a single body and the tail decides
 /// which field it reads; the admin and ack routes take no body at all, and an extra field a route
-/// never reads is ignored rather than acted on — which is also how <c>replyToId</c> stays unbound
-/// until TASK-0037.
+/// never reads is ignored rather than acted on — <c>ReplyToId</c> joined this shape with
+/// TASK-0037 and only the message route reads it (SPEC-0010 section E).
 /// </summary>
-public sealed record ThreadPostRequest(string? Content, string? ActorId, long? Seq = null);
+public sealed record ThreadPostRequest(string? Content, string? ActorId, long? Seq = null, string? ReplyToId = null);
 
 /// <summary>
 /// SPEC-0010 section A — create and list conversations (FR-030 base, data-model section 2.7 +
@@ -36,7 +36,10 @@ public sealed record ThreadPostRequest(string? Content, string? ActorId, long? S
 /// (§9.6's gate — an append without it is 428, decided inside the store so no send path escapes
 /// it), <c>read</c> moves the monotonic marker (a smaller value is ignored, above the total is
 /// 400 — GAP-38), and a <c>Suspended</c> actor's send is denied and reaches the trail before the
-/// 403 (data-model section 3.1, the publish ladder's own rule).
+/// 403 (data-model section 3.1, the publish ladder's own rule). Section E rides it as well:
+/// <c>POST .../messages</c> takes <c>replyToId</c> of a message of the SAME thread — anything
+/// else is <c>422 invalid_reply_target</c> (§9.9) — and the reference never widens the wall: the
+/// participant probe above still answers a stranger with the byte-identical 404 (FR-057).
 /// </summary>
 public static class ThreadEndpoints
 {
@@ -264,8 +267,8 @@ public static class ThreadEndpoints
     }
 
     /// <summary>
-    /// <c>POST /api/threads/{id}/messages</c> (contract §6, SPEC-0010 section B): session (401),
-    /// then the 404 rule of FR-031 — a thread the actor is not in and a thread that does not exist
+    /// <c>POST /api/threads/{id}/messages</c> (contract §6, SPEC-0010 sections B and E): session
+    /// (401), then the 404 rule of FR-031 — a thread the actor is not in and a thread that does not exist
     /// share one body, decided by the single participant probe before anything else is learned
     /// about the thread (AC-04, SC-005); then data-model §3.1: a <c>Suspended</c> actor does not
     /// send — the refusal reaches the append-only trail BEFORE the 403, the publish ladder's own
@@ -273,8 +276,12 @@ public static class ThreadEndpoints
     /// 4000 is 400, GAP-24's sanitizer runs in between); and only then the write: the append takes
     /// the next seq under the thread's version guard and lands the row in the SAME transaction
     /// (GAP-29) — and inside that same attempt the §9.6 gate answers <c>428</c> when the sender
-    /// never recorded the FR-032 acceptance (AC-02; one actor's ack never unlocks another). The
-    /// answer is 200 + seq — "entregue = persistido" (section D), not 201.
+    /// never recorded the FR-032 acceptance (AC-02; one actor's ack never unlocks another), and
+    /// AFTER the gate section E checks <c>replyToId</c> against the thread's own messages, so a
+    /// target from another thread or a target that does not exist is
+    /// <c>422 invalid_reply_target</c> (§9.9, one answer for both cases) — 428 before 422 because
+    /// §6 makes the acceptance absolute for every send. The answer is 200 + seq — "entregue =
+    /// persistido" (section D), not 201.
     /// </summary>
     private static async Task<IResult> MessageSendAsync(
         string id, ThreadPostRequest? request, HttpContext context, IThreadStore store,
@@ -311,16 +318,22 @@ public static class ThreadEndpoints
         }
 
         var result = await store.AppendMessageAsync(
-            id, $"{Origin(context)}/m/{NewToken()}", actorId, content, time.GetUtcNow());
+            id, $"{Origin(context)}/m/{NewToken()}", actorId, content, time.GetUtcNow(),
+            request?.ReplyToId);
 
-        // Three answers of §6/§8/§9.6: the absent thread keeps FR-031's one body, the missing
-        // acceptance keeps the precondition the contract asks for, and the stored row is the 200.
+        // Four answers of §6/§8/§9.6/§9.9: the absent thread keeps FR-031's one body, the missing
+        // acceptance keeps the precondition the contract asks for (and, per §6, wins over a reply
+        // refusal in the same send), a reply target outside this thread keeps §9.9's word, and the
+        // stored row is the 200.
         return result.Outcome switch
         {
             AppendOutcome.NoSuchThread => HiddenThread(context), // defensive twin of the probe
             AppendOutcome.AckRequired => AuthErrors.Write(context,
                 StatusCodes.Status428PreconditionRequired, "precondition_required",
                 "aceite o aviso de não-E2EE antes de enviar (POST /api/threads/{id}/ack-no-e2ee)."),
+            AppendOutcome.InvalidReplyTarget => AuthErrors.Write(context,
+                StatusCodes.Status422UnprocessableEntity, "invalid_reply_target",
+                "replyToId deve apontar para uma mensagem desta mesma thread (FR-057, §9.9)."),
             _ => Results.Json(MessageView.Of(result.Message!)),
         };
     }

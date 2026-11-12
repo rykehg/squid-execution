@@ -439,7 +439,8 @@ public sealed class SqliteThreadStore : IThreadStore
 
     /// <inheritdoc />
     public async Task<AppendResult> AppendMessageAsync(
-        string threadId, string messageId, string authorActorId, string content, DateTimeOffset createdAt)
+        string threadId, string messageId, string authorActorId, string content, DateTimeOffset createdAt,
+        string? replyToId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -494,6 +495,27 @@ public sealed class SqliteThreadStore : IThreadStore
                 }
             }
 
+            // SPEC-0010 section E (FR-057, §9.9), inside the same attempt and AFTER the gate:
+            // contract §6 makes 428 absolute ("sem aceite, o envio responde 428"), so a send that
+            // misses BOTH the acceptance and the target is answered 428. Another thread's message
+            // and a message that does not exist share this ONE lookup, so the 422 never tells a
+            // participant which case it was — and refusing before the CAS means no sequence is
+            // taken and no row is written (the scope rolls back without commit).
+            if (replyToId is not null)
+            {
+                await using (var target = connection.CreateCommand())
+                {
+                    target.Transaction = transaction;
+                    target.CommandText = "SELECT thread_id FROM message WHERE id = @ReplyToId";
+                    target.Parameters.AddWithValue("@ReplyToId", replyToId);
+                    var owner = await target.ExecuteScalarAsync();
+                    if (!string.Equals(owner as string, threadId, StringComparison.Ordinal))
+                    {
+                        return new AppendResult(AppendOutcome.InvalidReplyTarget, null);
+                    }
+                }
+            }
+
             // The same version-guarded CAS NextMessageSeqAsync runs (GAP-29): message_seq and
             // version move together, and RETURNING hands back exactly the number THIS update took.
             long seq;
@@ -521,8 +543,8 @@ public sealed class SqliteThreadStore : IThreadStore
             {
                 insert.Transaction = transaction;
                 insert.CommandText = """
-                    INSERT INTO message (id, thread_id, author_actor_id, content, seq, created_at)
-                    VALUES (@Id, @ThreadId, @Author, @Content, @Seq, @CreatedAt)
+                    INSERT INTO message (id, thread_id, author_actor_id, content, seq, created_at, reply_to_id)
+                    VALUES (@Id, @ThreadId, @Author, @Content, @Seq, @CreatedAt, @ReplyToId)
                     """;
                 insert.Parameters.AddWithValue("@Id", messageId);
                 insert.Parameters.AddWithValue("@ThreadId", threadId);
@@ -531,13 +553,14 @@ public sealed class SqliteThreadStore : IThreadStore
                 insert.Parameters.AddWithValue("@Seq", seq);
                 insert.Parameters.AddWithValue("@CreatedAt",
                     createdAt.ToString("O", CultureInfo.InvariantCulture));
+                insert.Parameters.AddWithValue("@ReplyToId", (object?)replyToId ?? DBNull.Value);
                 await insert.ExecuteNonQueryAsync();
             }
 
             // Commit is the one step that makes the number and its row real at the same instant.
             await transaction.CommitAsync();
             return new AppendResult(AppendOutcome.Appended,
-                new MessageState(messageId, threadId, authorActorId, content, seq, createdAt));
+                new MessageState(messageId, threadId, authorActorId, content, seq, createdAt, replyToId));
         }
 
         throw new IOException(
@@ -554,10 +577,11 @@ public sealed class SqliteThreadStore : IThreadStore
 
         // The exact delta of §9.3: seq > since, one row per number, ORDER BY seq — the
         // (thread_id, seq) index of 0003 is what this reads through, so a live thread answers a
-        // polling client with only what is new, never a repeat.
+        // polling client with only what is new, never a repeat. reply_to_id (0005) rides along:
+        // null when the message answers nothing (FR-057), the reference the row was written with.
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT id, thread_id, author_actor_id, content, seq, created_at
+            SELECT id, thread_id, author_actor_id, content, seq, created_at, reply_to_id
             FROM message
             WHERE thread_id = @ThreadId AND seq > @Since
             ORDER BY seq
@@ -576,7 +600,8 @@ public sealed class SqliteThreadStore : IThreadStore
                 reader.GetString(3),
                 reader.GetInt64(4),
                 DateTimeOffset.Parse(reader.GetString(5),
-                    CultureInfo.InvariantCulture, DateTimeStyles.None)));
+                    CultureInfo.InvariantCulture, DateTimeStyles.None),
+                reader.IsDBNull(6) ? null : reader.GetString(6)));
         }
 
         return items;

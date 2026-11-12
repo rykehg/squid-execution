@@ -1,0 +1,25 @@
+﻿QA-0037 scope scan (AC-04: nenhum arquivo alterado fora dos touches)
+baseline-mtime=2026-11-12 06:43:05
+git-backend-entries=0 (esperado 0)
+blob backend/src/Squid.Service/SqliteThreadStore.cs work=4be8bcca6919bfff36b958f75808b57cf3b8fc75 head=4be8bcca6919bfff36b958f75808b57cf3b8fc75 match=True
+blob backend/src/Squid.Api/Threads/MessageView.cs work=01a4c39b75bb2e91d34332761ca5adce114263e5 head=01a4c39b75bb2e91d34332761ca5adce114263e5 match=True
+blob backend/src/Squid.Api/Threads/ThreadEndpoints.cs work=b70c963a9291540323c3c67641ad37ed46484386 head=b70c963a9291540323c3c67641ad37ed46484386 match=True
+blob backend/src/Squid.Persistence/schema/SchemaMigrator.cs work=80e44ac60ce62a6e56512ee50a32f4bbb6c787c9 head=80e44ac60ce62a6e56512ee50a32f4bbb6c787c9 match=True
+mtime-count=4 (esperado 4: os quatro arquivos mutados restaurados com bump; bin/obj excluidos)
+  backend\src\Squid.Api\Threads\MessageView.cs 2026-11-12 06:48:24
+  backend\src\Squid.Api\Threads\ThreadEndpoints.cs 2026-11-12 06:49:51
+  backend\src\Squid.Persistence\schema\SchemaMigrator.cs 2026-11-12 06:50:18
+  backend\src\Squid.Service\SqliteThreadStore.cs 2026-11-12 06:47:53
+residue=0 (esperado 0)
+temp-backups=0 (esperado 0)
+temp-test-file-present=False (esperado False: esta QA nao deixou teste temporario na arvore)
+fora-dos-touches=0 (esperado 0) -> git status sobre backend + specs + memory-bank = 0 entradas
+--- git status --porcelain -uall (repo inteiro) ---
+   M docs/sdd/tasks/TASK-0037-resposta-a-mensagem.md
+   M docs/sdd/tasks/TASK-0040-facet-do-dod-sprint4.md
+  ?? docs/sdd/qa/QA-0037-git-baseline.txt
+  ?? docs/sdd/qa/QA-0037-mutations.log
+  ?? docs/sdd/qa/QA-0037-scope.log
+  ?? docs/sdd/qa/qa-check-task-0037.ps1
+  ?? docs/sdd/qa/qa-check-task-0037.sh
+  ?? docs/sdd/qa/qa-mutate-task-0037.ps1

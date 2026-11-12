@@ -1,0 +1,36 @@
+﻿CHECK BASELINE-HEAD OK - baseline HEAD = 6dfac85
+CHECK BASELINE-BRANCH OK - branch task/TASK-0037-resposta-a-mensagem
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado na baseline (suite Linux = unverified)
+CHECK GATE-NAME OK - 20261112-065700-test-gate.log e o gate desta QA
+CHECK GATE-EXIT OK - 20261112-065700-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - 20261112-065700-test-gate.log Com falha 0 / Aprovado 462 / Total 462
+CHECK BASELINE-FILTER OK - 20261112-064406-test-filter.log
+CHECK GREEN-FILTER OK - 20261112-065047-test-filter.log
+CHECK MUT-IDS OK - M1..M10 todos com linha PRE
+CHECK MUT-RED OK - M1..M10 todos com RUN vermelho classificado no log
+CHECK MUT-RESTORE OK - RESTORE-OK = 10 (esperado >= 10)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 30/30 = 1 (fim do driver, arvore restaurada)
+CHECK MUT-ANOMALIA OK - nenhuma CLASSIFICACAO-ERRADA (S-22)
+CHECK MUT-SUMMARY-FULL OK - SUMMARY cycles=10 failed=0 residue=0 temp-backups=0
+CHECK CATCH-M1 OK - M1 vermelho com ThreadStoreTests.The_append_gates + A_target_from_another_thread
+CHECK CATCH-M2 OK - M2 vermelho com ThreadStoreTests.The_append_gates + A_target_from_another_thread
+CHECK CATCH-M3 OK - M3 vermelho com A_send_missing_both_the_acceptance_and_a_valid_target_answers_428_then_422
+CHECK CATCH-M4 OK - M4 vermelho com ThreadStoreTests.The_append_gates + A_target_from_another_thread
+CHECK CATCH-M5 OK - M5 vermelho com ThreadStoreTests.The_append_gates + A_reply_to_a_message_of_the_same_thread
+CHECK CATCH-M6 OK - M6 vermelho com A_reply_to_a_message_of_the_same_thread
+CHECK CATCH-M7 OK - M7 vermelho com A_target_from_another_thread
+CHECK CATCH-M8 OK - M8 vermelho com byte_identical_404
+CHECK CATCH-M9 OK - M9 vermelho com byte_identical_404
+CHECK CATCH-M10 OK - M10 (ledger da 0005 desligado) vermelho com duplicate column nas ThreadMigrationTests
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0037-* no TEMP = 0
+CHECK DRIVER-BOM OK - qa-mutate-task-0037.ps1 com UTF-8 BOM
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 4/4 arquivos mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = exatamente os 4 arquivos mutados (restaurados)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo QA-MUTATION = 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum arquivo de produto fora dos touches alterado
+CHECK SDD-STATE OK - check: OK - log entries 16, evidence rows 15
+CHECK QA-DOC OK - QA-0037-resposta-a-mensagem.md com verdict PASSED
+SUMMARY total=35 fails=0

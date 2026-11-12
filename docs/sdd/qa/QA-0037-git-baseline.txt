@@ -1,0 +1,8 @@
+﻿QA-0037 git baseline (capturado antes da QA escrever)
+HEAD: 6dfac8530d70cfbb6483aca6a955eb9f0cb35c27
+branch: task/TASK-0037-resposta-a-mensagem
+status --porcelain -uall:
+ M docs/sdd/tasks/TASK-0037-resposta-a-mensagem.md
+ M docs/sdd/tasks/TASK-0040-facet-do-dod-sprint4.md
+?? docs/sdd/qa/QA-0037-git-baseline.txt
+dotnet no WSL: dotnet-missing
