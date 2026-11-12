@@ -59,7 +59,13 @@ Each AC is one observable behaviour. QA tests against this list; anything not li
   `seq` únicas e a leitura devolve todas na ordem, sem duplicata — teste.
 - AC-04: facet "resposta e reação idempotentes e só participantes": repetir resposta/reação não
   muda contagem nem estado; não-participante não vê resposta nem reação (404 idêntico) — teste.
-- AC-05: gate `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test`
+- AC-05: **regressões que só a QA cobriu com teste temporário viram teste permanente** (finding 3
+  da QA-0036, adjudicado pelo ODEV 2026-11-12 06:02:34): (a) colisão de parser — participante com
+  handle `read` (ou outro sufixo de rota) não quebra remoção/leitura; (b) o texto do aviso FR-032
+  gravado na linha de aceite existe — teste.
+- AC-06: facet "dois conversam" completa da TASK-0033 até a TASK-0039 em fluxo: criação, aceite,
+  envio, resposta, reação e anexo na mesma thread — teste.
+- AC-07: gate `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test`
   exit 0; nenhum arquivo alterado fora dos `touches` (se a facet acusar lacuna de produto, é
   `D-01` para o ODEV — o DEV desta task só escreve teste).
 
@@ -93,6 +99,7 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 
 `- YYYY-MM-DD HH:MM:SS | ROLE | what was done or decided`
 - 2026-11-11 23:45:07 | odev | task created from SPEC-0010 (entrega 8 de 8 e ULTIMA da P-05; blockedBy TASK-0039; facet DoD do Sprint 4)
+- 2026-11-12 06:03:08 | odev | AC renumerada pelo ODEV: a antiga AC-05 (gate) virou AC-07; acrescentadas AC-05 (testes permanentes das duas regressoes que a QA-0036 so cobriu com teste temporario - colisao de parser e texto do aviso FR-032, finding 3 adjudicado) e AC-06 (facet ponta a ponta 0033..0039); nenhuma AC anterior perde sentido
 
 ## Evidence
 
