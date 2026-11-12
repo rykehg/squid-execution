@@ -1,0 +1,28 @@
+﻿CHECK GATE-NAME OK - 20261112-041813-test-gate.log e o gate desta QA
+CHECK GATE-EXIT OK - 20261112-041813-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - 20261112-041813-test-gate.log Com falha 0 / Aprovado 450 / Total 450
+CHECK BASELINE OK - 20261112-035540-test-filter.log
+CHECK TEMPTEST-GREEN OK - 20261112-040053-test-filter.log
+CHECK MUT-IDS OK - M1..M13 todos com linha PRE
+CHECK MUT-RED OK - M1..M13 todos com RUN vermelho classificado no log
+CHECK MUT-RESTORE OK - RESTORE-OK = 14 (esperado >= 14: 13 ciclos + M4 v2)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 19/19 = 2 (fim do driver cheio + fim da re-execucao M4)
+CHECK MUT-ANOMALIA OK - exatamente 1 CLASSIFICACAO-ERRADA (M4 v1 quebrou o build do mutante CS1026 - S-22 classificou em vez de ondular; mutante corrigido e re-executado)
+CHECK MUT-SUMMARY-FULL OK - SUMMARY da execucao cheia: cycles=13 failed=1 (o 1 = M4 v1), residue 0
+CHECK MUT-SUMMARY-LAST OK - SUMMARY final da re-execucao: cycles=1 failed=0, residue 0
+CHECK MUT-M4V2 OK - M4 v2 vermelho registrado (aprovado 16 / falha 3, log 041039)
+CHECK MUT-M12-CATCH OK - M12 (semi-join de volta ao bug) pego pelos testes do DEV: Adding_a_seat + A_seat_added_later
+CHECK MUT-M3-QATEST OK - M3 vermelho inclui o teste temporario da QA (can-fail do teste novo)
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0035-* no TEMP = 0
+CHECK TEMP-FILE OK - QaTask0035RemovedRoutesTests.cs ausente da arvore
+CHECK DRIVER-BOM OK - qa-mutate-task-0035.ps1 com UTF-8 BOM
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 2/2 arquivos mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = exatamente os 2 arquivos mutados (restaurados)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo QA-MUTATION = 0
+CHECK SCOPE-TEMPFILE OK - scope scan: teste temporario da QA ausente
+CHECK SDD-STATE OK - check: OK - log entries 11, evidence rows 14
+CHECK QA-DOC OK - QA-0035-participantes-e-admin.md com verdict PASSED
+SUMMARY total=27 fails=0

@@ -1,0 +1,62 @@
+﻿# QA-0035 mutations - 2026-11-12 04:01:24
+M1 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-01: ordem trocada - add em Direct por nao-admin vira 403 antes do 400 (ThreadParticipantRoutesTests vermelha)
+M1 RUN wrapper=1 logExit=1 aprovado=18 falha=1 constraint=no log=20261112-040152-test-filter.log
+M1 RED-IN-LOG Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...st_fifty [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [596 ms]
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-01: teto 50 vira 51 - o grupo cheio aceita o proximo participante em vez de 400 (ThreadParticipantRoutesTests vermelha)
+M2 RUN wrapper=1 logExit=1 aprovado=18 falha=1 constraint=no log=20261112-040218-test-filter.log
+M2 RED-IN-LOG Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...st_fifty [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [542 ms]
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-01/02/03: portao de participante desligado nas 3 rotas - fora-da-thread e removido seguem em vez de 404 identico (routes da QA e do DEV vermelhas)
+M3 RUN wrapper=1 logExit=1 aprovado=16 falha=3 constraint=no log=20261112-040250-test-filter.log
+M3 RED-IN-LOG Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._changes [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [1 s] | Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [643 ms] | Squid.Tests.Threads.QaTask0035RemovedRoutesTests.A_removed_seat_gets_the_shared_404_on_every_participant_route [FAIL] | Com falha Squid.Tests.Threads.QaTask0035RemovedRoutesTests.A_removed_seat_gets_the_shared_404_on_every_participant_route [513 ms]
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: portao de participante desligado nas rotas de mensagem - removido le e envia 200 em vez de 404 byte-identico (ThreadParticipantRoutesTests + ThreadMessageRoutesTests vermelhas)
+M4 RUN wrapper=1 logExit=1 aprovado=0 falha=0 constraint=no log=20261112-040259-test-filter.log
+M4 CLASSIFICACAO-ERRADA: o log nao mostra falha de produto (ambiente? S-22)
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: membro comum remove terceiro em vez de 403 - a remocao de `two` por `one` passa (ThreadParticipantRoutesTests vermelha)
+M5 RUN wrapper=1 logExit=1 aprovado=18 falha=1 constraint=no log=20261112-040328-test-filter.log
+M5 RED-IN-LOG eeps_the_history_and_never_lets_the_last_one_go [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...t_one_go [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Removal_ends_access_at_once_keeps_the_history_and_never_lets_the_last_one_go [400 ms]
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02/04: criador removivel por outro admin - a sucessao GAP-32 dispara na mao errada (ThreadParticipantRoutesTests vermelha)
+M6 RUN wrapper=1 logExit=1 aprovado=17 falha=2 constraint=no log=20261112-040354-test-filter.log
+M6 RED-IN-LOG eeps_the_history_and_never_lets_the_last_one_go [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...t_one_go [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Removal_ends_access_at_once_keeps_the_history_and_never_lets_the_last_one_go [643 ms] | dest_admin_or_promotes_the_oldest_member [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.The_creator_leave_hands_the_seat_to_the_oldest_admin_or_promotes_the_oldest_member [406 ms]
+M6 RESTORE-OK hash=PRE residue=0
+M7 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-03: qualquer autenticado promove/demove - membro comum ganha 200 em vez de 403 (ThreadParticipantRoutesTests vermelha)
+M7 RUN wrapper=1 logExit=1 aprovado=18 falha=1 constraint=no log=20261112-040420-test-filter.log
+M7 RED-IN-LOG Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._changes [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [1 s]
+M7 RESTORE-OK hash=PRE residue=0
+M8 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-03: criador demovivel pelo DELETE admin - papel do criador vira member em vez de 403 (ThreadParticipantRoutesTests vermelha)
+M8 RUN wrapper=1 logExit=1 aprovado=17 falha=2 constraint=no log=20261112-040445-test-filter.log
+M8 RED-IN-LOG Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._changes [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [981 ms] | dest_admin_or_promotes_the_oldest_member [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.The_creator_leave_hands_the_seat_to_the_oldest_admin_or_promotes_the_oldest_member [482 ms]
+M8 RESTORE-OK hash=PRE residue=0
+M9 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | GAP-38: 409 last_participant vira 400 last_owner - status e codigo do §9.11 caem (ThreadParticipantRoutesTests vermelha)
+M9 RUN wrapper=1 logExit=1 aprovado=17 falha=2 constraint=no log=20261112-040510-test-filter.log
+M9 RED-IN-LOG _to_one_with_its_history_readable_by_the_remaining_member [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...g_member [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.A_direct_thread_goes_from_two_to_one_with_its_history_readable_by_the_remaining_member [1 s] | ory_and_never_lets_the_last_one_go [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Removal_ends_access_at_once_keeps_the_history_and_never_lets_the_last_one_go [539 ms]
+M9 RESTORE-OK hash=PRE residue=0
+M10 PRE 73DBB8906C2E | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-02: penultimo participante ja recusado - o Direct 2->1 e a saida com 2 viram 409 em vez de 200 (ThreadParticipantRoutesTests vermelha)
+M10 RUN wrapper=1 logExit=1 aprovado=16 falha=3 constraint=no log=20261112-040536-test-filter.log
+M10 RED-IN-LOG _to_one_with_its_history_readable_by_the_remaining_member [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...g_member [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.A_direct_thread_goes_from_two_to_one_with_its_history_readable_by_the_remaining_member [1 s] | ory_and_never_lets_the_last_one_go [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Removal_ends_access_at_once_keeps_the_history_and_never_lets_the_last_one_go [536 ms] | Squid.Tests.Threads.QaTask0035RemovedRoutesTests.A_removed_seat_gets_the_shared_404_on_every_participant_route [FAIL] | Com falha Squid.Tests.Threads.QaTask0035RemovedRoutesTests.A_removed_seat_gets_the_shared_404_on_every_participant_route [633 ms]
+M10 RESTORE-OK hash=PRE residue=0
+M11 PRE 73DBB8906C2E | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-04: sucessao invertida - o membro/admin mais NOVO assume (ThreadStoreTests e ThreadParticipantRoutesTests vermelhas)
+M11 RUN wrapper=1 logExit=1 aprovado=17 falha=2 constraint=no log=20261112-040602-test-filter.log
+M11 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ts_admin [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_succession_ranks_by_joined_at_and_a_group_with_seats_never_loses_its_admin [168 ms] | dest_admin_or_promotes_the_oldest_member [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.The_creator_leave_hands_the_seat_to_the_oldest_admin_or_promotes_the_oldest_member [349 ms]
+M11 RESTORE-OK hash=PRE residue=0
+M12 PRE 73DBB8906C2E | editado backend\src\Squid.Service\SqliteThreadStore.cs | lista cheia: participants volta a colapsar no proprio chamador - igualdade de 3 nomes do GET /api/threads cai (ThreadParticipantRoutesTests vermelha)
+M12 RUN wrapper=1 logExit=1 aprovado=17 falha=2 constraint=no log=20261112-040627-test-filter.log
+M12 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...me_order [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.A_seat_added_later_reads_the_whole_history_and_joins_the_same_order [501 ms] | Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [708 ms]
+M12 RESTORE-OK hash=PRE residue=0
+M13 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-05/GAP-40: historico comeca no joined_at do leitor - o late joiner deixa de enxergar seq 1,2 (ThreadParticipantRoutesTests vermelha)
+M13 RUN wrapper=1 logExit=1 aprovado=18 falha=1 constraint=no log=20261112-040657-test-filter.log
+M13 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...me_order [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.A_seat_added_later_reads_the_whole_history_and_joins_the_same_order [462 ms]
+M13 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=19 falha=0 log=20261112-040726-test-filter.log
+SUMMARY cycles=13 failed=1 residue-QA-MUTATION=0 temp-backups=0
+## re-execucao seletiva (M4) - 2026-11-12 04:10:11
+M4 PRE 8675C92CB1BB | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: portao de participante desligado nas rotas de mensagem - removido le e envia 200 em vez de 404 byte-identico (ThreadParticipantRoutesTests + ThreadMessageRoutesTests vermelhas)
+M4 RUN wrapper=1 logExit=1 aprovado=16 falha=3 constraint=no log=20261112-041039-test-filter.log
+M4 RED-IN-LOG _to_one_with_its_history_readable_by_the_remaining_member [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...g_member [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.A_direct_thread_goes_from_two_to_one_with_its_history_readable_by_the_remaining_member [1 s] | ory_and_never_lets_the_last_one_go [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Removal_ends_access_at_once_keeps_the_history_and_never_lets_the_last_one_go [1 s] | [FAIL] | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.A_non_participant_and_an_absent_thread_get_one_404_body_byte_for_byte [336 ms]
+M4 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=19 falha=0 log=20261112-041105-test-filter.log
+SUMMARY cycles=1 failed=0 residue-QA-MUTATION=0 temp-backups=0

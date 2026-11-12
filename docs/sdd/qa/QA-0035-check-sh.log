@@ -1,0 +1,25 @@
+﻿CHECK GATE OK - 20261112-041813-test-gate.log header exit 0 e 450/450
+CHECK BASELINE OK - 035540 exit 0 / 18 de 18
+CHECK TEMPTEST-GREEN OK - 040053 exit 0 / 19 de 19 (teste temporario da QA verde)
+CHECK MUT-IDS OK - M1..M13 todos com linha PRE
+CHECK MUT-RED OK - M1..M13 todos com RUN vermelho no log
+CHECK MUT-RESTORE OK - RESTORE-OK = 14 (esperado >= 14)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL no ledger
+CHECK MUT-GREEN OK - GREEN 19/19 = 2
+CHECK MUT-ANOMALIA OK - exatamente 1 CLASSIFICACAO-ERRADA (M4 v1, mutante corrigido)
+CHECK MUT-SUMMARY-FULL OK - SUMMARY cheio cycles=13 failed=1 residue=0
+CHECK MUT-SUMMARY-LAST OK - SUMMARY final cycles=1 failed=0 residue=0
+CHECK MUT-M4V2 OK - M4 v2 vermelho (aprovado 16 / falha 3, log 041039)
+CHECK MUT-M12-CATCH OK - M12 pego pelos testes do DEV: Adding_a_seat + A_seat_added_later
+CHECK MUT-M3-QATEST OK - M3 vermelho inclui o teste temporario da QA
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0035-* = 0
+CHECK TEMP-FILE OK - QaTask0035RemovedRoutesTests.cs ausente
+CHECK DRIVER-BOM OK - qa-mutate-task-0035.ps1 com UTF-8 BOM (efbbbf)
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-BLOB OK - blob-identity match=True = 2 de 2
+CHECK SCOPE-MTIME OK - mtime desde a baseline = 2 arquivos mutados
+CHECK SCOPE-RESIDUE OK - scope scan: residuo 0
+CHECK SCOPE-TEMPFILE OK - scope scan: teste temporario ausente
+CHECK QA-DOC OK - QA-0035-participantes-e-admin.md com verdict PASSED
+SUMMARY total=24 fails=0

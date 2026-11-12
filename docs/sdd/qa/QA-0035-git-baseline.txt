@@ -1,0 +1,6 @@
+﻿QA-0035 git baseline capturado antes da QA escrever
+2026-11-12 03:54:59
+branch: task/TASK-0035-participantes-e-admin
+HEAD: aff96795de8951dcb0aa5f355d25db6cbbaed478
+--- git status --porcelain -uall ---
+ M docs/sdd/tasks/TASK-0035-participantes-e-admin.md
