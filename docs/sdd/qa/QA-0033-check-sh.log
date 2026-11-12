@@ -1,0 +1,14 @@
+﻿CHECK GATE-EXIT OK - 20261112-013346-test-gate.log header exit 0 e 438/438
+CHECK FILTER-GREEN OK - 20261112-012742-test-filter.log exit 0 / 9 de 9
+CHECK MUT-RESTORE OK - RESTORE-OK = 14 (esperado >= 14)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL no ledger
+CHECK MUT-SUMMARYS OK - SUMMARYs todas com residue=0 e temp-backups=0 (fora=0)
+CHECK MUT-IDS OK - M1..M10 todos com linha PRE
+CHECK MUT-GREEN OK - GREEN 9/9 = 3
+CHECK MUT-ANOMALIA OK - exatamente 1 CLASSIFICACAO-ERRADA (M4D quebrou o build, corrigido)
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0033-* = 0
+CHECK HASH-PRE OK - 5 arquivos mutados = PRE/HEAD (S-16)
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK QA-DOC OK - QA-0033-nucleo-da-thread.md com verdict PASSED
+SUMMARY total=13 fails=0

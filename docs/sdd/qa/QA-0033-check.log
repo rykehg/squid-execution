@@ -1,0 +1,17 @@
+﻿CHECK GATE-EXIT OK - 20261112-013346-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - 20261112-013346-test-gate.log Com falha 0 / Aprovado 438 / Total 438
+CHECK FILTER-GREEN OK - 20261112-012742-test-filter.log exit 0 / 9 de 9
+CHECK MUT-RESTORE OK - RESTORE-OK = 14 (esperado >= 14: 12 + M4D re-run + M10)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-SUMMARYS OK - toda SUMMARY com residue=0 e temp-backups=0
+CHECK MUT-IDS OK - M1..M10 todos com linha PRE
+CHECK MUT-GREEN OK - GREEN 9/9 = 3 (fim do driver, apos M4D, apos M10)
+CHECK MUT-ANOMALIA OK - exatamente 1 CLASSIFICACAO-ERRADA (M4D quebrou o build - mutante corrigido e re-executado)
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0033-* no TEMP = 0
+CHECK HASH-PRE OK - 5 arquivos mutados = PRE/HEAD (S-16)
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK MTIME-SCOPE OK - mtime desde 01:05:33 = 5 arquivos (esperado exatamente os 5 mutados): backend\src\Squid.Api\Auth\AuthSessionMiddleware.cs; backend\src\Squid.Api\Threads\ThreadEndpoints.cs; backend\src\Squid.Persistence\schema\0002_threads.sql; backend\src\Squid.Persistence\schema\SchemaMigrator.cs; backend\src\Squid.Service\SqliteThreadStore.cs
+CHECK SDD-STATE OK - check: OK - log entries 13, evidence rows 18
+CHECK QA-DOC OK - QA-0033-nucleo-da-thread.md com verdict PASSED
+SUMMARY total=16 fails=0
