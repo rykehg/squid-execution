@@ -127,7 +127,11 @@ public static class SquidServiceHost
         builder.Services.AddSingleton<IReportStore>(_ => new SqliteReportStore(storage));
         // Thread core (SPEC-0010 section A, TASK-0033): the store over the migrated thread tables —
         // the GAP-29 total order is a version-guarded UPDATE in SQL, never a grain (decision 9).
-        builder.Services.AddSingleton<IThreadStore>(_ => new SqliteThreadStore(connectionString));
+        // TASK-0039 (section G): it also reads the upload records, because the contentHashes of a
+        // message are validated INSIDE the append transaction (the same ladder as the 428/422) —
+        // resolved lazily, after every registration below exists.
+        builder.Services.AddSingleton<IThreadStore>(provider =>
+            new SqliteThreadStore(connectionString, provider.GetRequiredService<IMediaStore>()));
         // Media slice (SPEC-0009 section E, TASK-0027): the content-addressed blob volume and its
         // upload record over the same SQLite file (data-model §5: Media:BlobRoot is a NAMED
         // volume, never an external service), and the SkiaSharp pipeline whose order §2.6 fixes —

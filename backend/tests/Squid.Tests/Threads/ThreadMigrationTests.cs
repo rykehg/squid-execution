@@ -123,9 +123,14 @@ public sealed class ThreadMigrationTests
             var first = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
             Assert.Contains(5, first);
             // A coluna nova chega POR CIMA das seis de 0003, na mesma ordem — nada do que já
-            // existia se move (é o ALTER TABLE da família 0005, não uma reescrita do 0003).
+            // existia se move (é o ALTER TABLE da família 0005, não uma reescrita do 0003). A
+            // oitava é attachments, que a 0007 soma depois (TASK-0039) — sempre a última.
             Assert.Equal(
-                new[] { "id", "thread_id", "author_actor_id", "content", "seq", "created_at", "reply_to_id" },
+                new[]
+                {
+                    "id", "thread_id", "author_actor_id", "content", "seq", "created_at",
+                    "reply_to_id", "attachments",
+                },
                 await ProjectionDb.QueryAsync<string>(file,
                     "SELECT name FROM pragma_table_info('message')"));
             Assert.Equal("message_reply_to_id", await ProjectionDb.ScalarAsync<string>(file,
@@ -178,11 +183,16 @@ public sealed class ThreadMigrationTests
             Assert.Equal("message_reaction", await ProjectionDb.ScalarAsync<string>(file,
                 "SELECT name FROM schema_version WHERE version = 6"));
 
-            // Nunca fonte: a mensagem NÃO ganhou coluna de contagem alguma — os sete campos dela
-            // seguem os da 0005, porque counts.reactions é projeção das linhas de 0006 lida em
-            // cada leitura, nunca um número guardado (AC-03, §2.14).
+            // Nunca fonte: a mensagem NÃO ganhou coluna de contagem alguma — os oito campos dela
+            // são os sete da 0005 mais attachments (a lista de anexos da 0007, TASK-0039), porque
+            // counts.reactions é projeção das linhas de 0006 lida em cada leitura, nunca um número
+            // guardado (AC-03, §2.14) — nenhum deles é uma contagem.
             Assert.Equal(
-                new[] { "id", "thread_id", "author_actor_id", "content", "seq", "created_at", "reply_to_id" },
+                new[]
+                {
+                    "id", "thread_id", "author_actor_id", "content", "seq", "created_at",
+                    "reply_to_id", "attachments",
+                },
                 await ProjectionDb.QueryAsync<string>(file,
                     "SELECT name FROM pragma_table_info('message')"));
 
@@ -213,6 +223,70 @@ public sealed class ThreadMigrationTests
             var second = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
             Assert.Empty(second);
             Assert.Equal(1, await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM message_reaction"));
+            Assert.Equal(SchemaMigrations.Load().Count,
+                await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM schema_version"));
+        }
+        finally
+        {
+            ProjectionDb.TryDelete(file);
+        }
+    }
+
+    [Fact] // TASK-0039 — a 0007 dá casa aos anexos da mensagem (§2.6) somando coluna, sem tocar 0002..0006
+    public async Task The_0007_version_adds_the_attachments_column_and_reapplying_changes_nothing()
+    {
+        var file = ProjectionDb.NewFile();
+        try
+        {
+            var first = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            Assert.Contains(7, first);
+            // Os sete campos de antes ficam na mesma ordem; attachments entra NO FIM (é o ALTER
+            // TABLE da família 0007, nunca uma reescrita da 0003/0005) — e a coluna nova é texto,
+            // não uma contagem de nada (§2.6: a lista, guardada como o post guarda a sua).
+            Assert.Equal(
+                new[]
+                {
+                    "id", "thread_id", "author_actor_id", "content", "seq", "created_at",
+                    "reply_to_id", "attachments",
+                },
+                await ProjectionDb.QueryAsync<string>(file,
+                    "SELECT name FROM pragma_table_info('message')"));
+            Assert.Equal("message_attachments", await ProjectionDb.ScalarAsync<string>(file,
+                "SELECT name FROM schema_version WHERE version = 7"));
+
+            // Duas linhas semeadas ENTRE as duas aplicações: uma com a lista JSON de §2.6, outra
+            // sem anexo nenhum — "sem anexo" é NULL, o mesmo significado de sempre (nenhum backfill).
+            const string comAnexo = "http://127.0.0.1/m/com-anexo";
+            const string semAnexo = "http://127.0.0.1/m/sem-anexo";
+            const string hash = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08";
+            var lista =
+                $$"""[{"Kind":1,"ContentHash":"{{hash}}","MimeType":"image/png","Url":"http://127.0.0.1/api/media/{{hash}}","BlurHash":"LGCQ?B00?b~q","Alt":"descrição","Width":8,"Height":4,"DurationSeconds":null,"SizeBytes":42}]""";
+            await using (var connection = new SqliteConnection(ProjectionDb.ConnectionOf(file)))
+            {
+                await connection.OpenAsync();
+                await using var seed = connection.CreateCommand();
+                seed.CommandText = """
+                    INSERT INTO message (id, thread_id, author_actor_id, content, seq, created_at, attachments)
+                    VALUES ('http://127.0.0.1/m/com-anexo', 'http://127.0.0.1/t/semente',
+                            'http://127.0.0.1/users/a', 'com anexo', 1,
+                            '2026-11-12T00:00:00.0000000+00:00', @Anexos);
+                    INSERT INTO message (id, thread_id, author_actor_id, content, seq, created_at)
+                    VALUES ('http://127.0.0.1/m/sem-anexo', 'http://127.0.0.1/t/semente',
+                            'http://127.0.0.1/users/a', 'sem anexo', 2,
+                            '2026-11-12T00:00:01.0000000+00:00');
+                    """;
+                seed.Parameters.AddWithValue("@Anexos", lista);
+                await seed.ExecuteNonQueryAsync();
+            }
+
+            // Reaplicação: idempotente — nada roda de novo e as duas linhas saem como foram escritas.
+            var second = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            Assert.Empty(second);
+            Assert.Equal(2, await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM message"));
+            Assert.Equal(lista, await ProjectionDb.ScalarAsync<string>(file,
+                "SELECT attachments FROM message WHERE id = @Id", new { Id = comAnexo }));
+            Assert.Null(await ProjectionDb.ScalarAsync<string>(file,
+                "SELECT attachments FROM message WHERE id = @Id", new { Id = semAnexo }));
             Assert.Equal(SchemaMigrations.Load().Count,
                 await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM schema_version"));
         }
