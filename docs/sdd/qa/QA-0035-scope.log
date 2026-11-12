@@ -1,0 +1,15 @@
+﻿== QA-0035 scope scan - 2026-11-12 04:18:54 ==
+-- git status --porcelain -uall (repo) entradas=4 --
+ M docs/sdd/tasks/TASK-0035-participantes-e-admin.md
+?? docs/sdd/qa/QA-0035-git-baseline.txt
+?? docs/sdd/qa/QA-0035-mutations.log
+?? docs/sdd/qa/qa-mutate-task-0035.ps1
+GIT-BACKEND entradas=0
+BLOB backend/src/Squid.Api/Threads/ThreadEndpoints.cs work=d8425372d46a head=d8425372d46a match=True
+BLOB backend/src/Squid.Service/SqliteThreadStore.cs work=24affd52962f head=24affd52962f match=True
+mtime-count=2 (esperado 2: os 2 arquivos mutados e restaurados)
+  mtime backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+  mtime backend\src\Squid.Service\SqliteThreadStore.cs
+residue=0
+temp-test-file-present=False (esperado False)
+temp-backups=0
