@@ -59,7 +59,11 @@ Each AC is one observable behaviour. QA tests against this list; anything not li
   ignorado, não retrocede); `seq` acima do total da thread → `400` (GAP-38) — teste.
 - AC-04: `GET /api/threads` e o envelope de mensagens expõem `lastReadSeq` por participante
   **visível só a participantes**; não-participante → 404 idêntico sem o dado — teste.
-- AC-05: gate `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test`
+- AC-05: ator `Suspended` não envia mensagem (SPEC-0010 §Rules, data-model §3.1 — mesma família
+  do post): envio negado e registrado (log estruturado), participante ativo segue enviando —
+  teste. **AC acrescentada pelo ODEV 2026-11-12 02:25:21**: regra da spec sem task dona,
+  reportada como `notDone` pelo DEV da TASK-0034; sem mudança de contrato.
+- AC-06: gate `powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test`
   exit 0; nenhum arquivo alterado fora dos `touches`.
 
 ## Touches (scope of the change)
@@ -94,6 +98,7 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 
 `- YYYY-MM-DD HH:MM:SS | ROLE | what was done or decided`
 - 2026-11-11 23:45:07 | odev | task created from SPEC-0010 (entrega 4 de 8 da P-05; blockedBy TASK-0035; FR-032/FR-033 + §9.6; decisão humana lastReadSeq da rodada 1)
+- 2026-11-12 02:27:14 | odev | AC-05 (ator Suspenso nao envia mensagem) acrescentada pelo ODEV e a antiga AC-05 (gate) virou AC-06: regra da SPEC-0010 Rules/section D sem task dona, reportada como notDone pelo DEV da TASK-0034; nenhuma AC anterior muda de sentido, so renumeracao do gate
 
 ## Evidence
 
