@@ -4,7 +4,7 @@ Cinco runbooks mínimos do §8 do documento mestre (`docs/features/05-arquitetur
 entregues no Sprint 0 (P-01) conforme `docs/sdd/specs/SPEC-0006-runbooks-iniciais.md`.
 
 Regra de honestidade (GAP-18): quatro dos cinco descrevem sistemas que ainda não existem
-(backup = P-07, rotação de chave = sem dono de fase desde 2026-11-12, peer/DLQ = P-06). Esses
+(backup = P-07, rotação de chave = P-07 desde 2026-11-12, peer/DLQ = P-06). Esses
 são **esboços com ponteiro de fase**, sem passo a passo. Runbook que manda num comando que não
 roda é pior que runbook ausente.
 
@@ -14,7 +14,7 @@ roda é pior que runbook ausente.
 | --- | --- | --- | --- |
 | [disco-cheio.md](disco-cheio.md) | liberar espaço em disco com o stack parado | EXECUTÁVEL | — |
 | [restaurar-backup.md](restaurar-backup.md) | devolver o SQLite de um arquivo para o volume | PARCIAL | geração do backup — P-07 |
-| [rotacionar-chave.md](rotacionar-chave.md) | rotacionar `RK`/`RC` | PENDENTE-fase | sem dono de fase — chaves existem desde a P-02, mecanismo nunca entrou em escopo (S-39; candidata P-07) |
+| [rotacionar-chave.md](rotacionar-chave.md) | rotacionar `RK`/`RC` | PENDENTE-fase | dono: **P-07** (decidido 2026-11-12, fecha S-39) — chaves existem desde a P-02, mecanismo nasce na P-07 |
 | [peer-entrega-travada.md](peer-entrega-travada.md) | entrega federada travada num par | PENDENTE-fase | P-06 (federação) |
 | [dlq-cheia.md](dlq-cheia.md) | fila de falhas de entrega cheia | PENDENTE-fase | P-06 (federação) |
 

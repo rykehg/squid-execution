@@ -52,7 +52,7 @@ engana teste e revisão humana.
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
 | P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — **8/8 DONE com QA PASSED na 1ª tentativa** (QA-0033..QA-0040); gate da casa 480/480; detalhe em `plan/history/0006-plan.md` | **CLOSED** | 2026-11-12 12:46:09 |
 | P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | a cortar | NOT_STARTED | — |
-| P-07 | Backup cifrado e restore drill no CI | a cortar | NOT_STARTED | — |
+| P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) | a cortar | NOT_STARTED | — |
 | P-08 | Front web SSR, preview social e compartilhamento externo | a cortar | NOT_STARTED | — |
 
 ### P-01 — entregas
@@ -251,3 +251,4 @@ nomes** — nenhum arquivo deles é copiado, nem como trecho.
 | 2026-11-11 22:55:32 | Abertura da P-05 (entrevista rodada 4): **corte aprovado com 8 tasks seriais** (TASK-0033..0040); **2 emendas aprovadas** — (a) data-model §2.7 ganha papéis de admin da thread, (b) contrato §6 ganha `POST .../participants` + rotas de admin + `contentHashes` na mensagem — originais intactos (precedente S-27/P-03) | PHASE | Henrique |
 | 2026-11-11 23:08:37 | Abertura da P-05 (entrevista rodada 5): estado da thread = **SQLite + ETag** (não `ThreadGrain`/Orleans — ADR-1 vale, thread não federa); rota de admin = **`POST`/`DELETE /api/threads/{id}/participants/{actorId}/admin`** | PHASE | Henrique |
 | 2026-11-12 19:01:23 | **Prática de fecho de fase**: a cada `PHASE_CLOSED` o ODEV atualiza o `README.md` (§Estado atual) e os ponteiros de fase de `docs/runbooks/**` (índice + "PENDENTE-fase") junto com a consolidação — ponteiro velho engana teste e revisão humana; rotação de chave registrada como **S-39** (sem dono de fase, candidata P-07); execução imediata: README, runbooks e gate contagem atualizados no fecho da P-05 | PHASE | Henrique |
+| 2026-11-12 20:21:42 | **Rotação de chave é da P-07** (dono decidido pelo humano, fecha o S-39): a fase de backup e chaves corta as tasks que criam a rota de `RK`/`RC`, a reemissão do kit e o teste de cadeia derivada — runbooks `rotacionar-chave` e índice atualizados de "sem dono" para "P-07"; linha da P-07 no plano emendada | PHASE | Henrique |
