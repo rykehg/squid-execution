@@ -608,6 +608,234 @@ public sealed class SqliteThreadStore : IThreadStore
     }
 
     /// <inheritdoc />
+    public async Task<bool> MessageVisibleAsync(string threadId, string messageId, string actorId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actorId);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        // One probe for the three facts of the reaction wall (FR-031 + SPEC-0010 section F): the
+        // thread row, the caller's seat in it and the message OF THAT thread — all three misses
+        // read the same false, which is what lets an absent thread, a stranger and a message of
+        // another thread share ONE byte-identical 404 without the answer ever telling them apart
+        // (SC-005), and what keeps reactions and counts inside §9.10's participant wall.
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT EXISTS(
+                SELECT 1
+                FROM message AS m
+                WHERE m.id = @MessageId
+                  AND m.thread_id = @ThreadId
+                  AND EXISTS(
+                      SELECT 1 FROM thread_participant
+                      WHERE thread_id = @ThreadId AND actor_id = @ActorId
+                  )
+            )
+            """;
+        command.Parameters.AddWithValue("@ThreadId", threadId);
+        command.Parameters.AddWithValue("@MessageId", messageId);
+        command.Parameters.AddWithValue("@ActorId", actorId);
+        return Convert.ToInt64(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture) != 0;
+    }
+
+    /// <inheritdoc />
+    public async Task<ReactionOutcome> AddReactionAsync(
+        string threadId, string messageId, string actorId, string emoji, DateTimeOffset createdAt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actorId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(emoji);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        await BusyTimeoutAsync(connection);
+
+        await using var transaction = connection.BeginTransaction(deferred: false);
+
+        // The target check INSIDE the attempt (the defensive twin of MessageVisibleAsync): a
+        // message that left or belongs to another thread means nothing is written and the caller
+        // answers the byte-identical 404 — decided before the insert, so no row can be born for a
+        // target nobody can see.
+        await using (var target = connection.CreateCommand())
+        {
+            target.Transaction = transaction;
+            target.CommandText =
+                "SELECT EXISTS(SELECT 1 FROM message WHERE id = @MessageId AND thread_id = @ThreadId)";
+            target.Parameters.AddWithValue("@MessageId", messageId);
+            target.Parameters.AddWithValue("@ThreadId", threadId);
+            if (Convert.ToInt64(await target.ExecuteScalarAsync(), CultureInfo.InvariantCulture) == 0)
+            {
+                return ReactionOutcome.Missing;
+            }
+        }
+
+        int affected;
+        await using (var insert = connection.CreateCommand())
+        {
+            insert.Transaction = transaction;
+            insert.CommandText = """
+                INSERT INTO message_reaction (message_id, actor_id, emoji, kind, created_at)
+                VALUES (@MessageId, @ActorId, @Emoji, @Kind, @CreatedAt)
+                ON CONFLICT (message_id, actor_id, emoji) DO NOTHING
+                """;
+            insert.Parameters.AddWithValue("@MessageId", messageId);
+            insert.Parameters.AddWithValue("@ActorId", actorId);
+            insert.Parameters.AddWithValue("@Emoji", emoji);
+            // data-model section 2.14 Kind: the default 👍 is Like, every other whitelisted emoji
+            // is Custom — the word travels with the row, no federation distinction at this phase.
+            insert.Parameters.AddWithValue("@Kind",
+                emoji == ReactionOptions.Like ? ReactionKinds.Like : ReactionKinds.Custom);
+            insert.Parameters.AddWithValue("@CreatedAt", createdAt.ToString("O", CultureInfo.InvariantCulture));
+            affected = await insert.ExecuteNonQueryAsync();
+        }
+
+        await transaction.CommitAsync();
+
+        // The idempotence of AC-01 IS this number: 1 = the row is new, 0 = the SAME (message,
+        // actor, emoji) already existed, so the primary key of 0006 kept the second attempt from
+        // writing anything and the count a reader derives cannot move on a repeat.
+        return affected > 0 ? ReactionOutcome.Created : ReactionOutcome.Repeated;
+    }
+
+    /// <inheritdoc />
+    public async Task<ReactionOutcome> RemoveReactionAsync(
+        string threadId, string messageId, string actorId, string emoji)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actorId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(emoji);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        await BusyTimeoutAsync(connection);
+
+        await using var transaction = connection.BeginTransaction(deferred: false);
+
+        // Same defensive twin as the append: the message must still belong to this thread, or the
+        // refusal is the ONE 404 and nothing is touched.
+        await using (var target = connection.CreateCommand())
+        {
+            target.Transaction = transaction;
+            target.CommandText =
+                "SELECT EXISTS(SELECT 1 FROM message WHERE id = @MessageId AND thread_id = @ThreadId)";
+            target.Parameters.AddWithValue("@MessageId", messageId);
+            target.Parameters.AddWithValue("@ThreadId", threadId);
+            if (Convert.ToInt64(await target.ExecuteScalarAsync(), CultureInfo.InvariantCulture) == 0)
+            {
+                return ReactionOutcome.Missing;
+            }
+        }
+
+        int affected;
+        await using (var delete = connection.CreateCommand())
+        {
+            delete.Transaction = transaction;
+            // Only the ACTOR's own row for this emoji: somebody else's reaction of the same emoji
+            // is a different row and survives (one row per (message, actor, emoji)).
+            delete.CommandText = """
+                DELETE FROM message_reaction
+                WHERE message_id = @MessageId AND actor_id = @ActorId AND emoji = @Emoji
+                """;
+            delete.Parameters.AddWithValue("@MessageId", messageId);
+            delete.Parameters.AddWithValue("@ActorId", actorId);
+            delete.Parameters.AddWithValue("@Emoji", emoji);
+            affected = await delete.ExecuteNonQueryAsync();
+        }
+
+        await transaction.CommitAsync();
+
+        // Rows leave the table, they are never decremented anywhere: 0 means "no such reaction"
+        // (AC-03's 404) and the count of the next read simply reflects the rows that remain.
+        return affected > 0 ? ReactionOutcome.Removed : ReactionOutcome.Missing;
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<ReactionCount>> ListReactionsAsync(
+        string threadId, long since, string readerActorId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(readerActorId);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        // The derived projection of section F over the SAME delta the message read walks: one row
+        // per (message, emoji) with COUNT(*) of the rows that exist right now and whether the
+        // READER holds one of them — computed here, on every read, so there is no stored number
+        // anywhere that could drift (data-model section 2.14: projection, never source). The join
+        // through message carries the thread filter, and MIN(rowid) keeps the first-seen order.
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT r.message_id, r.emoji, COUNT(*) AS total,
+                   SUM(CASE WHEN r.actor_id = @Reader THEN 1 ELSE 0 END) AS mine
+            FROM message_reaction AS r
+            JOIN message AS m ON m.id = r.message_id
+            WHERE m.thread_id = @ThreadId AND m.seq > @Since
+            GROUP BY r.message_id, r.emoji
+            ORDER BY MIN(r.rowid)
+            """;
+        command.Parameters.AddWithValue("@ThreadId", threadId);
+        command.Parameters.AddWithValue("@Since", since);
+        command.Parameters.AddWithValue("@Reader", readerActorId);
+
+        return await ReadCountsAsync(command);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<ReactionCount>> ReactionsOfAsync(
+        string threadId, string messageId, string readerActorId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(readerActorId);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        // The same projection for ONE message — the answer POST/DELETE .../reactions return right
+        // after the effect, so what the caller reads back is COUNT(*) of the rows as they are NOW.
+        // The join re-checks the thread, so a message of another thread projects nothing (404 up
+        // front anyway, this is the defensive twin).
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT r.message_id, r.emoji, COUNT(*) AS total,
+                   SUM(CASE WHEN r.actor_id = @Reader THEN 1 ELSE 0 END) AS mine
+            FROM message_reaction AS r
+            JOIN message AS m ON m.id = r.message_id AND m.thread_id = @ThreadId
+            WHERE r.message_id = @MessageId
+            GROUP BY r.emoji
+            ORDER BY MIN(r.rowid)
+            """;
+        command.Parameters.AddWithValue("@ThreadId", threadId);
+        command.Parameters.AddWithValue("@MessageId", messageId);
+        command.Parameters.AddWithValue("@Reader", readerActorId);
+
+        return await ReadCountsAsync(command);
+    }
+
+    /// <summary>Materializes one projected (message, emoji) group — the two reads above share only this.</summary>
+    private static async Task<IReadOnlyList<ReactionCount>> ReadCountsAsync(SqliteCommand command)
+    {
+        var counts = new List<ReactionCount>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            counts.Add(new ReactionCount(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetInt64(2),
+                reader.GetInt64(3) != 0));
+        }
+
+        return counts;
+    }
+
+    /// <inheritdoc />
     public async Task AckNoE2eeAsync(string threadId, string actorId, string notice, DateTimeOffset ackedAt)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(threadId);

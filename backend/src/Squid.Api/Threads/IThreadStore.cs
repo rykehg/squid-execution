@@ -68,8 +68,9 @@ public sealed record ThreadListItem(
 /// sanitized <c>Content</c> exactly as stored and <c>Seq</c> — the position the thread's state
 /// handed out under its version guard. <c>ReplyToId</c> is FR-057's reference (section E): null
 /// when the message answers nothing, and always another message OF THE SAME thread — the append
-/// refuses any other target before a row exists. The reaction counts are deliberately absent:
-/// they arrive with TASK-0038, not before.
+/// refuses any other target before a row exists. Reaction counts are deliberately NOT a field
+/// here: they are the derived projection of <see cref="ReactionCount"/> the read assembles from
+/// the rows of 0006 (data-model section 2.14: projection, never source).
 /// </summary>
 public sealed record MessageState(
     string Id,
@@ -108,6 +109,46 @@ public enum AppendOutcome
 
 /// <summary>One append attempt: <see cref="Message"/> is the stored row only when <see cref="Outcome"/> is <see cref="AppendOutcome.Appended"/>.</summary>
 public sealed record AppendResult(AppendOutcome Outcome, MessageState? Message);
+
+/// <summary>The vocabulary of data-model section 2.14 <c>Kind</c> on a reaction row (local only — a message reaction never federates).</summary>
+public static class ReactionKinds
+{
+    /// <summary>The default 👍 — the kind section 2.14 says federates when the day comes.</summary>
+    public const string Like = "like";
+
+    /// <summary>Every other whitelisted emoji — the extension path, no federation distinction at this phase.</summary>
+    public const string Custom = "custom";
+}
+
+/// <summary>
+/// What one reaction attempt answered (SPEC-0010 section F, data-model section 2.14): the row
+/// landed, the SAME (message, actor, emoji) was already there so nothing changed (AC-01's
+/// idempotence), the actor's own row left, or the target was not there — no message of this thread
+/// for a POST, no row of this actor for a DELETE —, which the caller answers with the ONE
+/// byte-identical 404 so neither case ever tells a participant which one it was (SC-005).
+/// </summary>
+public enum ReactionOutcome
+{
+    /// <summary>Row inserted (one row per (message, actor, emoji) — the primary key of 0006).</summary>
+    Created,
+
+    /// <summary>The triple already existed: no second row, no count change, nothing written.</summary>
+    Repeated,
+
+    /// <summary>The actor's own row was deleted.</summary>
+    Removed,
+
+    /// <summary>No message of this thread, or no row to remove: the caller answers the byte-identical 404.</summary>
+    Missing,
+}
+
+/// <summary>
+/// One entry of the derived projection the read envelope carries (contract §6):
+/// <c>{emoji, count, mine}</c> — <c>count</c> is <c>COUNT(*)</c> of the rows that exist right now
+/// and <c>mine</c> says whether the READER holds one, so the number is reconciled at read time and
+/// is never a stored counter (data-model section 2.14: projection, never source).
+/// </summary>
+public sealed record ReactionCount(string MessageId, string Emoji, long Count, bool Mine);
 
 /// <summary>
 /// The thread store of SPEC-0010 section A (ADR-35: the edge declares it, <c>Squid.Service</c>
@@ -229,4 +270,52 @@ public interface IThreadStore
     /// index <c>(thread_id, seq)</c> of 0003 is what it reads through.
     /// </summary>
     Task<IReadOnlyList<MessageState>> ListMessagesAsync(string threadId, long since);
+
+    /// <summary>
+    /// The single probe the reaction routes authorize with (SPEC-0010 section F, FR-031 + §9.10):
+    /// true only when <paramref name="threadId"/> exists, <paramref name="actorId"/> sits in its
+    /// participant rows AND <paramref name="messageId"/> is a message OF THAT thread — the three
+    /// misses return the same false, which is what lets a stranger, an absent thread and a message
+    /// of another thread share ONE byte-identical 404 (SC-005) without ever telling which case it
+    /// was. Reactions and counts live only behind this wall.
+    /// </summary>
+    Task<bool> MessageVisibleAsync(string threadId, string messageId, string actorId);
+
+    /// <summary>
+    /// Writes one reaction row (section F, data-model section 2.14): an insert that
+    /// conflict-does-nothing, inside a transaction that FIRST re-checks the message belongs to the
+    /// thread (the defensive twin of the probe above), so repeating the same (message, actor,
+    /// emoji) answers <see cref="ReactionOutcome.Repeated"/> with no second row and no count change
+    /// (AC-01's idempotence) and a target that vanished answers
+    /// <see cref="ReactionOutcome.Missing"/> with nothing written. The emoji whitelist itself is
+    /// configuration (GAP-34) and is checked at the edge, before this call.
+    /// </summary>
+    Task<ReactionOutcome> AddReactionAsync(
+        string threadId, string messageId, string actorId, string emoji, DateTimeOffset createdAt);
+
+    /// <summary>
+    /// Deletes the ACTOR's own row for <paramref name="emoji"/> (section F): rows are deleted,
+    /// never decremented, so the count a reader sees stays a projection of what exists. A message
+    /// that belongs to another thread, a row the actor never wrote and an absent thread all answer
+    /// <see cref="ReactionOutcome.Missing"/> with nothing touched — the caller maps that one word
+    /// to the byte-identical 404 (AC-03: removing a reaction that does not exist is 404).
+    /// </summary>
+    Task<ReactionOutcome> RemoveReactionAsync(
+        string threadId, string messageId, string actorId, string emoji);
+
+    /// <summary>
+    /// Every reaction of the delta <c>seq &gt; since</c>, grouped per (message, emoji) with
+    /// <c>COUNT(*)</c> and whether <paramref name="readerActorId"/> holds one of those rows — the
+    /// contract §6 <c>{emoji, count, mine}</c> items, read from the rows on EVERY call and never
+    /// from a counter (section F: projection reconciled, never source — AC-03).
+    /// </summary>
+    Task<IReadOnlyList<ReactionCount>> ListReactionsAsync(string threadId, long since, string readerActorId);
+
+    /// <summary>
+    /// The same projection for ONE message: the answer <c>POST/DELETE .../reactions</c> return
+    /// right after the effect, so the caller reports the reconciled count of the row it just wrote
+    /// or removed (AC-01's unchanged count, AC-03's derived count).
+    /// </summary>
+    Task<IReadOnlyList<ReactionCount>> ReactionsOfAsync(
+        string threadId, string messageId, string readerActorId);
 }

@@ -159,4 +159,66 @@ public sealed class ThreadMigrationTests
             ProjectionDb.TryDelete(file);
         }
     }
+
+    [Fact] // TASK-0038 — a 0006 dá casa à reação (§2.14) sem tocar 0002..0005 e sem contador algum
+    public async Task The_0006_version_creates_the_reaction_table_and_reapplying_changes_nothing()
+    {
+        var file = ProjectionDb.NewFile();
+        try
+        {
+            var first = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            Assert.Contains(6, first);
+            // A tabela nova casa o agregado Reaction do data-model §2.14: o alvo, quem reagiu, o
+            // emoji da whitelist, o Kind Like|Custom e o instante — e a CHAVE é a própria tríade,
+            // que é o que faz repetir idempotente (AC-01) e remover apagar a linha (AC-03).
+            Assert.Equal(
+                new[] { "message_id", "actor_id", "emoji", "kind", "created_at" },
+                await ProjectionDb.QueryAsync<string>(file,
+                    "SELECT name FROM pragma_table_info('message_reaction')"));
+            Assert.Equal("message_reaction", await ProjectionDb.ScalarAsync<string>(file,
+                "SELECT name FROM schema_version WHERE version = 6"));
+
+            // Nunca fonte: a mensagem NÃO ganhou coluna de contagem alguma — os sete campos dela
+            // seguem os da 0005, porque counts.reactions é projeção das linhas de 0006 lida em
+            // cada leitura, nunca um número guardado (AC-03, §2.14).
+            Assert.Equal(
+                new[] { "id", "thread_id", "author_actor_id", "content", "seq", "created_at", "reply_to_id" },
+                await ProjectionDb.QueryAsync<string>(file,
+                    "SELECT name FROM pragma_table_info('message')"));
+
+            // Uma linha semeada ENTRE as duas aplicações: a re-aplicação pula a versão registrada
+            // (0002..0005 intactos por checksum) e a linha sai como foi escrita.
+            await using (var connection = new SqliteConnection(ProjectionDb.ConnectionOf(file)))
+            {
+                await connection.OpenAsync();
+                await using var seed = connection.CreateCommand();
+                seed.CommandText = """
+                    INSERT INTO message_reaction (message_id, actor_id, emoji, kind, created_at)
+                    VALUES ('http://127.0.0.1/m/semente', 'http://127.0.0.1/users/a', '👍', 'like',
+                            '2026-11-12T00:00:00.0000000+00:00');
+                    """;
+                await seed.ExecuteNonQueryAsync();
+
+                // A MESMA tríade de novo é recusada pelo próprio esquema (AC-01: uma linha por
+                // (mensagem, ator, emoji) — a chave primária é a invariante, não a store).
+                await using var repeat = connection.CreateCommand();
+                repeat.CommandText = """
+                    INSERT INTO message_reaction (message_id, actor_id, emoji, kind, created_at)
+                    VALUES ('http://127.0.0.1/m/semente', 'http://127.0.0.1/users/a', '👍', 'like',
+                            '2026-11-12T00:00:01.0000000+00:00');
+                    """;
+                await Assert.ThrowsAsync<SqliteException>(() => repeat.ExecuteNonQueryAsync());
+            }
+
+            var second = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            Assert.Empty(second);
+            Assert.Equal(1, await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM message_reaction"));
+            Assert.Equal(SchemaMigrations.Load().Count,
+                await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM schema_version"));
+        }
+        finally
+        {
+            ProjectionDb.TryDelete(file);
+        }
+    }
 }

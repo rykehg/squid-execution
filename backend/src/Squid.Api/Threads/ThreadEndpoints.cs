@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
 using Squid.Api.Posts;
@@ -18,9 +19,11 @@ public sealed record CreateThreadRequest(string? Kind, IReadOnlyList<string>? Pa
 /// section D. ONE record because the catch-all dispatcher binds a single body and the tail decides
 /// which field it reads; the admin and ack routes take no body at all, and an extra field a route
 /// never reads is ignored rather than acted on — <c>ReplyToId</c> joined this shape with
-/// TASK-0037 and only the message route reads it (SPEC-0010 section E).
+/// TASK-0037 and only the message route reads it (SPEC-0010 section E), <c>Emoji</c> with
+/// TASK-0038 and only the reaction route reads it (SPEC-0010 section F, <c>{emoji}</c>).
 /// </summary>
-public sealed record ThreadPostRequest(string? Content, string? ActorId, long? Seq = null, string? ReplyToId = null);
+public sealed record ThreadPostRequest(
+    string? Content, string? ActorId, long? Seq = null, string? ReplyToId = null, string? Emoji = null);
 
 /// <summary>
 /// SPEC-0010 section A — create and list conversations (FR-030 base, data-model section 2.7 +
@@ -40,6 +43,17 @@ public sealed record ThreadPostRequest(string? Content, string? ActorId, long? S
 /// <c>POST .../messages</c> takes <c>replyToId</c> of a message of the SAME thread — anything
 /// else is <c>422 invalid_reply_target</c> (§9.9) — and the reference never widens the wall: the
 /// participant probe above still answers a stranger with the byte-identical 404 (FR-057).
+/// Section F rides it as well (FR-058, data-model section 2.14, §9.10): <c>POST
+/// .../messages/{messageId}/reactions</c> with <c>{emoji}</c> writes ONE row per (message, actor,
+/// emoji) and repeating it changes nothing (AC-01), <c>DELETE ...?emoji=</c> deletes the actor's own
+/// row and a row that is not there is the 404 (AC-03), an emoji outside
+/// <c>Reactions:AllowedEmojis</c> is <c>422 invalid_emoji</c> (GAP-34's whitelist, read from the
+/// configuration on every request so changing the config changes the set — AC-02) BEFORE anything is
+/// written, and the count a reader gets is <c>COUNT(*)</c> of the rows that exist now (projection,
+/// never source). Neither route is gated by the 428 of §9.6 — section D binds that gate to the
+/// SEND of a message —, and neither runs the §3.1 suspension ladder — that rule is about publishing
+/// too: reacting writes no content, so the participant wall alone decides, and a stranger gets the
+/// byte-identical 404 on GET and on both reaction routes alike (§9.10, AC-04).
 /// </summary>
 public static class ThreadEndpoints
 {
@@ -68,6 +82,12 @@ public static class ThreadEndpoints
 
     /// <summary>The tail of <c>POST .../read</c> (SPEC-0010 section D, FR-033).</summary>
     private const string ReadSuffix = "/read";
+
+    /// <summary>The tail of <c>POST/DELETE .../reactions</c> (SPEC-0010 section F, FR-058).</summary>
+    private const string ReactionsSuffix = "/reactions";
+
+    /// <summary>What separates the thread id from the addressed message of <c>.../{id}/messages/{messageId}</c>.</summary>
+    private const string MessagesMarker = "/messages/";
 
     /// <summary>
     /// The notice the acceptance of <c>ack-no-e2ee</c> is recorded against (FR-032: messages have
@@ -200,13 +220,13 @@ public static class ThreadEndpoints
 
     /// <summary>
     /// The POST tail of <c>/api/threads</c>: <c>{id}/messages</c>, <c>{id}/participants</c> of
-    /// contract §6 + emenda GAP-31, plus <c>{id}/ack-no-e2ee</c> and <c>{id}/read</c> of section D
-    /// — any other tail answers the shared 404 like nothing was ever there (the
-    /// <c>/api/posts/{*target}</c> shape).
+    /// contract §6 + emenda GAP-31, <c>{id}/ack-no-e2ee</c> and <c>{id}/read</c> of section D, and
+    /// <c>{id}/messages/{messageId}/reactions</c> of section F — any other tail answers the shared
+    /// 404 like nothing was ever there (the <c>/api/posts/{*target}</c> shape).
     /// </summary>
     private static async Task<IResult> PostTargetAsync(
         string target, ThreadPostRequest? request, HttpContext context, IThreadStore store,
-        IActorStatusStore statuses, IPolicyAuditStore audit, TimeProvider time)
+        IActorStatusStore statuses, IPolicyAuditStore audit, IConfiguration configuration, TimeProvider time)
     {
         var route = ThreadRouteOf(target);
         if (route is null)
@@ -223,6 +243,8 @@ public static class ThreadEndpoints
                 route.Id, route.ActorId, promote: true, context, store),
             ThreadTail.AckNoE2ee => await AckNoE2eeAsync(route.Id, context, store, time),
             ThreadTail.Read => await ReadAsync(route.Id, request, context, store),
+            ThreadTail.Reactions => await ReactionAddAsync(
+                route.Id, route.MessageId!, request, context, store, configuration, time),
             _ => HiddenThread(context),
         };
     }
@@ -243,12 +265,13 @@ public static class ThreadEndpoints
     }
 
     /// <summary>
-    /// The DELETE tail of <c>/api/threads</c> (emenda GAP-31): <c>{id}/participants/{actorId}</c>
-    /// and the demotion half of <c>.../{actorId}/admin</c> — anything else, messages included
-    /// (contract §6 gives message no DELETE), the shared 404.
+    /// The DELETE tail of <c>/api/threads</c> (emenda GAP-31): <c>{id}/participants/{actorId}</c>,
+    /// the demotion half of <c>.../{actorId}/admin</c> and <c>{id}/messages/{messageId}/reactions
+    /// ?emoji=</c> of section F — anything else, messages included (contract §6 gives message no
+    /// DELETE), the shared 404.
     /// </summary>
     private static async Task<IResult> DeleteTargetAsync(
-        string target, HttpContext context, IThreadStore store)
+        string target, HttpContext context, IThreadStore store, IConfiguration configuration)
     {
         var route = ThreadRouteOf(target);
         if (route is null)
@@ -262,6 +285,8 @@ public static class ThreadEndpoints
                 route.Id, route.ActorId!, context, store),
             ThreadTail.SetAdmin => await ParticipantAdminAsync(
                 route.Id, route.ActorId!, promote: false, context, store),
+            ThreadTail.Reactions => await ReactionRemoveAsync(
+                route.Id, route.MessageId!, context, store, configuration),
             _ => HiddenThread(context),
         };
     }
@@ -347,6 +372,9 @@ public static class ThreadEndpoints
     /// non-negative integer is a payload this route cannot take (400). The envelope also carries
     /// the READER's own <c>lastReadSeq</c> (section D, FR-033) — read only after the participant
     /// probe, so a non-participant is refused with the 404 that carries no marker at all (AC-04).
+    /// Every item also carries its derived <c>reactions</c> of section F (contract §6,
+    /// <c>{emoji, count, mine}</c>): COUNT(*) of the rows that exist at this instant, read after
+    /// that same probe — a non-participant receives neither a marker nor a count (§9.10, AC-04).
     /// </summary>
     private static async Task<IResult> MessageListAsync(
         string id, HttpContext context, IThreadStore store)
@@ -378,9 +406,16 @@ public static class ThreadEndpoints
         }
 
         var items = await store.ListMessagesAsync(id, since);
+        // section F rides the SAME delta: the derived projection of every message of this page,
+        // assembled from the rows of 0006 at this instant — read only after the participant probe,
+        // so a non-participant never receives a count (§9.10, AC-04).
+        var reactions = await store.ListReactionsAsync(id, since, reader);
+        var byMessage = reactions
+            .GroupBy(reaction => reaction.MessageId, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<ReactionCount>)group.ToList());
         return Results.Json(new
         {
-            items = items.Select(MessageView.Of).ToList(),
+            items = items.Select(message => MessageView.Of(message, byMessage.GetValueOrDefault(message.Id))).ToList(),
             nextSince = items.Count > 0 ? items[^1].Seq : since,
             lastReadSeq = await store.LastReadSeqAsync(id, reader),
         });
@@ -456,6 +491,112 @@ public static class ThreadEndpoints
         return Results.Json(new { lastReadSeq = await store.MarkReadAsync(id, reader, seq.Value) });
     }
 
+    /// <summary>
+    /// <c>POST /api/threads/{id}/messages/{messageId}/reactions</c> (contract §6, SPEC-0010 section
+    /// F, FR-058 + data-model section 2.14): session (401), then the ONE probe — the caller's seat
+    /// AND the message of THIS thread — so an absent thread, a stranger and a message of another
+    /// thread share the byte-identical 404 (AC-04, §9.10, SC-005) before any other fact of the
+    /// request is learned. Then the instance whitelist (GAP-34): an emoji outside
+    /// <c>Reactions:AllowedEmojis</c> is <c>422 invalid_emoji</c> (AC-02), read from the
+    /// configuration on EVERY request, which is what makes a changed config change the accepted set.
+    /// Only then the write — one row per (message, actor, emoji), a repeat of the SAME triple
+    /// answering <c>Repeated</c> with no second row and no count change (AC-01) — and the answer is
+    /// the SAME derived projection either way, <c>{reactions: [{emoji, count, mine}]}</c> reconciled
+    /// from the rows that exist at this instant (AC-03). No 428 on this path: section D binds that
+    /// gate to the SEND of a message ("sem aceite, o ENVIO responde 428"), and no §3.1 ladder
+    /// either: that rule refuses a publication, and reacting publishes no content — the participant
+    /// wall is the whole authorization.
+    /// </summary>
+    private static async Task<IResult> ReactionAddAsync(
+        string id, string messageId, ThreadPostRequest? request, HttpContext context, IThreadStore store,
+        IConfiguration configuration, TimeProvider time)
+    {
+        var current = AuthSessions.Current(context);
+        if (current is null)
+        {
+            return AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
+                "not_authenticated", "sessão inválida ou expirada.");
+        }
+
+        var actorId = ContainerEndpoints.ActorId(context, current.Handle);
+        if (!await store.MessageVisibleAsync(id, messageId, actorId))
+        {
+            return HiddenThread(context);
+        }
+
+        var emoji = request?.Emoji?.Trim();
+        if (!ReactionOptions.From(configuration).Allows(emoji))
+        {
+            return InvalidEmoji(context);
+        }
+
+        var outcome = await store.AddReactionAsync(id, messageId, actorId, emoji!, time.GetUtcNow());
+        return outcome == ReactionOutcome.Missing
+            ? HiddenThread(context) // defensive twin of the probe: the message left between the two reads
+            : await ReactionAnswerAsync(store, id, messageId, actorId);
+    }
+
+    /// <summary>
+    /// <c>DELETE /api/threads/{id}/messages/{messageId}/reactions?emoji=</c> (contract §6,
+    /// SPEC-0010 section F, AC-03): the same session, the same ONE probe and the same whitelist
+    /// refusal in the same order (401 → 404 → 422 → effect), because the query value is input like
+    /// any other — an emoji this instance does not allow is <c>422 invalid_emoji</c>, never an
+    /// effect on a row that could not exist. The delete takes the ACTOR's OWN row for that emoji
+    /// only (one row per (message, actor, emoji)), and removing a reaction that does not exist —
+    /// never written, already gone, or an emoji of a message of another thread — answers with the
+    /// SAME byte-identical 404 as an absent thread (AC-03, AC-04). The answer carries the
+    /// projection read AFTER the delete, so the count shown is what the rows still say (AC-03:
+    /// derived, never a stored counter).
+    /// </summary>
+    private static async Task<IResult> ReactionRemoveAsync(
+        string id, string messageId, HttpContext context, IThreadStore store, IConfiguration configuration)
+    {
+        var current = AuthSessions.Current(context);
+        if (current is null)
+        {
+            return AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
+                "not_authenticated", "sessão inválida ou expirada.");
+        }
+
+        var actorId = ContainerEndpoints.ActorId(context, current.Handle);
+        if (!await store.MessageVisibleAsync(id, messageId, actorId))
+        {
+            return HiddenThread(context);
+        }
+
+        var emoji = context.Request.Query["emoji"].ToString().Trim();
+        if (!ReactionOptions.From(configuration).Allows(emoji))
+        {
+            return InvalidEmoji(context);
+        }
+
+        var outcome = await store.RemoveReactionAsync(id, messageId, actorId, emoji);
+        return outcome == ReactionOutcome.Removed
+            ? await ReactionAnswerAsync(store, id, messageId, actorId)
+            : HiddenThread(context); // nothing to remove: the ONE 404 of the thread routes (AC-03)
+    }
+
+    /// <summary>
+    /// The body both reaction routes answer with: the message's own projection, reconciled from
+    /// <c>message_reaction</c> at this instant (SPEC-0010 section F — counts are read, never stored),
+    /// already filtered to rows a participant of this thread may see (the caller probed the wall).
+    /// </summary>
+    private static async Task<IResult> ReactionAnswerAsync(
+        IThreadStore store, string id, string messageId, string actorId)
+    {
+        var reactions = await store.ReactionsOfAsync(id, messageId, actorId);
+        return Results.Json(new { reactions = reactions.Select(ReactionView.Of).ToList() });
+    }
+
+    /// <summary>
+    /// <c>422 invalid_emoji</c> in the house format (contract §8 family + SPEC-0010 section F):
+    /// one word for "outside the whitelist", for an empty value and for an emoji the instance once
+    /// allowed and no longer does — the refusal says nothing about which rows exist.
+    /// </summary>
+    private static IResult InvalidEmoji(HttpContext context) =>
+        AuthErrors.Write(context, StatusCodes.Status422UnprocessableEntity, "invalid_emoji",
+            "emoji fora da whitelist da instância (Reactions:AllowedEmojis, GAP-34).");
+
     /// <summary>Which sub-route of §6 a catch-all thread target names.</summary>
     private enum ThreadTail
     {
@@ -469,10 +610,16 @@ public static class ThreadEndpoints
 
         /// <summary><c>POST .../read</c> — the FR-033 monotonic marker.</summary>
         Read,
+
+        /// <summary><c>POST/DELETE .../reactions</c> — the FR-058 rows of data-model section 2.14.</summary>
+        Reactions,
     }
 
-    /// <summary>One parsed target: the thread id, the tail it ended in and the addressed seat.</summary>
-    private sealed record ThreadRoute(string Id, ThreadTail Tail, string? ActorId);
+    /// <summary>
+    /// One parsed target: the thread id, the tail it ended in, the addressed seat (the participant
+    /// routes) and the addressed message (the reaction routes of section F).
+    /// </summary>
+    private sealed record ThreadRoute(string Id, ThreadTail Tail, string? ActorId, string? MessageId = null);
 
     /// <summary>
     /// The tail off a catch-all target: the id arrives as the caller spelled it — the whole URI
@@ -482,11 +629,32 @@ public static class ThreadEndpoints
     /// of exactly <c>admin</c> (the rule allows one) then keeps spelling a plain removal. The
     /// <c>/participants/</c> marker wins over the section-D tails for the same reason: a seat
     /// named <c>read</c> is still that participant's removal, exactly as it was before those tails
-    /// existed. Null is any tail no route of the contract owns (the shared 404).
+    /// existed. The reaction tail of section F is read FIRST because it is the most specific of
+    /// the family: <c>{id}/messages/{messageId}/reactions</c> splits on the LAST <c>/messages/</c>
+    /// marker — both ids are whole URIs that carry slashes of their own once unescaped
+    /// (<c>/t/{token}</c> and <c>/m/{token}</c>), and neither can contain that marker, so the
+    /// split is stable however the caller spelled them. Null is any tail no route of the contract
+    /// owns (the shared 404) — including <c>GET .../reactions</c>, which §6 never gives a method.
     /// </summary>
     private static ThreadRoute? ThreadRouteOf(string? target)
     {
         var path = Uri.UnescapeDataString(target ?? string.Empty).Trim().TrimEnd('/');
+
+        if (path.EndsWith(ReactionsSuffix, StringComparison.Ordinal))
+        {
+            var addressed = path[..^ReactionsSuffix.Length];
+            var split = addressed.LastIndexOf(MessagesMarker, StringComparison.Ordinal);
+            if (split <= 0)
+            {
+                return null;
+            }
+
+            var id = addressed[..split];
+            var messageId = addressed[(split + MessagesMarker.Length)..];
+            return string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(messageId)
+                ? null
+                : new ThreadRoute(id, ThreadTail.Reactions, null, messageId);
+        }
 
         if (path.EndsWith(MessagesSuffix, StringComparison.Ordinal))
         {
