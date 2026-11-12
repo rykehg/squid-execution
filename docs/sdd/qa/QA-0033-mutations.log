@@ -1,0 +1,65 @@
+﻿# QA-0033 mutations - 2026-11-12 01:10:54
+M1 PRE 86679F604F0A | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-01/GAP-29: qualquer escrita vence o ETag - dois emissores recebem a mesma seq (ThreadStoreTests vermelha)
+M1 RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261112-011118-test-filter.log
+M1 RED-IN-LOG Squid.Tests.Threads.ThreadStoreTests.The_message_seq_is_taken_only_under_the_matching_version_and_never_twice [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...er_twice [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_message_seq_is_taken_only_under_the_matching_version_and_never_twice [177 ms]
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE 7B51779F621A | editado backend\src\Squid.Persistence\schema\SchemaMigrator.cs | AC-01: a re-aplicacao nao e mais vazia - registro duplicado derruba a segunda aplicacao (ThreadMigrationTests vermelha)
+M2 RUN wrapper=1 logExit=1 aprovado=6 falha=3 log=20261112-011142-test-filter.log
+M2 RED-IN-LOG _thread_tables_and_applying_twice_changes_nothing [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._nothing [FAIL]:String) [], RemoteException | [FAIL] | [FAIL] | Com falha Squid.Tests.Threads.ThreadMigrationTests.Ac01_the_second_migration_creates_the_thread_tables_and_applying_twice_changes_nothing [200 ms] | Com falha Squid.Tests.Projections.SchemaMigrationTests.Ac01_a_new_database_gets_every_table_and_the_second_apply_changes_nothing [223 ms]
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE EA1D8BE3BF48 | editado backend\src\Squid.Persistence\schema\0002_threads.sql | AC-01: o indice que a listagem usa some - Assert IndexExistsAsync falha (ThreadMigrationTests vermelha)
+M3 RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261112-011205-test-filter.log
+M3 RED-IN-LOG _thread_tables_and_applying_twice_changes_nothing [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._nothing [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMigrationTests.Ac01_the_second_migration_creates_the_thread_tables_and_applying_twice_changes_nothing [162 ms]
+M3 RESTORE-OK hash=PRE residue=0
+M4A PRE 758FDCDE5A01 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: direct com 3 participantes e aceito - o 400 da faixa nao cai (ThreadRoutesTests vermelha)
+M4A RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261112-011228-test-filter.log
+M4A RED-IN-LOG Squid.Tests.Threads.ThreadRoutesTests.A_direct_thread_has_exactly_two_participants_with_the_creator_among_them [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ong_them [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadRoutesTests.A_direct_thread_has_exactly_two_participants_with_the_creator_among_them [1 s]
+M4A RESTORE-OK hash=PRE residue=0
+M4B PRE 758FDCDE5A01 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: todo pedido fora da faixa vira 201 - group com 1 participante passa (ThreadRoutesTests vermelha)
+M4B RUN wrapper=1 logExit=1 aprovado=7 falha=2 log=20261112-011250-test-filter.log
+M4B RED-IN-LOG _and_refuses_anything_outside_two_to_fifty [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...to_fifty [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadRoutesTests.A_group_thread_runs_the_creator_as_admin_and_refuses_anything_outside_two_to_fifty [1 s] | Squid.Tests.Threads.ThreadRoutesTests.A_direct_thread_has_exactly_two_participants_with_the_creator_among_them [FAIL] | Com falha Squid.Tests.Threads.ThreadRoutesTests.A_direct_thread_has_exactly_two_participants_with_the_creator_among_them [913 ms]
+M4B RESTORE-OK hash=PRE residue=0
+M4C PRE 758FDCDE5A01 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: o grupo de 50 e recusado - o teto exato cai (ThreadRoutesTests vermelha)
+M4C RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261112-011312-test-filter.log
+M4C RED-IN-LOG _and_refuses_anything_outside_two_to_fifty [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...to_fifty [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadRoutesTests.A_group_thread_runs_the_creator_as_admin_and_refuses_anything_outside_two_to_fifty [1 s]
+M4C RESTORE-OK hash=PRE residue=0
+M4D PRE 758FDCDE5A01 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: o grupo de 2 (criador + 1) e recusado - o piso exato cai (ThreadRoutesTests vermelha)
+M4D RUN wrapper=1 logExit=1 aprovado=0 falha=0 log=20261112-011327-test-filter.log
+M4D CLASSIFICACAO-ERRADA: o log nao mostra falha de produto (ambiente? S-22)
+M4D RESTORE-OK hash=PRE residue=0
+M5 PRE 758FDCDE5A01 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: o criador sai do conjunto - direct com 1 convidado vira 400 em vez de 201 (ThreadRoutesTests vermelha)
+M5 RUN wrapper=1 logExit=1 aprovado=5 falha=4 log=20261112-011349-test-filter.log
+M5 RED-IN-LOG _and_refuses_anything_outside_two_to_fifty [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...to_fifty [FAIL]:String) [], RemoteException | Squid.Tests.Threads.ThreadRoutesTests.A_direct_thread_has_exactly_two_participants_with_the_creator_among_them [FAIL] | Com falha Squid.Tests.Threads.ThreadRoutesTests.A_group_thread_runs_the_creator_as_admin_and_refuses_anything_outside_two_to_fifty [1 s] | Com falha Squid.Tests.Threads.ThreadRoutesTests.A_direct_thread_has_exactly_two_participants_with_the_creator_among_them [868 ms] | [FAIL]
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE 758FDCDE5A01 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: a linha do criador nasce member - o Assert do role admin falha (ThreadRoutesTests vermelha)
+M6 RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261112-011413-test-filter.log
+M6 RED-IN-LOG _and_refuses_anything_outside_two_to_fifty [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...to_fifty [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadRoutesTests.A_group_thread_runs_the_creator_as_admin_and_refuses_anything_outside_two_to_fifty [1 s]
+M6 RESTORE-OK hash=PRE residue=0
+M7 PRE 86679F604F0A | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-03: a listagem devolve threads alheias - a contagem e o DoesNotContain falham (ThreadRoutesTests vermelha)
+M7 RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261112-011438-test-filter.log
+M7 RED-IN-LOG he_actor_is_in_and_both_counters_start_at_zero [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._at_zero [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadRoutesTests.The_list_answers_only_with_the_threads_the_actor_is_in_and_both_counters_start_at_zero [921 ms]
+M7 RESTORE-OK hash=PRE residue=0
+M8 PRE 758FDCDE5A01 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-04: o id nasce em dominio fixo - o Assert.StartsWith da origem falha (ThreadRoutesTests vermelha)
+M8 RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261112-011501-test-filter.log
+M8 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...e_origin [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadRoutesTests.Both_routes_demand_a_session_the_mutation_its_csrf_and_the_id_follows_the_origin [906 ms]
+M8 RESTORE-OK hash=PRE residue=0
+M9 PRE 758FDCDE5A01 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-04: sem sessao a rota responde 403 em vez de 401 - os dois asserts anonimos falham (ThreadRoutesTests vermelha)
+M9 RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261112-011522-test-filter.log
+M9 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...e_origin [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadRoutesTests.Both_routes_demand_a_session_the_mutation_its_csrf_and_the_id_follows_the_origin [5 ms]
+M9 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=9 falha=0 log=20261112-011545-test-filter.log
+SUMMARY cycles=12 failed=1 residue-QA-MUTATION=0 temp-backups=0
+## re-execucao seletiva (M4D) - 2026-11-12 01:19:07
+M4D PRE 758FDCDE5A01 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: o grupo de 2 (criador + 1) e recusado - o piso exato cai (ThreadRoutesTests vermelha)
+M4D RUN wrapper=1 logExit=1 aprovado=7 falha=2 log=20261112-011929-test-filter.log
+M4D RED-IN-LOG _and_refuses_anything_outside_two_to_fifty [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...to_fifty [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadRoutesTests.A_group_thread_runs_the_creator_as_admin_and_refuses_anything_outside_two_to_fifty [1 s] | n_and_both_counters_start_at_zero [FAIL] | Com falha Squid.Tests.Threads.ThreadRoutesTests.The_list_answers_only_with_the_threads_the_actor_is_in_and_both_counters_start_at_zero [756 ms]
+M4D RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=9 falha=0 log=20261112-011950-test-filter.log
+SUMMARY cycles=6 failed=0 residue-QA-MUTATION=0 temp-backups=0
+## re-execucao seletiva (M10) - 2026-11-12 01:26:57
+M10 PRE F2F22F2269D0 | editado backend\src\Squid.Api\Auth\AuthSessionMiddleware.cs | AC-04: sem header CSRF a mutacao passa - o 403 da rota nao cai (ThreadRoutesTests vermelha)
+M10 RUN wrapper=1 logExit=1 aprovado=8 falha=1 log=20261112-012720-test-filter.log
+M10 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...e_origin [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadRoutesTests.Both_routes_demand_a_session_the_mutation_its_csrf_and_the_id_follows_the_origin [484 ms]
+M10 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=9 falha=0 log=20261112-012742-test-filter.log
+SUMMARY cycles=1 failed=0 residue-QA-MUTATION=0 temp-backups=0

@@ -1,4 +1,4 @@
-﻿using Squid.Persistence;
+using Squid.Persistence;
 using Squid.Service;
 
 namespace Squid.Tests.Projections;
@@ -24,7 +24,7 @@ public sealed class SchemaMigrationTests
         {
             // Banco novo: a primeira aplicaÃ§Ã£o roda o script e registra a versÃ£o.
             var first = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
-            Assert.Equal(new[] { 1 }, first);
+            Assert.Equal(SchemaMigrations.Load().Select(script => script.Version), first);
 
             foreach (var table in Tables)
             {
@@ -40,10 +40,11 @@ public sealed class SchemaMigrationTests
 
             // schema_version registra a versÃ£o, com o checksum do texto que rodou.
             var row = Assert.Single(await ProjectionDb.QueryAsync<VersionRow>(file,
-                "SELECT version AS Version, name AS Name, checksum AS Checksum FROM schema_version"));
+                "SELECT version AS Version, name AS Name, checksum AS Checksum FROM schema_version "
+                + "WHERE version = 1"));
             Assert.Equal(1, row.Version);
             Assert.Equal("init_projections", row.Name);
-            var script = Assert.Single(SchemaMigrations.Load());
+            var script = SchemaMigrations.Load().Single(item => item.Version == 1);
             Assert.Equal(SchemaMigrator.ChecksumOf(script.Sql), row.Checksum);
 
             // Os counters que nascem com a migration (GAP-23 e a seÃ§Ã£o F): zero e 10 GiB.
@@ -55,7 +56,8 @@ public sealed class SchemaMigrationTests
             // ReaplicaÃ§Ã£o: idempotente â€” nada roda de novo e a tabela continua com uma linha.
             var second = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
             Assert.Empty(second);
-            Assert.Equal(1, await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM schema_version"));
+            Assert.Equal(SchemaMigrations.Load().Count,
+                await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM schema_version"));
         }
         finally
         {

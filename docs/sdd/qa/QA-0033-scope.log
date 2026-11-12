@@ -1,0 +1,40 @@
+QA-0033 scope - 2026-11-12 01:34:53
+--- gate final (header e resumo do proprio log, S-22) ---
+exit:    0
+Com falha:     0, Aprovado:   438, Ignorado:     0, Total:   438
+--- git status --porcelain -uall (baseline 10 + artefatos desta QA) ---
+ M docs/sdd/plan/plan.md
+?? docs/sdd/qa/QA-0033-git-baseline.txt
+?? docs/sdd/qa/QA-0033-mutations.log
+?? docs/sdd/qa/QA-0033-scope.log
+?? docs/sdd/qa/qa-check-task-0033.ps1
+?? docs/sdd/qa/qa-check-task-0033.sh
+?? docs/sdd/qa/qa-mutate-task-0033.ps1
+?? docs/sdd/specs/SPEC-0010-mensageria-p05.md
+?? docs/sdd/tasks/TASK-0033-nucleo-da-thread.md
+?? docs/sdd/tasks/TASK-0034-envio-e-leitura.md
+?? docs/sdd/tasks/TASK-0035-participantes-e-admin.md
+?? docs/sdd/tasks/TASK-0036-aviso-nao-e2ee-e-leitura.md
+?? docs/sdd/tasks/TASK-0037-resposta-a-mensagem.md
+?? docs/sdd/tasks/TASK-0038-reacao-whitelist.md
+?? docs/sdd/tasks/TASK-0039-anexo-em-mensagem.md
+?? docs/sdd/tasks/TASK-0040-facet-do-dod-sprint4.md
+--- git status backend (esperado vazio) ---
+backend-entradas=0
+--- SHA256 dos 5 arquivos mutados (esperado = PRE do ledger) ---
+86679F604F0A03A9CA2BA86ADA108AE58E3C6687C8EC32012858057EA31F002A  backend\src\Squid.Service\SqliteThreadStore.cs
+7B51779F621A054B497A2E2550AAFC57F178861D0D594DDE9ACB4843CE5EAF07  backend\src\Squid.Persistence\schema\SchemaMigrator.cs
+EA1D8BE3BF489BE94B452B34A04E631A40A8CA254FE340769650B8CF48F923A5  backend\src\Squid.Persistence\schema\0002_threads.sql
+758FDCDE5A01DE42EF04E8F1FD9002A7FD4D049ED952E9621EA69B1B40104CA6  backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+F2F22F2269D011ED6DB70978382A0EFF515424492C6A8002F4966324A37EE948  backend\src\Squid.Api\Auth\AuthSessionMiddleware.cs
+--- mtime em backend/src+tests desde 2026-11-12 01:05:33 (sem bin/obj), esperado exatamente os 5 mutados ---
+2026-11-12 01:27:20 backend\src\Squid.Api\Auth\AuthSessionMiddleware.cs
+2026-11-12 01:19:29 backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+2026-11-12 01:12:05 backend\src\Squid.Persistence\schema\0002_threads.sql
+2026-11-12 01:11:42 backend\src\Squid.Persistence\schema\SchemaMigrator.cs
+2026-11-12 01:14:38 backend\src\Squid.Service\SqliteThreadStore.cs
+mtime-moved=5
+--- residuo QA-MUTATION em backend (cs+sql, esperado 0) ---
+residue=0
+--- backups qa0033-* no TEMP (esperado 0) ---
+temp-backups=0
