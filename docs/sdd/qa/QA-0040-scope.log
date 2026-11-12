@@ -1,0 +1,21 @@
+# QA-0040 scope scan - 2026-11-12 11:55:23
+git-backend-count=0
+blob backend/src/Squid.Service/SqliteThreadStore.cs work=f9585eb8b303 head=f9585eb8b303 match=True
+blob backend/src/Squid.Api/Threads/ThreadEndpoints.cs work=2ea88b9a9370 head=2ea88b9a9370 match=True
+blob backend/src/Squid.Api/Media/MediaEndpoints.cs work=d78757281d23 head=d78757281d23 match=True
+mtime-count=3 (esperado 3: os arquivos mutados e restaurados)
+mtime novo: backend\src\Squid.Api\Media\MediaEndpoints.cs em 2026-11-12 11:41:47
+mtime novo: backend\src\Squid.Api\Threads\ThreadEndpoints.cs em 2026-11-12 11:41:01
+mtime novo: backend\src\Squid.Service\SqliteThreadStore.cs em 2026-11-12 11:39:33
+residue=0
+fora-dos-touches=0
+git-status-total=8 (task file + artefatos docs/sdd/qa)
+git:  M docs/sdd/tasks/TASK-0040-facet-do-dod-sprint4.md
+git: ?? docs/sdd/qa/QA-0040-git-baseline.txt
+git: ?? docs/sdd/qa/QA-0040-mutations.log
+git: ?? docs/sdd/qa/QA-0040-scope.log
+git: ?? docs/sdd/qa/QA-0040-verify.log
+git: ?? docs/sdd/qa/qa-check-task-0040.ps1
+git: ?? docs/sdd/qa/qa-check-task-0040.sh
+git: ?? docs/sdd/qa/qa-mutate-task-0040.ps1
+temp-backups=0

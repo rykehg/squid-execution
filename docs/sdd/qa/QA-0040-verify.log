@@ -1,0 +1,11 @@
+M1 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M2 hits=1 expected=1 OK backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M3 hits=1 expected=1 OK backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M4 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M5 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M6 hits=1 expected=1 OK backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M7 hits=1 expected=1 OK backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M8 hits=1 expected=1 OK backend\src\Squid.Api\Media\MediaEndpoints.cs
+M9 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+BOM OK (UTF-8 BOM presente)
+VERIFY total=9 bad=0

@@ -1,0 +1,6 @@
+HEAD: 01b741f1e69d061cfbe17911d5b2f6ef9912337d
+branch: task/TASK-0040-facet-do-dod-sprint4
+status:
+ M docs/sdd/tasks/TASK-0040-facet-do-dod-sprint4.md
+wsl-dotnet: dotnet-missing
+captured: QA-0040 git baseline (antes de qualquer escrita da QA)
