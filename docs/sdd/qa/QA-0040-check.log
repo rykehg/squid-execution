@@ -1,0 +1,41 @@
+CHECK BASELINE-HEAD OK - baseline HEAD = 01b741f
+CHECK BASELINE-BRANCH OK - branch task/TASK-0040-facet-do-dod-sprint4
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado na baseline (suite Linux = unverified)
+CHECK BASELINE-THREADS OK - 20261112-112436-test-filter.log
+CHECK GATE-AGE OK - 20261112-115022-test-gate.log criado depois do verde 114231 da QA
+CHECK GATE-EXIT OK - 20261112-115022-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - 20261112-115022-test-gate.log Com falha 0 / Aprovado 480 / Total 480
+CHECK MUT-IDS OK - M1..M9 todos com linha PRE
+CHECK MUT-RED OK - M1..M9 todos vermelhos DENTRO do log (exit: 1, falha >= 1)
+CHECK MUT-LOGEXIT OK - 9/9 ciclos com logExit=1 lido no cabecalho do log (S-22)
+CHECK CATCH-M1 OK - RED-FACET contem: Two_users_create_a_direct|The_full_flow_from_creation|A_seat_spelled_read
+CHECK CATCH-M2 OK - RED-FACET contem: A_third_user_shares|Repeating_a_reply
+CHECK CATCH-M3 OK - RED-FACET contem: A_third_user_shares|Repeating_a_reply
+CHECK CATCH-M4 OK - RED-FACET contem: Concurrent_sends_take|Two_users_create_a_direct
+CHECK CATCH-M5 OK - RED-FACET contem: Repeating_a_reply|The_full_flow_from_creation
+CHECK CATCH-M6 OK - RED-FACET contem: A_seat_spelled_read
+CHECK CATCH-M7 OK - RED-FACET contem: The_ack_row_carries
+CHECK CATCH-M8 OK - RED-FACET contem: The_full_flow_from_creation
+CHECK M9-SURVIVES-FACET OK - M9 (marcador pode regredir) sobrevive a facet mas a suite da TASK-0036 fica vermelha (falha >= 1)
+CHECK M9-CAUGHT-BY-SUITE OK - M9 RED-IN-LOG pega em The_read_marker_only_advances (a monotonicidade e da TASK-0036, nao da facet)
+CHECK MUT-CLASSIFICACAO OK - nenhuma CLASSIFICACAO-ERRADA (todo vermelho e falha de produto)
+CHECK MUT-RESTORE OK - RESTORE-OK = 9 (esperado >= 9: oito ciclos can-fail + a observacao M9)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 48/48 sobre as fontes restauradas
+CHECK MUT-SUMMARY OK - SUMMARY cycles=8 failed=0 residue=0 temp-backups=0 (run cheio)
+CHECK MUT-SUMMARY-M9 OK - SUMMARY cycles=1 failed=0 (re-execucao seletiva do M9)
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0040-* no TEMP = 0
+CHECK DRIVER-BOM OK - qa-mutate-task-0040.ps1 com UTF-8 BOM
+CHECK VERIFY-RECORDED OK - QA-0040-verify.log com VERIFY total=9 bad=0
+CHECK CONCURRENCY-REAL OK - AC-03 usa Task.WhenAll (3 rodadas), nao envio sequencial
+CHECK FACET-FACTS OK - facet com 7 [Fact] (AC-01..AC-06)
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 3/3 arquivos mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = exatamente os 3 arquivos mutados (restaurados)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo QA-MUTATION = 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum arquivo de produto fora dos touches alterado
+CHECK SCOPE-GIT-SCOPE OK - git status fora de docs/sdd = 0 entradas (esperado 0: nem produto, nem outra task)
+CHECK SDD-STATE OK - check: OK - log entries 15, evidence rows 11
+CHECK QA-DOC OK - QA-0040-facet-do-dod-sprint4.md com verdict PASSED
+SUMMARY total=40 fails=0

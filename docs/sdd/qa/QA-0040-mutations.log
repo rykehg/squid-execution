@@ -1,0 +1,86 @@
+﻿# QA-0040 mutations - 2026-11-12 11:35:45
+M1 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M1 WHY AC-01/AC-05a/AC-06: o marcador nunca e gravado - a resposta ecoa o pedido e a lista devolve 0
+M1 EXPECT Two_users_create_a_direct|The_full_flow_from_creation|A_seat_spelled_read
+M1 FILTER FullyQualifiedName~Squid.Tests.Threads
+M1 RUN wrapper=1 logExit=1 aprovado=42 falha=6 constraint=no log=20261112-113630-test-filter.log
+M1 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...advances [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_gates_on_the_ack_of_each_sender_and_the_read_marker_only_ever_advances [104 ms] | [FAIL] | _of_participants_and_of_nobody_else [FAIL] | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.The_read_marker_only_advances_and_a_seq_above_the_thread_total_is_400 [287 ms] | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.The_last_read_seq_reaches_list_and_envelope_of_participants_and_of_nobody_else [490 ms] | s_back_every_reference_count_and_attachment [FAIL]
+M1 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: 2
+M1 RED-FACET The_full_flow_from_creation_to_attachment_reads_back_every_reference_count_and_attachment,A_seat_spelled_read_is_still_a_removal_and_the_section_d_tails_keep_working,Two_users_create_a_direct_accept_the_notice_and_exchange_messages_read_in_seq_order
+M1 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M2 PRE 30AFD8CB7389 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M2 WHY AC-02/AC-04: o 404 ganha traceId - os corpos deixam de ser byte-identicos e a recusa ensina algo
+M2 EXPECT A_third_user_shares|Repeating_a_reply
+M2 FILTER FullyQualifiedName~Squid.Tests.Threads
+M2 RUN wrapper=1 logExit=1 aprovado=38 falha=10 constraint=no log=20261112-113719-test-filter.log
+M2 RED-IN-LOG _and_the_stranger_keeps_the_byte_identical_404 [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ical_404 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadReplyRoutesTests.A_valid_reply_never_widens_the_wall_and_the_stranger_keeps_the_byte_identical_404 [516 ms] | s_the_rows_and_a_missing_one_is_404 [FAIL] | Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [FAIL] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.Deleting_takes_the_actor_row_the_count_follows_the_rows_and_a_missing_one_is_404 [561 ms] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [452 ms] | Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [FAIL]
+M2 RED-DETAIL Assert.Equal() Failure: Collections differ ~ â†“ (pos 79)
+M2 RED-FACET A_third_user_shares_one_404_body_on_get_and_post_and_never_reads_the_participants,Repeating_a_reply_or_a_reaction_changes_nothing_and_an_outsider_sees_neither
+M2 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M3 PRE 30AFD8CB7389 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M3 WHY AC-02/AC-04: o nao-participante LE o historico da thread alheia (GET devolve 200 em vez de 404)
+M3 EXPECT A_third_user_shares|Repeating_a_reply
+M3 FILTER FullyQualifiedName~Squid.Tests.Threads
+M3 RUN wrapper=1 logExit=1 aprovado=38 falha=10 constraint=no log=20261112-113807-test-filter.log
+M3 RED-IN-LOG _and_the_stranger_keeps_the_byte_identical_404 [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ical_404 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadReplyRoutesTests.A_valid_reply_never_widens_the_wall_and_the_stranger_keeps_the_byte_identical_404 [352 ms] | Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [FAIL] | its_history_readable_by_the_remaining_member [FAIL] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [454 ms] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.A_direct_thread_goes_from_two_to_one_with_its_history_readable_by_the_remaining_member [627 ms] | ory_and_never_lets_the_last_one_go [FAIL]
+M3 RED-DETAIL Assert.All() Failure: 2 out of 4 items in the collection did not pass. ~ [0]: Item: StatusCode: 200, ReasonPhrase: 'OK', Version: 1.1, Content: System.Net.Http.HttpConnectionResponseContent, Headers:
+M3 RED-FACET A_seat_spelled_read_is_still_a_removal_and_the_section_d_tails_keep_working,A_third_user_shares_one_404_body_on_get_and_post_and_never_reads_the_participants,Repeating_a_reply_or_a_reaction_changes_nothing_and_an_outsider_sees_neither
+M3 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M4 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M4 WHY AC-03: alocacao de seq quebrada - envios concorrentes colidem no mesmo numero (GAP-29 morto)
+M4 EXPECT Concurrent_sends_take|Two_users_create_a_direct
+M4 FILTER FullyQualifiedName~Squid.Tests.Threads
+M4 RUN wrapper=1 logExit=1 aprovado=17 falha=31 constraint=yes log=20261112-113851-test-filter.log
+M4 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ts_admin [FAIL]:String) [], RemoteException | [FAIL] | Com falha Squid.Tests.Threads.ThreadStoreTests.The_succession_ranks_by_joined_at_and_a_group_with_seats_never_loses_its_admin [237 ms] | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_lands_number_and_row_together_and_the_delta_reads_only_what_is_new [104 ms] | tores_a_same_thread_reference [FAIL] | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_gates_the_ack_before_the_reply_target_and_stores_a_same_thread_reference [131 ms] | [FAIL]
+M4 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: 1
+M4 RED-FACET The_full_flow_from_creation_to_attachment_reads_back_every_reference_count_and_attachment,A_seat_spelled_read_is_still_a_removal_and_the_section_d_tails_keep_working,A_third_user_shares_one_404_body_on_get_and_post_and_never_reads_the_participants,Concurrent_sends_take_unique_seqs_and_the_history_reads_back_complete_ordered_and_without_duplicates,Repeating_a_reply_or_a_reaction_changes_nothing_and_an_outsider_sees_neither,Two_users_create_a_direct_accept_the_notice_and_exchange_messages_read_in_seq_order
+M4 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M5 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M5 WHY AC-04: o reply reescreve reply_to_id da mensagem alvo - o estado pre-existente deixa de ficar intacto
+M5 EXPECT Repeating_a_reply|The_full_flow_from_creation
+M5 FILTER FullyQualifiedName~Squid.Tests.Threads
+M5 RUN wrapper=1 logExit=1 aprovado=44 falha=4 constraint=no log=20261112-113933-test-filter.log
+M5 RED-IN-LOG _target_and_stores_a_same_thread_reference [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...eference [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_gates_the_ack_before_the_reply_target_and_stores_a_same_thread_reference [109 ms] | d_the_envelope_carries_the_reference [FAIL] | Com falha Squid.Tests.Threads.ThreadReplyRoutesTests.A_reply_to_a_message_of_the_same_thread_lands_and_the_envelope_carries_the_reference [372 ms] | s_back_every_reference_count_and_attachment [FAIL] | Com falha Squid.Tests.Threads.Sprint4ClosingFacetTests.The_full_flow_from_creation_to_attachment_reads_back_every_reference_count_and_attachment [602 ms] | g_and_an_outsider_sees_neither [FAIL]
+M5 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: Null
+M5 RED-FACET The_full_flow_from_creation_to_attachment_reads_back_every_reference_count_and_attachment,Repeating_a_reply_or_a_reaction_changes_nothing_and_an_outsider_sees_neither
+M5 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M6 PRE 30AFD8CB7389 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M6 WHY AC-05a: o sufixo /read engole a rota - o DELETE da cadeira read vira 404 em vez de 200
+M6 EXPECT A_seat_spelled_read
+M6 FILTER FullyQualifiedName~Squid.Tests.Threads
+M6 RUN wrapper=1 logExit=1 aprovado=47 falha=1 constraint=no log=20261112-114018-test-filter.log
+M6 RED-IN-LOG moval_and_the_section_d_tails_keep_working [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._working [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.Sprint4ClosingFacetTests.A_seat_spelled_read_is_still_a_removal_and_the_section_d_tails_keep_working [540 ms]
+M6 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: OK
+M6 RED-FACET A_seat_spelled_read_is_still_a_removal_and_the_section_d_tails_keep_working
+M6 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M7 PRE 30AFD8CB7389 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M7 WHY AC-05b: a linha do aceite nasce sem o texto do aviso - a leitura na fonte nao encontra as palavras
+M7 EXPECT The_ack_row_carries
+M7 FILTER FullyQualifiedName~Squid.Tests.Threads
+M7 RUN wrapper=1 logExit=1 aprovado=47 falha=1 constraint=no log=20261112-114101-test-filter.log
+M7 RED-IN-LOG Squid.Tests.Threads.Sprint4ClosingFacetTests.The_ack_row_carries_the_fr_032_notice_text_itself [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...t_itself [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.Sprint4ClosingFacetTests.The_ack_row_carries_the_fr_032_notice_text_itself [200 ms]
+M7 RED-FACET The_ack_row_carries_the_fr_032_notice_text_itself
+M7 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M8 PRE D5A5BDD7B46A | editado backend\src\Squid.Api\Media\MediaEndpoints.cs
+M8 WHY AC-06: o participante que NAO subiu a midia cai no 404 - o ramo mensagem da visibilidade sai
+M8 EXPECT The_full_flow_from_creation
+M8 FILTER FullyQualifiedName~Squid.Tests.Threads
+M8 RUN wrapper=1 logExit=1 aprovado=46 falha=2 constraint=no log=20261112-114147-test-filter.log
+M8 RED-IN-LOG t_of_a_thread_referencing_the_hash_and_hides_it_from_everyone_else [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...one_else [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.GetMedia_serves_the_participant_of_a_thread_referencing_the_hash_and_hides_it_from_everyone_else [824 ms] | s_back_every_reference_count_and_attachment [FAIL] | Com falha Squid.Tests.Threads.Sprint4ClosingFacetTests.The_full_flow_from_creation_to_attachment_reads_back_every_reference_count_and_attachment [790 ms]
+M8 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: OK
+M8 RED-FACET The_full_flow_from_creation_to_attachment_reads_back_every_reference_count_and_attachment
+M8 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Media\MediaEndpoints.cs
+GREEN wrapper=0 logExit=0 aprovado=48 falha=0 log=20261112-114231-test-filter.log
+SUMMARY cycles=8 failed=0 residue-QA-MUTATION=0 temp-backups=0
+## re-execucao seletiva (M9) - 2026-11-12 12:00:35
+M9 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M9 WHY OBSERVACAO: marcador un-monotonico - a facet nao tem caso de regressao; quem pega e a suite da TASK-0036
+M9 EXPECT SURVIVES-FACET
+M9 FILTER FullyQualifiedName~Squid.Tests.Threads
+M9 RUN wrapper=1 logExit=1 aprovado=46 falha=2 constraint=no log=20261112-120124-test-filter.log
+M9 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...advances [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_gates_on_the_ack_of_each_sender_and_the_read_marker_only_ever_advances [124 ms] | [FAIL] | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.The_read_marker_only_advances_and_a_seq_above_the_thread_total_is_400 [336 ms]
+M9 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: 2
+M9 RED-FACET NONE - a facet nao falhou neste mutante
+M9 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+GREEN wrapper=0 logExit=0 aprovado=48 falha=0 log=20261112-120209-test-filter.log
+SUMMARY cycles=1 failed=0 residue-QA-MUTATION=0 temp-backups=0
