@@ -77,14 +77,20 @@ public sealed class ThreadStoreTests
             Assert.False(await store.IsParticipantAsync(
                 $"http://127.0.0.1:5199/t/{Guid.NewGuid():N}", author));
 
+            // TASK-0036: the §9.6 gate reads a row per (thread, SENDER) inside the append — both
+            // seats accept the notice once here, so this test stays about the CAS of GAP-29 and
+            // the exact delta. The gate's own branch is the dedicated test below.
+            await store.AckNoE2eeAsync(id, author, "aviso", now);
+            await store.AckNoE2eeAsync(id, peer, "aviso", now);
+
             // Number and row in ONE step: the seq the caller gets back is already in the delta,
             // so a 200 can never name a message a ?since= read would miss (GAP-29, §9.3).
-            var first = await store.AppendMessageAsync(id, $"{id}/m/um", author, "oi", now);
+            var first = (await store.AppendMessageAsync(id, $"{id}/m/um", author, "oi", now)).Message;
             Assert.NotNull(first);
             Assert.Equal(1L, first.Seq);
             Assert.Equal("oi", (await store.ListMessagesAsync(id, 0)).Single().Content);
 
-            var second = await store.AppendMessageAsync(id, $"{id}/m/dois", peer, "tudo bem?", now);
+            var second = (await store.AppendMessageAsync(id, $"{id}/m/dois", peer, "tudo bem?", now)).Message;
             Assert.NotNull(second);
             Assert.Equal(2L, second.Seq);
 
@@ -93,13 +99,14 @@ public sealed class ThreadStoreTests
             var racing = await Task.WhenAll(
                 store.AppendMessageAsync(id, $"{id}/m/tres", author, "da corrida A", now),
                 store.AppendMessageAsync(id, $"{id}/m/quatro", peer, "da corrida B", now));
-            Assert.All(racing, stored => Assert.NotNull(stored));
+            Assert.All(racing, stored => Assert.Equal(AppendOutcome.Appended, stored.Outcome));
             Assert.Equal(new[] { 3L, 4L },
-                racing.Select(stored => stored!.Seq).OrderBy(value => value).ToArray());
+                racing.Select(stored => stored.Message!.Seq).OrderBy(value => value).ToArray());
 
-            // No thread: null comes back, nothing is written, the delta it never had stays empty.
+            // No thread: the outcome says so, nothing is written, the delta it never had stays empty.
             var absent = $"http://127.0.0.1:5199/t/{Guid.NewGuid():N}";
-            Assert.Null(await store.AppendMessageAsync(absent, $"{id}/m/nada", author, "nada", now));
+            Assert.Equal(AppendOutcome.NoSuchThread,
+                (await store.AppendMessageAsync(absent, $"{id}/m/nada", author, "nada", now)).Outcome);
             Assert.Empty(await store.ListMessagesAsync(absent, 0));
 
             // The exact delta of contract §9.3: seq > since only, ordered, never a repeat.
@@ -155,6 +162,7 @@ public sealed class ThreadStoreTests
                     new ThreadParticipant(withAdmins, ana, "admin", t2),
                     new ThreadParticipant(withAdmins, bia, "admin", t1),
                 ]);
+            await store.AckNoE2eeAsync(withAdmins, creator, "aviso", t0); // §9.6 gate before the append
             await store.AppendMessageAsync(withAdmins, $"{withAdmins}/m/um", creator, "oi", t0);
 
             Assert.Equal(ParticipantRemoval.Removed,
@@ -211,6 +219,69 @@ public sealed class ThreadStoreTests
             Assert.False(await store.SetRoleAsync(noAdmin, fora, "admin"));
             Assert.Equal("admin", (await store.FindAsync(noAdmin))!
                 .Participants.Single(participant => participant.ActorId == ana).Role);
+        }
+        finally
+        {
+            ProjectionDb.TryDelete(file);
+        }
+    }
+
+    [Fact] // TASK-0036 — o gate do §9.6 por ator e o marcador monotônico de FR-033 na própria store
+    public async Task The_append_gates_on_the_ack_of_each_sender_and_the_read_marker_only_ever_advances()
+    {
+        var file = ProjectionDb.NewFile();
+        try
+        {
+            await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file));
+
+            const string author = "http://127.0.0.1:5199/users/autora";
+            const string peer = "http://127.0.0.1:5199/users/par";
+            var now = DateTimeOffset.UtcNow;
+            var id = $"http://127.0.0.1:5199/t/{Guid.NewGuid():N}";
+            await store.CreateAsync(
+                new ThreadState(id, "direct", author, 0, now, 1),
+                [
+                    new ThreadParticipant(id, author, "member", now),
+                    new ThreadParticipant(id, peer, "member", now),
+                ]);
+
+            // Sem aceite o append é recusado — e a recusa NÃO queima número nem escreve linha:
+            // o marcador da thread segue 0 e o delta segue vazio (é o 428 da rota que nasce daqui).
+            var refused = await store.AppendMessageAsync(id, $"{id}/m/recusada", author, "oi", now);
+            Assert.Equal(AppendOutcome.AckRequired, refused.Outcome);
+            Assert.Null(refused.Message);
+            Assert.Equal(0, await ProjectionDb.ScalarAsync<long>(file,
+                "SELECT message_seq FROM thread WHERE id = @Id", new { Id = id }));
+            Assert.Empty(await store.ListMessagesAsync(id, 0));
+
+            // Aceite de UM ator não libera o outro (AC-02): a autora grava a aceitação e passa,
+            // a par — sem linha nenhuma — continua recusada na MESMA thread.
+            await store.AckNoE2eeAsync(id, author, "aviso", now);
+            Assert.Equal(AppendOutcome.Appended,
+                (await store.AppendMessageAsync(id, $"{id}/m/primeira", author, "oi", now)).Outcome);
+            Assert.Equal(AppendOutcome.AckRequired,
+                (await store.AppendMessageAsync(id, $"{id}/m/segunda", peer, "oi", now)).Outcome);
+
+            // Idempotente (AC-01): repetir o aceite mantém a PRIMEIRA linha — uma só por par.
+            var firstAckedAt = await ProjectionDb.ScalarAsync<string>(file,
+                "SELECT acked_at FROM thread_no_e2ee_ack WHERE thread_id = @Id AND actor_id = @Actor",
+                new { Id = id, Actor = author });
+            await store.AckNoE2eeAsync(id, author, "aviso", now.AddMinutes(5));
+            Assert.Equal(1, await ProjectionDb.ScalarAsync<long>(file,
+                "SELECT COUNT(*) FROM thread_no_e2ee_ack WHERE thread_id = @Id", new { Id = id }));
+            Assert.Equal(firstAckedAt, await ProjectionDb.ScalarAsync<string>(file,
+                "SELECT acked_at FROM thread_no_e2ee_ack WHERE thread_id = @Id AND actor_id = @Actor",
+                new { Id = id, Actor = author }));
+
+            // Marcador monotônico (AC-03): nasce 0, avança até 2, e o pedido menor 1 não retrocede
+            // — a store devolve o valor em vigor nos dois casos.
+            Assert.Equal(0, await store.LastReadSeqAsync(id, author));
+            Assert.Equal(2, await store.MarkReadAsync(id, author, 2));
+            Assert.Equal(2, await store.MarkReadAsync(id, author, 1)); // ignorado, não regride
+            Assert.Equal(2, await store.LastReadSeqAsync(id, author));
+            // E é POR PARTICIPANTE: a par segue com o marcador dela, intocado.
+            Assert.Equal(0, await store.LastReadSeqAsync(id, peer));
         }
         finally
         {

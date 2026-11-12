@@ -98,13 +98,16 @@ public sealed class SqliteThreadStore : IThreadStore
         // in (threads they are not in cannot appear — FR-031), while the participant rows of
         // those threads are read IN FULL — filtering the outer p by actor_id (the first shape of
         // this query) collapsed every item to the caller's own seat, and data-model 2.7's
-        // ParticipantActorIds is the whole list. lastReadSeq is 0 while the monotonic marker
-        // belongs to TASK-0036 (GAP-38: the field exists from here).
+        // ParticipantActorIds is the whole list. The LEFT JOIN carries the READER's own marker of
+        // 0004 (FR-033, born 0 with no row) — r is keyed to @ActorId alone, so it is the same
+        // value on every row of a thread and only the first row of the group is ever read.
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT t.id, t.kind, t.created_by, t.message_seq, t.created_at, t.version, p.actor_id
+            SELECT t.id, t.kind, t.created_by, t.message_seq, t.created_at, t.version, p.actor_id,
+                   r.last_read_seq
             FROM thread AS t
             JOIN thread_participant AS p ON p.thread_id = t.id
+            LEFT JOIN thread_read AS r ON r.thread_id = t.id AND r.actor_id = @ActorId
             WHERE t.id IN (SELECT thread_id FROM thread_participant WHERE actor_id = @ActorId)
             ORDER BY t.rowid, p.rowid
             """;
@@ -113,6 +116,7 @@ public sealed class SqliteThreadStore : IThreadStore
         var items = new List<ThreadListItem>();
         ThreadState? current = null;
         List<string>? actors = null;
+        var lastRead = 0L;
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
@@ -121,7 +125,7 @@ public sealed class SqliteThreadStore : IThreadStore
             {
                 if (current is not null)
                 {
-                    items.Add(new ThreadListItem(current, actors!, LastReadSeq: 0));
+                    items.Add(new ThreadListItem(current, actors!, LastReadSeq: lastRead));
                 }
 
                 current = new ThreadState(
@@ -133,6 +137,7 @@ public sealed class SqliteThreadStore : IThreadStore
                         CultureInfo.InvariantCulture, DateTimeStyles.None),
                     reader.GetInt32(5));
                 actors = new List<string>();
+                lastRead = reader.IsDBNull(7) ? 0L : reader.GetInt64(7);
             }
 
             actors!.Add(reader.GetString(6));
@@ -140,7 +145,7 @@ public sealed class SqliteThreadStore : IThreadStore
 
         if (current is not null)
         {
-            items.Add(new ThreadListItem(current, actors!, LastReadSeq: 0));
+            items.Add(new ThreadListItem(current, actors!, LastReadSeq: lastRead));
         }
 
         return items;
@@ -433,7 +438,7 @@ public sealed class SqliteThreadStore : IThreadStore
     }
 
     /// <inheritdoc />
-    public async Task<MessageState?> AppendMessageAsync(
+    public async Task<AppendResult> AppendMessageAsync(
         string threadId, string messageId, string authorActorId, string content, DateTimeOffset createdAt)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
@@ -461,10 +466,32 @@ public sealed class SqliteThreadStore : IThreadStore
                 var found = await read.ExecuteScalarAsync();
                 if (found is null or DBNull)
                 {
-                    return null; // no thread: the caller answers its 404, nothing was written
+                    return new AppendResult(AppendOutcome.NoSuchThread, null); // no thread: the 404, nothing written
                 }
 
                 version = Convert.ToInt32(found, CultureInfo.InvariantCulture);
+            }
+
+            // §9.6 gate, inside the attempt and BEFORE a number is taken: the ack of FR-032 is one
+            // row per (thread, SENDER), so actor A's acceptance never unlocks actor B — and the
+            // refusal consumes no sequence (leaving the scope without commit rolls back), which is
+            // why the send after the ack still lands on the first free number.
+            await using (var ack = connection.CreateCommand())
+            {
+                ack.Transaction = transaction;
+                ack.CommandText = """
+                    SELECT EXISTS(
+                        SELECT 1 FROM thread_no_e2ee_ack WHERE thread_id = @ThreadId AND actor_id = @ActorId
+                    )
+                    """;
+                ack.Parameters.AddWithValue("@ThreadId", threadId);
+                ack.Parameters.AddWithValue("@ActorId", authorActorId);
+                var accepted = Convert.ToInt64(
+                    await ack.ExecuteScalarAsync(), CultureInfo.InvariantCulture) != 0;
+                if (!accepted)
+                {
+                    return new AppendResult(AppendOutcome.AckRequired, null);
+                }
             }
 
             // The same version-guarded CAS NextMessageSeqAsync runs (GAP-29): message_seq and
@@ -509,8 +536,8 @@ public sealed class SqliteThreadStore : IThreadStore
 
             // Commit is the one step that makes the number and its row real at the same instant.
             await transaction.CommitAsync();
-            return new MessageState(
-                messageId, threadId, authorActorId, content, seq, createdAt);
+            return new AppendResult(AppendOutcome.Appended,
+                new MessageState(messageId, threadId, authorActorId, content, seq, createdAt));
         }
 
         throw new IOException(
@@ -553,6 +580,93 @@ public sealed class SqliteThreadStore : IThreadStore
         }
 
         return items;
+    }
+
+    /// <inheritdoc />
+    public async Task AckNoE2eeAsync(string threadId, string actorId, string notice, DateTimeOffset ackedAt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actorId);
+        ArgumentNullException.ThrowIfNull(notice);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        await BusyTimeoutAsync(connection);
+
+        // Insert only, and a repeat keeps the FIRST ack: the primary key of 0004 is what makes
+        // the route idempotent (AC-01) — two acks racing write the same row, neither rewrites it.
+        await using var insert = connection.CreateCommand();
+        insert.CommandText = """
+            INSERT INTO thread_no_e2ee_ack (thread_id, actor_id, acked_at, notice)
+            VALUES (@ThreadId, @ActorId, @AckedAt, @Notice)
+            ON CONFLICT (thread_id, actor_id) DO NOTHING
+            """;
+        insert.Parameters.AddWithValue("@ThreadId", threadId);
+        insert.Parameters.AddWithValue("@ActorId", actorId);
+        insert.Parameters.AddWithValue("@AckedAt", ackedAt.ToString("O", CultureInfo.InvariantCulture));
+        insert.Parameters.AddWithValue("@Notice", notice);
+        await insert.ExecuteNonQueryAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<long> MarkReadAsync(string threadId, string actorId, long seq)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actorId);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        await BusyTimeoutAsync(connection);
+
+        // One statement is the whole marker rule (GAP-38): the upsert only MOVES the value when
+        // the request is ahead of it, so a smaller seq changes nothing and never regresses — and
+        // the read below answers with the value in force even when the WHERE kept the old one.
+        await using (var mark = connection.CreateCommand())
+        {
+            mark.CommandText = """
+                INSERT INTO thread_read (thread_id, actor_id, last_read_seq)
+                VALUES (@ThreadId, @ActorId, @Seq)
+                ON CONFLICT (thread_id, actor_id) DO UPDATE
+                SET last_read_seq = excluded.last_read_seq
+                WHERE excluded.last_read_seq > thread_read.last_read_seq
+                """;
+            mark.Parameters.AddWithValue("@ThreadId", threadId);
+            mark.Parameters.AddWithValue("@ActorId", actorId);
+            mark.Parameters.AddWithValue("@Seq", seq);
+            await mark.ExecuteNonQueryAsync();
+        }
+
+        await using var read = connection.CreateCommand();
+        read.CommandText =
+            "SELECT last_read_seq FROM thread_read WHERE thread_id = @ThreadId AND actor_id = @ActorId";
+        read.Parameters.AddWithValue("@ThreadId", threadId);
+        read.Parameters.AddWithValue("@ActorId", actorId);
+        var value = await read.ExecuteScalarAsync();
+        return value is null or DBNull
+            ? 0L
+            : Convert.ToInt64(value, CultureInfo.InvariantCulture);
+    }
+
+    /// <inheritdoc />
+    public async Task<long> LastReadSeqAsync(string threadId, string actorId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actorId);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        // No row = the marker born 0 (FR-033); the caller already probed participation, so this
+        // value only ever leaves through the participant's own read routes (section D).
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT last_read_seq FROM thread_read WHERE thread_id = @ThreadId AND actor_id = @ActorId";
+        command.Parameters.AddWithValue("@ThreadId", threadId);
+        command.Parameters.AddWithValue("@ActorId", actorId);
+        var value = await command.ExecuteScalarAsync();
+        return value is null or DBNull
+            ? 0L
+            : Convert.ToInt64(value, CultureInfo.InvariantCulture);
     }
 
     /// <summary>Keeps contended writers waiting for the file lock instead of failing (see the CAS).</summary>

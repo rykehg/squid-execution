@@ -65,4 +65,52 @@ public sealed class ThreadMigrationTests
             ProjectionDb.TryDelete(file);
         }
     }
+
+    [Fact] // TASK-0036 — a 0004 dá casa ao aceite (FR-032) e ao marcador (FR-033), sem tocar 0002/0003
+    public async Task The_0004_version_creates_the_ack_and_read_tables_and_reapplying_changes_nothing()
+    {
+        var file = ProjectionDb.NewFile();
+        try
+        {
+            var first = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            Assert.Contains(4, first);
+            Assert.Equal(
+                new[] { "thread_id", "actor_id", "acked_at", "notice" },
+                await ProjectionDb.QueryAsync<string>(file,
+                    "SELECT name FROM pragma_table_info('thread_no_e2ee_ack')"));
+            Assert.Equal(
+                new[] { "thread_id", "actor_id", "last_read_seq" },
+                await ProjectionDb.QueryAsync<string>(file,
+                    "SELECT name FROM pragma_table_info('thread_read')"));
+            Assert.Equal("no_e2ee_ack_and_read", await ProjectionDb.ScalarAsync<string>(file,
+                "SELECT name FROM schema_version WHERE version = 4"));
+
+            // Uma linha de cada semeada ENTRE as duas aplicações: a re-aplicação pula a versão
+            // registrada (0002/0003 intactos por checksum) e nenhuma das duas linhas se move.
+            await using (var connection = new SqliteConnection(ProjectionDb.ConnectionOf(file)))
+            {
+                await connection.OpenAsync();
+                await using var seed = connection.CreateCommand();
+                seed.CommandText = """
+                    INSERT INTO thread_no_e2ee_ack (thread_id, actor_id, acked_at, notice)
+                    VALUES ('http://127.0.0.1/t/semente', 'http://127.0.0.1/users/a',
+                            '2026-11-12T00:00:00.0000000+00:00', 'aviso');
+                    INSERT INTO thread_read (thread_id, actor_id, last_read_seq)
+                    VALUES ('http://127.0.0.1/t/semente', 'http://127.0.0.1/users/a', 7);
+                    """;
+                await seed.ExecuteNonQueryAsync();
+            }
+
+            var second = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            Assert.Empty(second);
+            Assert.Equal(1, await ProjectionDb.ScalarAsync<long>(file,
+                "SELECT COUNT(*) FROM thread_no_e2ee_ack"));
+            Assert.Equal(7, await ProjectionDb.ScalarAsync<long>(file,
+                "SELECT last_read_seq FROM thread_read"));
+        }
+        finally
+        {
+            ProjectionDb.TryDelete(file);
+        }
+    }
 }

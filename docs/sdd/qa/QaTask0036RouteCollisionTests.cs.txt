@@ -1,0 +1,111 @@
+using System.Net;
+using System.Text.Json;
+using Squid.Tests.Auth;
+using Squid.Tests.Posts;
+
+namespace Squid.Tests.Threads;
+
+/// <summary>
+/// QA-0036 temporary test (TASK-0036): the route parser of <c>ThreadEndpoints.ThreadRouteOf</c>
+/// puts the <c>/participants/</c> marker BEFORE the new section-D tails, so a seat whose actorId
+/// ends in <c>/read</c> (handle <c>read</c> is legal — <c>ActorHandle.Rule</c> is
+/// <c>[a-z0-9_]{3,30}</c>) is still that participant's REMOVAL, not <c>POST .../read</c> — the
+/// regression the DEV note names. The same run asserts the ack row carries the FR-032 notice
+/// TEXT itself (SPEC-0010 section D: no E2EE, operator-readable). Can-fail: moving the
+/// <c>/read</c> tail ahead of the marker turns the DELETE into 404; storing an empty notice
+/// turns the row assertion red. Removed from the tree after the mutation cycles.
+/// </summary>
+[Collection("ServiceHost")]
+public sealed class QaTask0036RouteCollisionTests : IClassFixture<AuthHostFixture>
+{
+    private readonly AuthHostFixture _host;
+
+    public QaTask0036RouteCollisionTests(AuthHostFixture host) => _host = host;
+
+    [Fact]
+    public async Task A_seat_called_read_is_still_a_removal_and_the_ack_row_carries_the_notice()
+    {
+        var (owner, ownerHandle) = await PostRoutes.SignedInAsync(_host, "qa36dono");
+
+        // The literal handle the collision needs — the rule allows it, so a REAL seat can end
+        // in /read (a generated handle never does, which is why no DEV test covers this shape).
+        var reader = _host.NewClient();
+        Assert.Equal(HttpStatusCode.Created,
+            (await reader.RegisterAsync("read", PostRoutes.Password)).StatusCode);
+
+        // Group of 3 seats (creator + `read` + one more): removal below never trips 409
+        // last_participant, so the ONLY thing that can answer the DELETE is the route parser.
+        var (_, extraHandle) = await PostRoutes.SignedInAsync(_host, "qa36extra");
+        var threadId = await CreateAsync(owner, "group", "read", extraHandle);
+        var origin = PostRoutes.Origin(_host);
+        var readId = $"{origin}/users/read";
+        Assert.Contains(readId, await ParticipantsAsync(owner, threadId));
+
+        // The ack row must store the notice TEXT of FR-032 (section D: o aviso em si é texto
+        // registrado no registro do aceite) — asserted at the source, against the wording the
+        // requirement itself states (spec FR-032), not against a remembered label.
+        var ack = await PostRoutes.SendAsync(owner, HttpMethod.Post,
+            $"/api/threads/{Uri.EscapeDataString(threadId)}/ack-no-e2ee", null, owner.Csrf);
+        Assert.Equal(HttpStatusCode.OK, ack.StatusCode);
+        var notice = await NoticeAsync(threadId, $"{origin}/users/{ownerHandle}");
+        Assert.Contains("criptografia ponta a ponta", notice, StringComparison.Ordinal);
+        Assert.Contains("legíveis pelo operador", notice, StringComparison.Ordinal);
+
+        // THE COLLISION: DELETE the seat whose actorId ends in /read. The parser must take the
+        // /participants/ marker (200, row gone) — a parser that reads the /read tail first
+        // answers the shared 404 and the seat survives.
+        var seatPath =
+            $"/api/threads/{Uri.EscapeDataString(threadId)}/participants/{Uri.EscapeDataString(readId)}";
+        var removed = await PostRoutes.SendAsync(owner, HttpMethod.Delete, seatPath, null, owner.Csrf);
+        Assert.Equal(HttpStatusCode.OK, removed.StatusCode);
+        Assert.DoesNotContain(readId, await ParticipantsAsync(owner, threadId));
+
+        // And the section-D read tail still answers on its OWN path (nothing swallowed it):
+        // thread total is 0 messages, so seq 0 is the marker that is legal at the boundary.
+        var marked = await PostRoutes.SendAsync(owner, HttpMethod.Post,
+            $"/api/threads/{Uri.EscapeDataString(threadId)}/read", new { seq = 0 }, owner.Csrf);
+        Assert.Equal(HttpStatusCode.OK, marked.StatusCode);
+        using (var json = JsonDocument.Parse(await marked.Content.ReadAsStringAsync()))
+        {
+            Assert.Equal(0, json.RootElement.GetProperty("lastReadSeq").GetInt64());
+        }
+    }
+
+    /// <summary>Creates a thread of <paramref name="kind"/> with these handle spellings (the creator counts).</summary>
+    private async Task<string> CreateAsync(AuthClient owner, string kind, params string[] handles)
+    {
+        var created = await PostRoutes.SendAsync(owner, HttpMethod.Post, "/api/threads",
+            new { kind, participantActorIds = handles }, owner.Csrf);
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        using var json = JsonDocument.Parse(await created.Content.ReadAsStringAsync());
+        return json.RootElement.GetProperty("id").GetString()!;
+    }
+
+    /// <summary>The participants the list answers with for this thread — data-model §2.7's list.</summary>
+    private async Task<List<string>> ParticipantsAsync(AuthClient client, string threadId)
+    {
+        var response = await PostRoutes.SendAsync(client, HttpMethod.Get, "/api/threads");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var item = json.RootElement.GetProperty("items").EnumerateArray()
+            .Single(value => value.GetProperty("id").GetString() == threadId);
+        return item.GetProperty("participants").EnumerateArray()
+            .Select(value => value.GetString()!).ToList();
+    }
+
+    /// <summary>The notice text one (thread, actor) ack row stored — read at the source (0004).</summary>
+    private async Task<string> NoticeAsync(string threadId, string actorId)
+    {
+        await using var connection = new Microsoft.Data.Sqlite.SqliteConnection(
+            $"Data Source={_host.StoragePath};Pooling=False");
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT notice FROM thread_no_e2ee_ack
+            WHERE thread_id = @ThreadId AND actor_id = @ActorId
+            """;
+        command.Parameters.AddWithValue("@ThreadId", threadId);
+        command.Parameters.AddWithValue("@ActorId", actorId);
+        return (string?)await command.ExecuteScalarAsync() ?? string.Empty;
+    }
+}
