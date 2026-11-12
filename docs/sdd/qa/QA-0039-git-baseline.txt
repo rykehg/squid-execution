@@ -1,0 +1,6 @@
+﻿HEAD: 3d8a1d99d23b96a833384c7781bac3cb8b89be56
+branch: task/TASK-0039-anexo-em-mensagem
+status:
+ M docs/sdd/tasks/TASK-0039-anexo-em-mensagem.md
+wsl-dotnet: dotnet-missing
+captured: QA-0039 git baseline (antes de qualquer escrita da QA)

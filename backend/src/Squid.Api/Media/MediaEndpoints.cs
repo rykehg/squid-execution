@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
 using Squid.Api.Posts;
+using Squid.Api.Threads;
 using Squid.Domain.Objects;
 using Squid.ReadModels.Quota;
 
@@ -14,12 +15,15 @@ namespace Squid.Api.Media;
 /// SPEC-0009 section E (contract §5): <c>POST /api/media</c> takes the multipart upload
 /// <c>file</c> + <c>alt</c> and answers the contract's metadata; <c>GET /api/media/{contentHash}</c>
 /// serves the stored blob behind the GAP-25 rule (session + uploader, or a reader who sees at
-/// least one post referencing the hash) with the byte-identical 404 of SC-005. The order of the
-/// upload is the §2.6 invariant: magic bytes first (415), alt of image/video/gif (400), per-type
+/// least one post referencing the hash) with the byte-identical 404 of SC-005 — TASK-0039
+/// ampliates that rule per SPEC-0010 section G: a participant of a thread whose MESSAGE references
+/// the hash sees it too, while everyone else (a participant of another thread included) keeps the
+/// same 404, and the post half of the rule stays exactly as it was. The order of the upload is the
+/// §2.6 invariant: magic bytes first (415), alt of image/video/gif (400), per-type
 /// limit (413), and only then the processor — which strips EXIF before anything is hashed,
 /// persisted or blurred. Section F (TASK-0028) closes the ladder: the optimistic quota reservation
 /// sits between the processed bytes and the blob write, so a <c>507 quota_exceeded</c> leaves the
-/// volume and the ledger exactly as they were.
+/// volume and the ledger exactly as they were — nothing of that pipeline moves in this task.
 /// </summary>
 public static class MediaEndpoints
 {
@@ -168,13 +172,14 @@ public static class MediaEndpoints
     }
 
     /// <summary>
-    /// <c>GET /api/media/{contentHash}</c> (GAP-25): session (401), then serve — the uploader, or
-    /// a reader who sees at least one post referencing the hash through the post visibility
-    /// ladder itself. Absent hash and out-of-sight hash share one 404 body, no traceId (SC-005).
+    /// <c>GET /api/media/{contentHash}</c> (GAP-25 + SPEC-0010 section G): session (401), then serve —
+    /// the uploader, a reader who sees at least one post referencing the hash through the post
+    /// visibility ladder itself, or a participant of a thread whose message references it (the
+    /// ampliation TASK-0039 owns). Absent hash and out-of-sight hash share one 404 body, no traceId (SC-005).
     /// </summary>
     private static async Task<IResult> GetAsync(
         string contentHash, HttpContext context, IMediaStore store, IObjectStore objects,
-        IContainerStore containers, IPolicyAuditStore audit)
+        IContainerStore containers, IPolicyAuditStore audit, IThreadStore threads)
     {
         var current = AuthSessions.Current(context);
         if (current is null)
@@ -183,7 +188,8 @@ public static class MediaEndpoints
                 "not_authenticated", "sessão inválida ou expirada.");
         }
 
-        var record = await VisibleAsync(contentHash, current, context, store, objects, containers, audit);
+        var record = await VisibleAsync(
+            contentHash, current, context, store, objects, containers, audit, threads);
         return record is null
             ? HiddenMedia(context)
             : await ServeAsync(context, store, record);
@@ -191,14 +197,15 @@ public static class MediaEndpoints
 
     /// <summary>
     /// <c>GET /api/media/{contentHash}/thumb</c> (SPEC-0009 section J): the very same session +
-    /// GAP-25 ladder as the blob route — the visibility rule of TASK-0027 is one rule, not two —
+    /// GAP-25 ladder as the blob route — the visibility rule of TASK-0027 is one rule, not two,
+    /// now carrying TASK-0039's ampliation —
     /// then the thumbnail the Worker registered for the hash; a visible record without one yet
     /// (video/audio per GAP-21, or an image whose pass has not run) serves the registered
     /// placeholder instead, so any media a reader may see answers an image here.
     /// </summary>
     private static async Task<IResult> GetThumbnailAsync(
         string contentHash, HttpContext context, IMediaStore store, IObjectStore objects,
-        IContainerStore containers, IPolicyAuditStore audit)
+        IContainerStore containers, IPolicyAuditStore audit, IThreadStore threads)
     {
         var current = AuthSessions.Current(context);
         if (current is null)
@@ -207,7 +214,8 @@ public static class MediaEndpoints
                 "not_authenticated", "sessão inválida ou expirada.");
         }
 
-        var record = await VisibleAsync(contentHash, current, context, store, objects, containers, audit);
+        var record = await VisibleAsync(
+            contentHash, current, context, store, objects, containers, audit, threads);
         if (record is null)
         {
             return HiddenMedia(context);
@@ -219,14 +227,15 @@ public static class MediaEndpoints
     }
 
     /// <summary>
-    /// The GAP-25 ladder both media GETs read with: the record when the reader is its uploader,
-    /// or sees at least one post referencing the hash through the post visibility rule itself;
-    /// null when the hash is absent or outside the reader's sight — the caller owes the one
+    /// The GAP-25 ladder both media GETs read with — the record when the reader is its uploader,
+    /// or sees at least one post referencing the hash through the post visibility rule itself, or
+    /// (TASK-0039's ampliation, SPEC-0010 section G) sits in a thread whose message references the
+    /// hash; null when the hash is absent or outside the reader's sight — the caller owes the one
     /// byte-identical 404 (SC-005), so absent and hidden stay indistinguishable.
     /// </summary>
     private static async Task<MediaRecord?> VisibleAsync(
         string contentHash, AuthSessions.Resolved current, HttpContext context, IMediaStore store,
-        IObjectStore objects, IContainerStore containers, IPolicyAuditStore audit)
+        IObjectStore objects, IContainerStore containers, IPolicyAuditStore audit, IThreadStore threads)
     {
         var record = await store.FindAsync(contentHash);
         if (record is null) return null;
@@ -239,6 +248,11 @@ public static class MediaEndpoints
                 context, containers, audit, forRead: true);
             if (container is not null) return record;
         }
+
+        // Section G (TASK-0039): the participant of a conversation carrying this hash reads it —
+        // the post rule above decides nothing here, and a reader in no such thread still gets null.
+        var actorId = ContainerEndpoints.ActorId(context, current.Handle);
+        if (await threads.MessageMediaVisibleAsync(record.ContentHash, actorId)) return record;
 
         return null;
     }

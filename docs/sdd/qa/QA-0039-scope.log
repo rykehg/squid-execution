@@ -1,0 +1,23 @@
+﻿# QA-0039 scope scan - 2026-11-12 10:03:52
+git-backend-count=0
+blob backend/src/Squid.Service/SqliteThreadStore.cs work=f9585eb8b303 head=f9585eb8b303 match=True
+blob backend/src/Squid.Api/Threads/MessageView.cs work=97abaebb59c8 head=97abaebb59c8 match=True
+blob backend/src/Squid.Api/Media/MediaEndpoints.cs work=d78757281d23 head=d78757281d23 match=True
+blob backend/src/Squid.Persistence/schema/0007_message_attachments.sql work=25e55ecc6cba head=25e55ecc6cba match=True
+mtime-count=4 (esperado 4: os arquivos mutados e restaurados)
+mtime novo: backend\src\Squid.Api\Media\MediaEndpoints.cs em 2026-11-12 09:51:57
+mtime novo: backend\src\Squid.Api\Threads\MessageView.cs em 2026-11-12 09:55:43
+mtime novo: backend\src\Squid.Persistence\schema\0007_message_attachments.sql em 2026-11-12 09:52:39
+mtime novo: backend\src\Squid.Service\SqliteThreadStore.cs em 2026-11-12 09:51:14
+residue=0
+fora-dos-touches=0
+git-status-total=8 (task file + artefatos docs/sdd/qa)
+git:  M docs/sdd/tasks/TASK-0039-anexo-em-mensagem.md
+git: ?? docs/sdd/qa/QA-0039-git-baseline.txt
+git: ?? docs/sdd/qa/QA-0039-mutations.log
+git: ?? docs/sdd/qa/QA-0039-verify.log
+git: ?? docs/sdd/qa/QaTask0039AttachmentCapTests.cs.txt
+git: ?? docs/sdd/qa/qa-check-task-0039.ps1
+git: ?? docs/sdd/qa/qa-check-task-0039.sh
+git: ?? docs/sdd/qa/qa-mutate-task-0039.ps1
+temp-backups=0

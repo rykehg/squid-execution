@@ -1,3 +1,5 @@
+using Squid.Domain.Objects;
+
 namespace Squid.Api.Threads;
 
 /// <summary>
@@ -70,7 +72,9 @@ public sealed record ThreadListItem(
 /// when the message answers nothing, and always another message OF THE SAME thread — the append
 /// refuses any other target before a row exists. Reaction counts are deliberately NOT a field
 /// here: they are the derived projection of <see cref="ReactionCount"/> the read assembles from
-/// the rows of 0006 (data-model section 2.14: projection, never source).
+/// the rows of 0006 (data-model section 2.14: projection, never source). Attachments join with
+/// TASK-0039 (section G): the §2.6 list frozen at publication from the <c>contentHashes</c> of
+/// the body — the <c>attachments</c> column of 0007, null when the message carries none.
 /// </summary>
 public sealed record MessageState(
     string Id,
@@ -79,7 +83,14 @@ public sealed record MessageState(
     string Content,
     long Seq,
     DateTimeOffset CreatedAt,
-    string? ReplyToId);
+    string? ReplyToId)
+{
+    /// <summary>
+    /// The §2.6 list as it was published (TASK-0039, SPEC-0010 section G): read back from the
+    /// JSON column of 0007, so the envelope reports the very metadata the send froze.
+    /// </summary>
+    public IReadOnlyList<Attachment> Attachments { get; init; } = [];
+}
 
 /// <summary>
 /// What one append attempt answered (SPEC-0010 sections D and E): the row landed, the §9.6
@@ -103,12 +114,30 @@ public enum AppendOutcome
     /// </summary>
     InvalidReplyTarget,
 
+    /// <summary>
+    /// The <c>contentHashes</c> of section G (SPEC-0010, GAP-35, data-model §2.6): more than
+    /// <see cref="Attachment.MaxPerPost"/>, a hash that was never uploaded, or an
+    /// <see cref="AttachmentKind.Image"/>/<see cref="AttachmentKind.Video"/>/<see cref="AttachmentKind.Gif"/>
+    /// whose <c>Alt</c> is empty — the §2.6 refusal of the PUBLICATION, decided inside the append
+    /// AFTER the 428 and the 422 (precondition first), before the sequence is taken: the caller
+    /// answers <c>400 validation_failed</c> with <see cref="AppendResult.Reason"/> and nothing was
+    /// written. The upload, magic bytes, EXIF and the 507 quota stay in <c>POST /api/media</c>.
+    /// </summary>
+    InvalidAttachment,
+
     /// <summary>No such thread: nothing was written, the caller answers the byte-identical 404.</summary>
     NoSuchThread,
 }
 
 /// <summary>One append attempt: <see cref="Message"/> is the stored row only when <see cref="Outcome"/> is <see cref="AppendOutcome.Appended"/>.</summary>
-public sealed record AppendResult(AppendOutcome Outcome, MessageState? Message);
+public sealed record AppendResult(AppendOutcome Outcome, MessageState? Message)
+{
+    /// <summary>
+    /// Why the append refused (TASK-0039): the house sentence of the <c>400</c> the route writes
+    /// for <see cref="AppendOutcome.InvalidAttachment"/> — null on every other outcome.
+    /// </summary>
+    public string? Reason { get; init; }
+}
 
 /// <summary>The vocabulary of data-model section 2.14 <c>Kind</c> on a reaction row (local only — a message reaction never federates).</summary>
 public static class ReactionKinds
@@ -258,11 +287,18 @@ public interface IThreadStore
     /// thread is decided first (<see cref="AppendOutcome.NoSuchThread"/>), so a foreign thread
     /// still shares the byte-identical 404 whether or not the caller ever acked (SC-005). A
     /// racing append waits for the lock instead of failing, which is why every sender of a race
-    /// still gets an answer, with its own number.
+    /// still gets an answer, with its own number. Section G (TASK-0039) rides the SAME attempt:
+    /// <paramref name="contentHashes"/> is checked inside the transaction AFTER the 428 and the
+    /// 422 (precondition first) — at most 10, every hash an upload that exists, and the §2.6 Alt
+    /// rule on image/video/gif — and a refusal is <see cref="AppendOutcome.InvalidAttachment"/>
+    /// with <see cref="AppendResult.Reason"/>, no sequence taken and no row written; when the list
+    /// stands, the <see cref="Attachment"/> list of §2.6 is built with <paramref name="origin"/>'s
+    /// media URL and stored in the row's <c>attachments</c> column (0007). Nothing else of the
+    /// pipeline moves: upload, magic bytes, EXIF and the 507 quota stay in <c>POST /api/media</c>.
     /// </summary>
     Task<AppendResult> AppendMessageAsync(
         string threadId, string messageId, string authorActorId, string content, DateTimeOffset createdAt,
-        string? replyToId = null);
+        string? replyToId = null, IReadOnlyList<string>? contentHashes = null, string? origin = null);
 
     /// <summary>
     /// The exact delta of contract §9.3: every message of <paramref name="threadId"/> with
@@ -280,6 +316,16 @@ public interface IThreadStore
     /// was. Reactions and counts live only behind this wall.
     /// </summary>
     Task<bool> MessageVisibleAsync(string threadId, string messageId, string actorId);
+
+    /// <summary>
+    /// The GAP-25 ampliation of SPEC-0010 section G (TASK-0039, AC-04): true only when
+    /// <paramref name="contentHash"/> is referenced by a message of a thread
+    /// <paramref name="actorId"/> sits in — the participant sees the media their conversation
+    /// carries, and every other reader (another thread's participant included) reads false, so
+    /// <c>GET /api/media/{contentHash}</c> keeps answering them the byte-identical 404 of SC-005.
+    /// The post half of the rule (GAP-25's original) is untouched and decided by the caller.
+    /// </summary>
+    Task<bool> MessageMediaVisibleAsync(string contentHash, string actorId);
 
     /// <summary>
     /// Writes one reaction row (section F, data-model section 2.14): an insert that

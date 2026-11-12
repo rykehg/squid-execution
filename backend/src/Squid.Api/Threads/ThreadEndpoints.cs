@@ -20,10 +20,13 @@ public sealed record CreateThreadRequest(string? Kind, IReadOnlyList<string>? Pa
 /// which field it reads; the admin and ack routes take no body at all, and an extra field a route
 /// never reads is ignored rather than acted on — <c>ReplyToId</c> joined this shape with
 /// TASK-0037 and only the message route reads it (SPEC-0010 section E), <c>Emoji</c> with
-/// TASK-0038 and only the reaction route reads it (SPEC-0010 section F, <c>{emoji}</c>).
+/// TASK-0038 and only the reaction route reads it (SPEC-0010 section F, <c>{emoji}</c>),
+/// <c>ContentHashes</c> with TASK-0039 and only the message route reads it (SPEC-0010 section G:
+/// the references of ≤ 10 uploads already living in <c>POST /api/media</c> — GAP-35's emenda (b)).
 /// </summary>
 public sealed record ThreadPostRequest(
-    string? Content, string? ActorId, long? Seq = null, string? ReplyToId = null, string? Emoji = null);
+    string? Content, string? ActorId, long? Seq = null, string? ReplyToId = null, string? Emoji = null,
+    IReadOnlyList<string>? ContentHashes = null);
 
 /// <summary>
 /// SPEC-0010 section A — create and list conversations (FR-030 base, data-model section 2.7 +
@@ -292,7 +295,7 @@ public static class ThreadEndpoints
     }
 
     /// <summary>
-    /// <c>POST /api/threads/{id}/messages</c> (contract §6, SPEC-0010 sections B and E): session
+    /// <c>POST /api/threads/{id}/messages</c> (contract §6, SPEC-0010 sections B, E and G): session
     /// (401), then the 404 rule of FR-031 — a thread the actor is not in and a thread that does not exist
     /// share one body, decided by the single participant probe before anything else is learned
     /// about the thread (AC-04, SC-005); then data-model §3.1: a <c>Suspended</c> actor does not
@@ -305,8 +308,14 @@ public static class ThreadEndpoints
     /// AFTER the gate section E checks <c>replyToId</c> against the thread's own messages, so a
     /// target from another thread or a target that does not exist is
     /// <c>422 invalid_reply_target</c> (§9.9, one answer for both cases) — 428 before 422 because
-    /// §6 makes the acceptance absolute for every send. The answer is 200 + seq — "entregue =
-    /// persistido" (section D), not 201.
+    /// §6 makes the acceptance absolute for every send. Section G (TASK-0039) rides the same
+    /// attempt AFTER those two — precondition first: <c>contentHashes</c> (≤ 10) is validated
+    /// inside the transaction against the upload records of <c>POST /api/media</c> — an unknown
+    /// hash or an image/video/gif without <c>Alt</c> is <c>400</c> with nothing written (§2.6
+    /// applied at publication) — and a standing list lands as the message's §2.6 attachments.
+    /// No upload and no quota run here: the 507 stays in <c>POST /api/media</c> (GAP-35), so a
+    /// message never charges twice. The answer is 200 + seq — "entregue = persistido" (section D),
+    /// not 201.
     /// </summary>
     private static async Task<IResult> MessageSendAsync(
         string id, ThreadPostRequest? request, HttpContext context, IThreadStore store,
@@ -344,12 +353,13 @@ public static class ThreadEndpoints
 
         var result = await store.AppendMessageAsync(
             id, $"{Origin(context)}/m/{NewToken()}", actorId, content, time.GetUtcNow(),
-            request?.ReplyToId);
+            request?.ReplyToId, request?.ContentHashes, Origin(context));
 
-        // Four answers of §6/§8/§9.6/§9.9: the absent thread keeps FR-031's one body, the missing
+        // Five answers of §6/§8/§9.6/§9.9/§2.6: the absent thread keeps FR-031's one body, the missing
         // acceptance keeps the precondition the contract asks for (and, per §6, wins over a reply
-        // refusal in the same send), a reply target outside this thread keeps §9.9's word, and the
-        // stored row is the 200.
+        // refusal in the same send), a reply target outside this thread keeps §9.9's word, the
+        // attachment refusal of section G is the payload 400 the store decided inside the same
+        // attempt, and the stored row is the 200.
         return result.Outcome switch
         {
             AppendOutcome.NoSuchThread => HiddenThread(context), // defensive twin of the probe
@@ -359,6 +369,8 @@ public static class ThreadEndpoints
             AppendOutcome.InvalidReplyTarget => AuthErrors.Write(context,
                 StatusCodes.Status422UnprocessableEntity, "invalid_reply_target",
                 "replyToId deve apontar para uma mensagem desta mesma thread (FR-057, §9.9)."),
+            AppendOutcome.InvalidAttachment => Invalid(context,
+                result.Reason ?? "anexo inválido: verifique contentHashes (SPEC-0010 section G)."),
             _ => Results.Json(MessageView.Of(result.Message!)),
         };
     }

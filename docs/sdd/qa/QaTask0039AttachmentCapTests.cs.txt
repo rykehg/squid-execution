@@ -1,0 +1,73 @@
+using System.Net;
+using System.Text.Json;
+using Squid.Tests.Auth;
+using Squid.Tests.Media;
+using Squid.Tests.Posts;
+
+namespace Squid.Tests.Threads;
+
+/// <summary>
+/// QA-0039 (TASK-0039 AC-01): the ≤ 10 cap of SPEC-0010 section G proved with REAL hashes —
+/// the DEV test spells eleven fabricated hex strings, which the per-hash 400 would also refuse,
+/// so nothing there distinguishes the count rule from the existence rule. This Fact is the one
+/// that reddens if the count guard ever stops refusing: eleven copies of ONE upload that exists
+/// are 400 with nothing written (the first accepted send still lands on seq 1), and ten of that
+/// same hash are accepted as ten §2.6 attachments in the send answer and in the read envelope.
+/// Mutation M3 (cap truncated to 10 instead of refused) turns the first refusal into a 200 and
+/// fails this Fact while the DEV test stays green on its fabricated hashes.
+/// </summary>
+[Collection("ServiceHost")]
+public sealed class QaTask0039AttachmentCapTests : IClassFixture<AuthHostFixture>
+{
+    private readonly AuthHostFixture _host;
+
+    public QaTask0039AttachmentCapTests(AuthHostFixture host) => _host = host;
+
+    [Fact]
+    public async Task Eleven_references_of_one_real_hash_are_400_and_ten_land_as_ten_attachments()
+    {
+        var (sender, _) = await PostRoutes.SignedInAsync(_host, "qacap");
+
+        // Tamanho próprio: o upload é content-addressed e a PRIMEIRA gravação de um hash vence,
+        // então bytes diferentes desta suite não dividem o registro de nenhuma outra.
+        var upload = await MediaHarness.UploadAsync(
+            sender, MediaHarness.JpegWithExif(11, 5), "anexo do limite");
+        Assert.Equal(HttpStatusCode.OK, upload.StatusCode);
+        using var uploaded = JsonDocument.Parse(await upload.Content.ReadAsStringAsync());
+        var hash = uploaded.RootElement.GetProperty("contentHash").GetString()!;
+
+        var created = await PostRoutes.SendAsync(sender, HttpMethod.Post, "/api/threads",
+            new { kind = "direct", participantActorIds = new[] { "parqacap" } }, sender.Csrf);
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        using var thread = JsonDocument.Parse(await created.Content.ReadAsStringAsync());
+        var threadId = thread.RootElement.GetProperty("id").GetString()!;
+        var acked = await PostRoutes.SendAsync(sender, HttpMethod.Post,
+            $"/api/threads/{Uri.EscapeDataString(threadId)}/ack-no-e2ee", null, sender.Csrf);
+        Assert.Equal(HttpStatusCode.OK, acked.StatusCode);
+
+        var path = $"/api/threads/{Uri.EscapeDataString(threadId)}/messages";
+
+        // ONZE referências de UM hash que existe: 400 — a lista é o primeiro juiz.
+        var refused = await PostRoutes.SendAsync(sender, HttpMethod.Post, path,
+            new { content = "onze de um só", contentHashes = Enumerable.Repeat(hash, 11).ToArray() },
+            sender.Csrf);
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+
+        // A recusa não escreve linha nem queima número: o primeiro aceite ainda é o seq 1.
+        var accepted = await PostRoutes.SendAsync(sender, HttpMethod.Post, path,
+            new { content = "dez valem", contentHashes = Enumerable.Repeat(hash, 10).ToArray() },
+            sender.Csrf);
+        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+        using var body = JsonDocument.Parse(await accepted.Content.ReadAsStringAsync());
+        Assert.Equal(1, body.RootElement.GetProperty("seq").GetInt64());
+        Assert.Equal(10, body.RootElement.GetProperty("attachments").GetArrayLength());
+
+        // E a leitura devolve a MESMA lista de dez (roundtrip da coluna 0007).
+        var read = await PostRoutes.SendAsync(sender, HttpMethod.Get, $"{path}?since=0");
+        Assert.Equal(HttpStatusCode.OK, read.StatusCode);
+        using var envelope = JsonDocument.Parse(await read.Content.ReadAsStringAsync());
+        var items = envelope.RootElement.GetProperty("items").EnumerateArray().ToArray();
+        Assert.Equal(1, items.Length);
+        Assert.Equal(10, items[0].GetProperty("attachments").GetArrayLength());
+    }
+}

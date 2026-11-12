@@ -1,0 +1,16 @@
+M1 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M2 hits=1 expected=1 OK backend\src\Squid.Api\Threads\MessageView.cs
+M3 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M4 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M5 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M5 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M6 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M7 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M8 hits=1 expected=1 OK backend\src\Squid.Api\Media\MediaEndpoints.cs
+M9 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M10 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M11 hits=1 expected=1 OK backend\src\Squid.Service\SqliteThreadStore.cs
+M12 hits=1 expected=1 OK backend\src\Squid.Api\Media\MediaEndpoints.cs
+M13 hits=1 expected=1 OK backend\src\Squid.Persistence\schema\0007_message_attachments.sql
+BOM OK (UTF-8 BOM presente)
+VERIFY total=13 bad=0

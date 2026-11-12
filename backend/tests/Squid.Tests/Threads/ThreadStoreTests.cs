@@ -1,3 +1,4 @@
+using Squid.Api.Media;
 using Squid.Api.Threads;
 using Squid.Persistence;
 using Squid.Service;
@@ -20,7 +21,7 @@ public sealed class ThreadStoreTests
         try
         {
             await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
-            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file));
+            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file), new NoMediaStore());
 
             const string creator = "http://127.0.0.1:5199/users/criador";
             var id = $"http://127.0.0.1:5199/t/{Guid.NewGuid():N}";
@@ -57,7 +58,7 @@ public sealed class ThreadStoreTests
         try
         {
             await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
-            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file));
+            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file), new NoMediaStore());
 
             const string author = "http://127.0.0.1:5199/users/autora";
             const string peer = "http://127.0.0.1:5199/users/par";
@@ -141,7 +142,7 @@ public sealed class ThreadStoreTests
         try
         {
             await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
-            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file));
+            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file), new NoMediaStore());
 
             const string creator = "http://127.0.0.1:5199/users/criador";
             const string ana = "http://127.0.0.1:5199/users/ana";
@@ -233,7 +234,7 @@ public sealed class ThreadStoreTests
         try
         {
             await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
-            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file));
+            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file), new NoMediaStore());
 
             const string author = "http://127.0.0.1:5199/users/autora";
             const string peer = "http://127.0.0.1:5199/users/par";
@@ -296,7 +297,7 @@ public sealed class ThreadStoreTests
         try
         {
             await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
-            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file));
+            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file), new NoMediaStore());
 
             const string author = "http://127.0.0.1:5199/users/autora";
             const string peer = "http://127.0.0.1:5199/users/par";
@@ -357,4 +358,20 @@ public sealed class ThreadStoreTests
             ProjectionDb.TryDelete(file);
         }
     }
+}
+
+/// <summary>
+/// The media store a suite that attaches nothing binds the thread store with (TASK-0039): the
+/// constructor asks for one because the append resolves <c>contentHashes</c> INSIDE its own
+/// transaction — nothing here runs while a send carries no list.
+/// </summary>
+internal sealed class NoMediaStore : IMediaStore
+{
+    public Task<MediaRecord?> FindAsync(string contentHash) => Task.FromResult<MediaRecord?>(null);
+
+    public Task<byte[]?> ReadAsync(string contentHash) => Task.FromResult<byte[]?>(null);
+
+    public Task SaveAsync(byte[] bytes, MediaRecord record) => Task.CompletedTask;
+
+    public Task<byte[]?> ReadThumbnailAsync(string contentHash) => Task.FromResult<byte[]?>(null);
 }

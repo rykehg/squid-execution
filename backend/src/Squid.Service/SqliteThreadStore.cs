@@ -1,6 +1,9 @@
 using System.Globalization;
+using System.Text.Json;
 using Microsoft.Data.Sqlite;
+using Squid.Api.Media;
 using Squid.Api.Threads;
+using Squid.Domain.Objects;
 using ThreadState = Squid.Api.Threads.ThreadState; // System.Threading.ThreadState rides the implicit usings
 
 namespace Squid.Service;
@@ -22,11 +25,18 @@ public sealed class SqliteThreadStore : IThreadStore
 
     private readonly string _connectionString;
 
-    /// <summary>Binds the store to the same SQLite file the composition root migrated.</summary>
-    public SqliteThreadStore(string connectionString)
+    private readonly IMediaStore _media;
+
+    /// <summary>
+    /// Binds the store to the same SQLite file the composition root migrated and to the upload
+    /// records section G validates against (TASK-0039): the media record is read inside the append
+    /// transaction so a hash refusal lands in the same ladder as the 428 and the 422.
+    /// </summary>
+    public SqliteThreadStore(string connectionString, IMediaStore media)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
         _connectionString = connectionString;
+        _media = media ?? throw new ArgumentNullException(nameof(media));
     }
 
     /// <inheritdoc />
@@ -440,7 +450,7 @@ public sealed class SqliteThreadStore : IThreadStore
     /// <inheritdoc />
     public async Task<AppendResult> AppendMessageAsync(
         string threadId, string messageId, string authorActorId, string content, DateTimeOffset createdAt,
-        string? replyToId = null)
+        string? replyToId = null, IReadOnlyList<string>? contentHashes = null, string? origin = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -516,6 +526,56 @@ public sealed class SqliteThreadStore : IThreadStore
                 }
             }
 
+            // SPEC-0010 section G (TASK-0039), inside the same attempt and AFTER the 428 and the
+            // 422 — precondition first: at most 10 hashes, each an upload that exists, and the
+            // §2.6 Alt rule on image/video/gif applied to the PUBLICATION of the message (the
+            // upload route enforces the same rule, and a record that slipped past it cannot ride
+            // a send). Every refusal answers before the CAS, so no sequence is taken and no row
+            // exists — and nothing of the P-04 pipeline runs here: no upload, no quota, no 507.
+            var attachments = new List<Attachment>();
+            if (contentHashes is { Count: > Attachment.MaxPerPost })
+            {
+                return new AppendResult(AppendOutcome.InvalidAttachment, null)
+                {
+                    Reason = $"máximo de {Attachment.MaxPerPost} anexos por mensagem",
+                };
+            }
+
+            foreach (var sent in contentHashes ?? [])
+            {
+                var record = await _media.FindAsync(sent ?? string.Empty);
+                if (record is null)
+                {
+                    return new AppendResult(AppendOutcome.InvalidAttachment, null)
+                    {
+                        Reason = "contentHash inexistente: faça o upload da mídia antes de anexá-la",
+                    };
+                }
+
+                var kind = Attachment.KindOf(record.MimeType);
+                if (Attachment.NeedsAlt(kind) && string.IsNullOrWhiteSpace(record.Alt))
+                {
+                    return new AppendResult(AppendOutcome.InvalidAttachment, null)
+                    {
+                        Reason = "alt obrigatório e não vazio para imagem, vídeo e gif (FR-022)",
+                    };
+                }
+
+                attachments.Add(new Attachment
+                {
+                    Kind = kind,
+                    ContentHash = record.ContentHash,
+                    MimeType = record.MimeType,
+                    Url = $"{origin}/api/media/{record.ContentHash}",
+                    BlurHash = record.BlurHash,
+                    Alt = record.Alt,
+                    Width = record.Width,
+                    Height = record.Height,
+                    DurationSeconds = record.DurationSeconds,
+                    SizeBytes = record.SizeBytes,
+                });
+            }
+
             // The same version-guarded CAS NextMessageSeqAsync runs (GAP-29): message_seq and
             // version move together, and RETURNING hands back exactly the number THIS update took.
             long seq;
@@ -543,8 +603,10 @@ public sealed class SqliteThreadStore : IThreadStore
             {
                 insert.Transaction = transaction;
                 insert.CommandText = """
-                    INSERT INTO message (id, thread_id, author_actor_id, content, seq, created_at, reply_to_id)
-                    VALUES (@Id, @ThreadId, @Author, @Content, @Seq, @CreatedAt, @ReplyToId)
+                    INSERT INTO message (id, thread_id, author_actor_id, content, seq, created_at,
+                                         reply_to_id, attachments)
+                    VALUES (@Id, @ThreadId, @Author, @Content, @Seq, @CreatedAt, @ReplyToId,
+                            @Attachments)
                     """;
                 insert.Parameters.AddWithValue("@Id", messageId);
                 insert.Parameters.AddWithValue("@ThreadId", threadId);
@@ -554,13 +616,20 @@ public sealed class SqliteThreadStore : IThreadStore
                 insert.Parameters.AddWithValue("@CreatedAt",
                     createdAt.ToString("O", CultureInfo.InvariantCulture));
                 insert.Parameters.AddWithValue("@ReplyToId", (object?)replyToId ?? DBNull.Value);
+                // §2.6's list as the send froze it (TASK-0039): the very same JSON the read hands
+                // back — NULL when there is none, so "sem anexo" stays what NULL already meant.
+                insert.Parameters.AddWithValue("@Attachments",
+                    attachments.Count > 0 ? JsonSerializer.Serialize(attachments) : DBNull.Value);
                 await insert.ExecuteNonQueryAsync();
             }
 
             // Commit is the one step that makes the number and its row real at the same instant.
             await transaction.CommitAsync();
             return new AppendResult(AppendOutcome.Appended,
-                new MessageState(messageId, threadId, authorActorId, content, seq, createdAt, replyToId));
+                new MessageState(messageId, threadId, authorActorId, content, seq, createdAt, replyToId)
+                {
+                    Attachments = attachments,
+                });
         }
 
         throw new IOException(
@@ -579,9 +648,10 @@ public sealed class SqliteThreadStore : IThreadStore
         // (thread_id, seq) index of 0003 is what this reads through, so a live thread answers a
         // polling client with only what is new, never a repeat. reply_to_id (0005) rides along:
         // null when the message answers nothing (FR-057), the reference the row was written with.
+        // attachments (0007) rides along too: the §2.6 list the send froze, or null (TASK-0039).
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT id, thread_id, author_actor_id, content, seq, created_at, reply_to_id
+            SELECT id, thread_id, author_actor_id, content, seq, created_at, reply_to_id, attachments
             FROM message
             WHERE thread_id = @ThreadId AND seq > @Since
             ORDER BY seq
@@ -601,10 +671,24 @@ public sealed class SqliteThreadStore : IThreadStore
                 reader.GetInt64(4),
                 DateTimeOffset.Parse(reader.GetString(5),
                     CultureInfo.InvariantCulture, DateTimeStyles.None),
-                reader.IsDBNull(6) ? null : reader.GetString(6)));
+                reader.IsDBNull(6) ? null : reader.GetString(6))
+            {
+                Attachments = AttachmentsOf(reader, 7),
+            });
         }
 
         return items;
+    }
+
+    /// <summary>The §2.6 list of the <c>attachments</c> column (0007) — null or blank means the message carries none.</summary>
+    private static IReadOnlyList<Attachment> AttachmentsOf(SqliteDataReader reader, int ordinal)
+    {
+        if (reader.IsDBNull(ordinal) || string.IsNullOrWhiteSpace(reader.GetString(ordinal)))
+        {
+            return [];
+        }
+
+        return JsonSerializer.Deserialize<List<Attachment>>(reader.GetString(ordinal)) ?? [];
     }
 
     /// <inheritdoc />
@@ -638,6 +722,42 @@ public sealed class SqliteThreadStore : IThreadStore
         command.Parameters.AddWithValue("@ThreadId", threadId);
         command.Parameters.AddWithValue("@MessageId", messageId);
         command.Parameters.AddWithValue("@ActorId", actorId);
+        return Convert.ToInt64(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture) != 0;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> MessageMediaVisibleAsync(string contentHash, string actorId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentHash);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actorId);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        // GAP-25's ampliation (SPEC-0010 section G, TASK-0039): a message of a thread the reader
+        // sits in carries the hash — the participant reads the media of their own conversation.
+        // json_each walks the §2.6 list of 0007 and json_extract reads the SAME row's
+        // ContentHash back out of the column (never a substring match, so an Alt that happens to
+        // spell 64 hex digits grants nothing), and the seat probe is the FR-031 wall itself — a
+        // reader in no such thread reads false and the route answers the byte-identical 404.
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT EXISTS(
+                SELECT 1
+                FROM message AS m
+                WHERE m.attachments IS NOT NULL
+                  AND EXISTS(
+                      SELECT 1 FROM thread_participant AS p
+                      WHERE p.thread_id = m.thread_id AND p.actor_id = @ActorId
+                  )
+                  AND EXISTS(
+                      SELECT 1 FROM json_each(m.attachments) AS a
+                      WHERE json_extract(m.attachments, '$[' || a.key || '].ContentHash') = @ContentHash
+                  )
+            )
+            """;
+        command.Parameters.AddWithValue("@ActorId", actorId);
+        command.Parameters.AddWithValue("@ContentHash", contentHash.Trim().ToLowerInvariant());
         return Convert.ToInt64(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture) != 0;
     }
 
