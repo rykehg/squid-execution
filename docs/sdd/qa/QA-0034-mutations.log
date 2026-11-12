@@ -1,0 +1,62 @@
+﻿# QA-0034 mutations - 2026-11-12 02:41:11
+M1 PRE F9725442571F | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-01/GAP-29: seq alocada comits mas a mensagem nao aparece no delta da thread (ThreadStoreTests + ThreadMessageRoutesTests vermelhas)
+M1 RUN wrapper=1 logExit=1 aprovado=6 falha=5 constraint=no log=20261112-024132-test-filter.log
+M1 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...t_is_new [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_lands_number_and_row_together_and_the_delta_reads_only_what_is_new [66 ms] | [FAIL] | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.Content_is_sanitized_on_the_server_and_empty_or_over_four_thousand_is_400 [804 ms] | and_the_delta_keeps_all_of_them [FAIL]
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE F9725442571F | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-01: CAS do version desligado - versao velha vence, as duas corridas recebem numero (ThreadStoreTests vermelha)
+M2 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024154-test-filter.log
+M2 RED-IN-LOG Squid.Tests.Threads.ThreadStoreTests.The_message_seq_is_taken_only_under_the_matching_version_and_never_twice [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...er_twice [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_message_seq_is_taken_only_under_the_matching_version_and_never_twice [181 ms]
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE F9725442571F | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-01: sem incremento todo append devolve a mesma seq - o UNIQUE de 0003 dispara (constraint no log) e o resto vermelho
+M3 RUN wrapper=1 logExit=1 aprovado=7 falha=4 constraint=no log=20261112-024214-test-filter.log
+M3 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...t_is_new [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_lands_number_and_row_together_and_the_delta_reads_only_what_is_new [55 ms] | [FAIL] | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.Content_is_sanitized_on_the_server_and_empty_or_over_four_thousand_is_400 [952 ms] | and_the_delta_keeps_all_of_them [FAIL]
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: 4000 caracteres exatos viram 400 - o teste atCap cai (ThreadMessageRoutesTests vermelha)
+M4 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024236-test-filter.log
+M4 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_is_400 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.Content_is_sanitized_on_the_server_and_empty_or_over_four_thousand_is_400 [644 ms]
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: 4000 ampersands explodem para 20000 pos-sanitizacao e sao aceitos - o 400 pos-cap cai (ThreadMessageRoutesTests vermelha)
+M5 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024257-test-filter.log
+M5 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_is_400 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.Content_is_sanitized_on_the_server_and_empty_or_over_four_thousand_is_400 [712 ms]
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: sem sanitizacao controles C0 nao vazam para 400, HTML cru e gravado - 3 asserts do teste de conteudo caem
+M6 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024319-test-filter.log
+M6 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_is_400 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.Content_is_sanitized_on_the_server_and_empty_or_over_four_thousand_is_400 [696 ms]
+M6 RESTORE-OK hash=PRE residue=0
+M7 PRE F9725442571F | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-03: since exato deixa repetir o proprio item - since=3 devolve 3,4,5 e since=5 devolve [5] (ThreadMessageRoutesTests vermelha)
+M7 RUN wrapper=1 logExit=1 aprovado=9 falha=2 constraint=no log=20261112-024340-test-filter.log
+M7 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...t_is_new [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_lands_number_and_row_together_and_the_delta_reads_only_what_is_new [95 ms] | [FAIL] | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.The_delta_returns_only_seq_since_ordered_with_nextSince_and_never_repeats [239 ms]
+M7 RESTORE-OK hash=PRE residue=0
+M8 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-03: ?since=abc vira 200 com o historico inteiro em vez de 400 - o assert final do delta cai (ThreadMessageRoutesTests vermelha)
+M8 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024400-test-filter.log
+M8 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._repeats [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.The_delta_returns_only_seq_since_ordered_with_nextSince_and_never_repeats [319 ms]
+M8 RESTORE-OK hash=PRE residue=0
+M9 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-03: polling sem novidade avanca o cursor - since=5 devolve nextSince 6 (ThreadMessageRoutesTests vermelha)
+M9 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024421-test-filter.log
+M9 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._repeats [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.The_delta_returns_only_seq_since_ordered_with_nextSince_and_never_repeats [279 ms]
+M9 RESTORE-OK hash=PRE residue=0
+M10 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-04: portao de participante desligado nas duas rotas - nao-participante le e envia 200 em vez de 404 (ThreadMessageRoutesTests vermelha)
+M10 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024442-test-filter.log
+M10 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...for_byte [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.A_non_participant_and_an_absent_thread_get_one_404_body_byte_for_byte [1 s]
+M10 RESTORE-OK hash=PRE residue=0
+M11 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-04: traceId por request no 404 - os corpos nao sao mais byte-identicos e o DoesNotContain cai (ThreadMessageRoutesTests vermelha)
+M11 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024502-test-filter.log
+M11 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...for_byte [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.A_non_participant_and_an_absent_thread_get_one_404_body_byte_for_byte [331 ms]
+M11 RESTORE-OK hash=PRE residue=0
+M12 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-04: POST de thread ausente com corpo proprio - bodies[0] vs bodies[3] deixam de ser byte-identicos (ThreadMessageRoutesTests vermelha)
+M12 RUN wrapper=0 logExit=0 aprovado=11 falha=0 constraint=no log=20261112-024522-test-filter.log
+M12 CLASSIFICACAO-ERRADA: o log nao mostra falha de produto (ambiente? S-22)
+M12 RESTORE-OK hash=PRE residue=0
+M13 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-04: 403 no lugar do 404 - os quatro asserts de status caem (ThreadMessageRoutesTests vermelha)
+M13 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024542-test-filter.log
+M13 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...for_byte [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.A_non_participant_and_an_absent_thread_get_one_404_body_byte_for_byte [328 ms]
+M13 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=11 falha=0 log=20261112-024603-test-filter.log
+SUMMARY cycles=13 failed=1 residue-QA-MUTATION=0 temp-backups=0
+## re-execucao seletiva (M12) - 2026-11-12 02:49:21
+M12 PRE 1C4DAF623F34 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-04: recusa do POST com corpo proprio - bodies[0] vs bodies[1] e bodies[2] vs bodies[3] deixam de ser byte-identicos (ThreadMessageRoutesTests vermelha)
+M12 RUN wrapper=1 logExit=1 aprovado=10 falha=1 constraint=no log=20261112-024941-test-filter.log
+M12 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...for_byte [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMessageRoutesTests.A_non_participant_and_an_absent_thread_get_one_404_body_byte_for_byte [316 ms]
+M12 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=11 falha=0 log=20261112-025001-test-filter.log
+SUMMARY cycles=1 failed=0 residue-QA-MUTATION=0 temp-backups=0

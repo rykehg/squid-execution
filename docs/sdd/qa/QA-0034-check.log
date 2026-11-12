@@ -1,0 +1,32 @@
+﻿CHECK GATE-NAME OK - 20261112-025653-test-gate.log e o gate desta QA
+CHECK GATE-EXIT OK - 20261112-025653-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - 20261112-025653-test-gate.log Com falha 0 / Aprovado 443 / Total 443
+CHECK BASELINE OK - baseline 023919 exit 0 / 11 de 11
+CHECK GREENS OK - GREENs 11/11 pos-restore = 2 de 2 (024603, 025001)
+CHECK MUT-IDS OK - M1..M13 todos com linha PRE
+CHECK MUT-RED OK - M1..M13 todos com RUN vermelho classificado no log
+CHECK MUT-RESTORE OK - RESTORE-OK = 14 (esperado >= 14: 13 ciclos + M12 v2)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 11/11 = 2 (fim do driver cheio + fim da re-execucao M12)
+CHECK MUT-ANOMALIA OK - exatamente 1 CLASSIFICACAO-ERRADA (M12 v1 sobreviveu - ramo que as 4 requests nao alcanca; mutante corrigido e re-executado)
+CHECK MUT-SUMMARY-FULL OK - SUMMARY da execucao cheia: cycles=13 failed=1 (o 1 = M12 v1), residue 0
+CHECK MUT-SUMMARY-LAST OK - SUMMARY final da re-execucao: cycles=1 failed=0, residue 0
+CHECK MUT-M3-RUN OK - M3 RUN registrado com constraint=no (o texto UNIQUE nao sobe ao output do host - prova nominal fica no probe)
+CHECK PROBE-PRISTINE OK - schema original: probe verde (UNIQUE recusa a duplicata)
+CHECK PROBE-MUTATED OK - 0003 sem UNIQUE: mesmo probe vermelho (can-fail provado)
+CHECK PROBE-MUTATED-RED OK - vermelho nomeado no proprio teste do probe
+CHECK PROBE-RESTORE OK - 0003 restaurado byte-exact (S-16/S-23)
+CHECK PROBE-GIT OK - arquivo temporario do probe removido, git backend limpo
+CHECK PROBE-SUMMARY OK - SUMMARY do probe: fails=0
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0034-* no TEMP = 0
+CHECK PROBE-FILE OK - QaTask0034UniqueProbeTests.cs ausente da arvore
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 3/3 arquivos mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = exatamente os 3 arquivos mutados
+CHECK SCOPE-RESIDUE OK - scope scan: residuo QA-MUTATION = 0
+CHECK SDD-STATE OK - check: OK - log entries 13, evidence rows 14
+CHECK QA-DOC OK - QA-0034-envio-e-leitura.md com verdict PASSED
+SUMMARY total=29 fails=0
+
+exit: 0
