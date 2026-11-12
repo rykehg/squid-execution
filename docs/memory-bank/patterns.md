@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the applicable index, 
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-11 20:00:27
+- lastVerified: 2026-11-12 12:27:17
 
 # Patterns — Squid
 
@@ -37,6 +37,10 @@ Never record here: code snippets or blocks, real test data, secrets.
 - Status de ator sem tabela: documento por handle na store, **linha ausente = `Active`** (`Suspended` grava linha) — porta única `IActorStatusStore` consumida pela rota `suspend` e pelo gate de publicação — evidence: backend/src/Squid.Service/SqliteActorStatusStore.cs; backend/src/Squid.Api/Posts/IActorStatusStore.cs — abandoned at: N/A — source: TASK-0023 (D-02), rota suspend da TASK-0031 — confidence: CONFIRMADO
 - **Linha de posição neutra anti-flicker**: o braço `Delete` do projetor grava uma linha `urn:squid:projection` no `seq` do evento para segurar o alto-mar `MAX(seq)` do pump — sem ela, uma remoção trailing re-projetaria o `Create` e o post reapareceria a cada passada (provado por mutação M3 da QA-0030) — evidence: backend/src/Squid.ReadModels/Projections/ActivityProjector.cs:31 — abandoned at: N/A — source: TASK-0030 / flag PADRAO_NOVO QA-0030 — confidence: CONFIRMADO
 - Colunas `INTEGER` do SQLite sempre como `long` em linhas Dapper (assinatura de construtor exata do Dapper exige `Int64` — `int` quebra a materialização com `InvalidOperationException`); qualificar colunas de JOIN com prefixo de tabela — evidence: backend/src/Squid.ReadModels/Projections/SqliteFeedTimeline.cs:15 — abandoned at: N/A — source: TASK-0025 (bug herdado corrigido na retomada) — confidence: CONFIRMADO
+- **Toda recusa de envio é decidida dentro da transação do append (P-05)**: a escada 404 → 403 suspenso → 400 → 428 aceite → 422 replyToId → 400 anexo roda antes da CAS no próprio `AppendMessageAsync`, então nenhuma rota de escrita escapa do gate, nenhuma recusa queima `seq` nem grava linha — evidence: backend/src/Squid.Service/SqliteThreadStore.cs:524-L558 — abandoned at: N/A — source: TASK-0036/0037/0039 (flags PADRAO_NOVO), provado por mutação nas QA-0036..0039 (M2/M5/M10/M11) — confidence: CONFIRMADO
+- **Família de migration imutável por checksum**: script registrado nunca é editado — mudança de schema soma `000N_*.sql` novo; o `SchemaMigrator` e o teste de família pinçam a lista completa (por isso a `0002` derrubou os `Assert.Single` da P-04 e virou correção de escopo da TASK-0033) — evidence: backend/src/Squid.Persistence/schema/ (0001..0007); backend/src/Squid.Persistence/schema/SchemaMigrator.cs:87-L92 — abandoned at: N/A — source: TASK-0034 (D-01) e família 0003..0007 — confidence: CONFIRMADO
+- Agregado de estado em **tabela migrada com CAS na coluna `version`** em vez de documento `IGrainStorage`: a thread aloca `MessageSeq` com `UPDATE … WHERE version = @Version` (mesma recusa otimista da guarda da TASK-0003), sem grain e sem documento — evidence: backend/src/Squid.Service/SqliteThreadStore.cs — abandoned at: N/A — source: TASK-0033 / GAP-29 (decisão humana: ADR-1, thread não federa) — confidence: OBSERVADO
+- **Facet de fecho de DoD por mutação can-fail**: a última task da fase só escreve testes e a QA prova que OS TESTES QUEBRAM quando cada comportamento quebra (mutação contra o produto com `RED-FACET` do teste da facet), em vez de re-provar o produto — evidence: docs/sdd/qa/QA-0040-facet-do-dod-sprint4.md; backend/tests/Squid.Tests/Threads/Sprint4ClosingFacetTests.cs — abandoned at: N/A — source: TASK-0040 / flag PADRAO_NOVO QA-0040 — confidence: OBSERVADO
 
 ## Anti-patterns
 - Nome do store interpolado no SQL: faz stores distintos colapsarem na mesma partição lógica — evidence: docs/features/05-arquitetura-consolidada.md:401 — source: doc 05 §4.7 #2 — confidence: CONFIRMADO

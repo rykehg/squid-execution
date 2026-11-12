@@ -6,8 +6,8 @@ Write responsibility: ODEV. Every other role reads it and never edits it.
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-11 23:33:16
-- snapshot: plan/history/0005-plan.md (fecho da P-04; 0004 é a P-03, 0003 é a P-02, 0002 é a P-01, 0001 é o bootstrap)
+- lastVerified: 2026-11-12 12:46:09
+- snapshot: plan/history/0006-plan.md (fecho da P-05; 0005 é a P-04, 0004 é a P-03, 0003 é a P-02, 0002 é a P-01, 0001 é o bootstrap)
 
 # Plan — Squid
 
@@ -45,7 +45,7 @@ adotado) — a fase muda de nome, não de conteúdo.
 | P-02 | Identidade: ator local com perfil, chaves e descoberta | TASK-0012..TASK-0016 (SPEC-0007) — **5/5 DONE com QA PASSED** (QA-0011..QA-0015); gate da casa 167/167; detalhe em `plan/history/0003-plan.md` | **CLOSED** | 2026-11-08 09:45:19 |
 | P-03 | Contêineres sociais: grupo/comunidade com papéis, política versada e sucessão de propriedade | TASK-0017..TASK-0022 (SPEC-0008) — **6/6 DONE com QA PASSED** (QA-0016..QA-0021); gate da casa 244/244; detalhe em `plan/history/0004-plan.md` | **CLOSED** | 2026-11-09 04:55:35 |
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
-| P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — 8 entregas cortadas, serializadas | **IN_PROGRESS** | — |
+| P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — **8/8 DONE com QA PASSED na 1ª tentativa** (QA-0033..QA-0040); gate da casa 480/480; detalhe em `plan/history/0006-plan.md` | **CLOSED** | 2026-11-12 12:46:09 |
 | P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | a cortar | NOT_STARTED | — |
 | P-07 | Backup cifrado e restore drill no CI | a cortar | NOT_STARTED | — |
 | P-08 | Front web SSR, preview social e compartilhamento externo | a cortar | NOT_STARTED | — |
@@ -146,31 +146,35 @@ participante, rotas de admin, anexo) — originais intactos, precedente S-27/P-0
 
 ## Current state
 
-- phase: **P-05 (Mensageria) IN_PROGRESS** — entrevista de abertura fechada 2026-11-11 (5
-  rodadas / 13 questões), SPEC-0010 escrita, 8 entregas cortadas (TASK-0033..TASK-0040,
-  serializadas). P-04 está **CLOSED** (2026-11-11 20:00:27) — 10/10 DONE com QA PASSED
-  (QA-0022..QA-0032), gate final **432/432**, memory bank consolidado
-  (`FEATURE_CONCLUIDA` em `progress/0001.md`), snapshot `plan/history/0005-plan.md`.
-- authority: **CODE** para P-01..P-04 (fechadas); **SPEC** para P-05 (até o próprio fecho).
+- phase: **P-05 (Mensageria) CLOSED** (2026-11-12 12:46:09) — 8/8 entregas DONE com QA PASSED
+  **na 1ª tentativa** (QA-0033..QA-0040, zero correções e zero bloqueios), gate final **480/480**,
+  DoD do Sprint 4 provado em cadeia; consolidação do memory bank feita (`FEATURE_CONCLUIDA` em
+  `progress/0001.md`); snapshot congelado em `plan/history/0006-plan.md`. A partir do fecho de
+  cada fase o **código é a fonte real** daquela fase (divergência = `[DIVERGENCIA]`, código
+  vence); P-01 fecha no 0002, P-02 no 0003, P-03 no 0004, P-04 no 0005, P-05 no 0006.
+- authority: **CODE** para P-01..P-05 (fechadas); a P-06, quando aberta, nasce com authority
+  SPEC até o próprio fecho.
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **dispatch DEV da TASK-0033** (base da P-05: migration + store ETag +
-  `POST/GET /api/threads`), depois a cadeia serial 0034..0040. Insumos da fase em
-  `specs/SPEC-0010-mensageria-p05.md` (doc 05 §Sprint 4, FR-030..033/057/058, data-model
-  §2.5.1/§2.7/§2.14, contrato §6/§9, aviso §2.5). Nada de deploy (nenhum push é meu de fazer —
-  a CI só roda pós-push, gate humano; último run verde 98/98 de 07/11, anterior à P-04 —
-  considere um push para revalidar a CI com os testes novos).
+- nextAction: **PARADO no fecho da P-05** — não inicio a P-06 por conta própria. Próximo passo
+  humano: `/odev` para abrir a **P-06 (Federação)** com entrevista/corte de spec (insumos:
+  doc 05 §Sprint 5, FR-034..FR-041, data-model §2.8 Activity/§2.9 Peer+PeerDelivery/§3.2
+  regras de saída, contrato activitypub.md, ADR-28 de assinatura, GAP-09 quem destrava a `RK`,
+  backlog S-26 inbox/outbox). Nada de deploy (nenhum push é meu de fazer — a CI só roda
+  pós-push, gate humano; último run verde 98/98 de 07/11, anterior à P-04 — considere um push
+  para revalidar a CI com os testes novos da P-04/P-05: gate local está em 480/480).
 - **Git a partir da P-05 (gate PHASE 2026-11-11 20:42:28, modelo C)**: branch por task
   `task/TASK-NNNN-<slug>` desde `develop`; DEV commita ao fim da entrega, QA commita no PASSED,
   ODEV mergeia em `develop` no `DONE` e commita docs; push/force/`main`/apagar branch =
   proibido a agentes, merge+tag de fecho em `main` = humano. Os dispatchs DEV/QA devem incluir
   a linha de autorização de commit deste gate. Commits da P-01..P-04 não mudam.
-- blocking gaps: NENHUM — decisões da abertura da P-05 registradas abaixo; abertos e
+- blocking gaps: NENHUM — decisões da abertura da P-05 e do fecho registradas abaixo; abertos e
   carregados: GAP-02, GAP-04/05/06, GAP-09 (P-06), GAP-13..GAP-18 (SPEC-0008),
   GAP-21..GAP-28 (SPEC-0009), GAP-29..GAP-40 (SPEC-0010 — 29..35 resolvidos por humano,
-  36..40 assumidos), S-11/S-12/S-19/S-22..S-38 (backlog), suite Linux nativa unverified
-  (CI é o executor), I-11/S-26 (P-06/P-08).
+  36..40 assumidos; 36 = ao vivo não decidido, 37 = UI do aviso é P-08),
+  S-11/S-12/S-19/S-22..S-38 (backlog), suite Linux nativa unverified (CI é o executor,
+  WSL sem dotnet sondado a vivo em toda QA da P-05), I-11/S-26 (P-06/P-08).
 
 ## Adopted legacy documentation
 
