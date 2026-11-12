@@ -18,7 +18,7 @@ updatedAt: 2026-11-11 23:45:07
 parent: SPEC-0010
 authority: SPEC
 parallel: false
-touches: ["backend/src/Squid.Api/Threads/**", "backend/src/Squid.Service/**", "backend/tests/Squid.Tests/Threads/**"]
+touches: ["backend/src/Squid.Api/Threads/**", "backend/src/Squid.Service/**", "backend/src/Squid.Persistence/schema/**", "backend/tests/Squid.Tests/Threads/**"]
 blocks: ["TASK-0039"]
 blockedBy: ["TASK-0037"]
 inputArtifacts: ["docs/sdd/specs/SPEC-0010-mensageria-p05.md", "docs/sdd/plan/plan.md", "specs/001-squid-mvp/data-model.md", "specs/001-squid-mvp/contracts/http-api.md"]
@@ -93,6 +93,7 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 
 `- YYYY-MM-DD HH:MM:SS | ROLE | what was done or decided`
 - 2026-11-11 23:45:07 | odev | task created from SPEC-0010 (entrega 6 de 8 da P-05; blockedBy TASK-0037; FR-058 + §2.14 + §9.10; decisão humana whitelist em config rodada 2)
+- 2026-11-12 05:18:25 | odev | touches emendado pelo ODEV preventivamente: backend/src/Squid.Persistence/schema/** entra no YAML (3a ocorrencia do erro do dispatch em 0034/0036 - esta task precisara de migration: coluna/tabela nova); nenhuma AC muda
 
 ## Evidence
 
