@@ -1,0 +1,25 @@
+scope scan 2026-11-12 02:52:25 (baseline 2026-11-12 02:38:45)
+--- git status --porcelain -uall ---
+ M docs/sdd/tasks/TASK-0034-envio-e-leitura.md
+ M docs/sdd/tasks/TASK-0036-aviso-nao-e2ee-e-leitura.md
+?? docs/sdd/qa/QA-0034-git-baseline.txt
+?? docs/sdd/qa/QA-0034-mutations.log
+?? docs/sdd/qa/QA-0034-unique-probe.log
+?? docs/sdd/qa/qa-mutate-task-0034.ps1
+?? docs/sdd/qa/qa-probe-task-0034-unique.ps1
+--- git status -- backend (esperado vazio) ---
+(vazio)
+--- mtime desde baseline em backend/src + backend/tests (sem bin/obj) ---
+backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+backend\src\Squid.Persistence\schema\0003_messages.sql
+backend\src\Squid.Service\SqliteThreadStore.cs
+mtime-count=3 (esperado 3)
+--- residuo QA-MUTATION em backend cs+sql ---
+residue=0
+--- backups qa0034-* no TEMP + probe temp test ---
+temp-backups=0
+probe-testfile-present=False
+--- blob-identity vs HEAD (git hash-object = git rev-parse, byte-exact) ---
+backend/src/Squid.Service/SqliteThreadStore.cs work=3a0aeedc0a7f HEAD=3a0aeedc0a7f match=True
+backend/src/Squid.Api/Threads/ThreadEndpoints.cs work=c58454367598 HEAD=c58454367598 match=True
+backend/src/Squid.Persistence/schema/0003_messages.sql work=696f137b60da HEAD=696f137b60da match=True

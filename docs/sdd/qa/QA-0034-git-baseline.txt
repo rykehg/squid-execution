@@ -1,0 +1,7 @@
+captured: 2026-11-12 02:38:45
+branch: task/TASK-0034-envio-e-leitura
+head: f6ba1b22d4ff34843e03feca4d40df08dc746000
+log1: f6ba1b2 TASK-0034: mensagens de thread com seq total sob CAS em uma transacao, delta ?since= com nextSince, sanitizacao 4000 e 404 identico (P-05 entrega 2/8)
+--- status --porcelain -uall ---
+ M docs/sdd/tasks/TASK-0034-envio-e-leitura.md
+ M docs/sdd/tasks/TASK-0036-aviso-nao-e2ee-e-leitura.md

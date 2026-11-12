@@ -1,0 +1,9 @@
+﻿# QA-0034 UNIQUE probe - 2026-11-12 02:51:22
+TEST-FILE written (3227 bytes)
+PRISTINE wrapper=0 logExit=0 aprovado=1 falha=0 log=20261112-025136-test-filter.log
+0003-MUTATE PRE 009E26192C8B | UNIQUE -> plain INDEX (can-fail)
+MUTATED wrapper=1 logExit=1 aprovado=0 falha=1 log=20261112-025148-test-filter.log
+MUTATED RED Squid.Tests.Threads.QaTask0034UniqueProbeTests.The_unique_of_thread_and_seq_refuses_a_duplicate_row [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...cate_row [FAIL]:String) [], RemoteException
+RESTORE-OK hash=PRE residue=0
+GIT-BACKEND entradas=0
+SUMMARY pristine=green mutated=red restore=OK testfile-removed=yes git-backend=0 fails=0

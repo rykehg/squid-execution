@@ -1,0 +1,27 @@
+﻿CHECK GATE OK - 20261112-025653-test-gate.log header exit 0 e 443/443
+CHECK BASELINE OK - 023919 exit 0 / 11 de 11
+CHECK GREENS OK - GREENs 11/11 pos-restore = 2 de 2
+CHECK MUT-IDS OK - M1..M13 todos com linha PRE
+CHECK MUT-RED OK - M1..M13 todos com RUN vermelho no log
+CHECK MUT-RESTORE OK - RESTORE-OK = 14 (esperado >= 14)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL no ledger
+CHECK MUT-GREEN OK - GREEN 11/11 = 2
+CHECK MUT-ANOMALIA OK - exatamente 1 CLASSIFICACAO-ERRADA (M12 v1, mutante corrigido)
+CHECK MUT-SUMMARY-FULL OK - SUMMARY cheio cycles=13 failed=1 residue=0
+CHECK MUT-SUMMARY-LAST OK - SUMMARY final cycles=1 failed=0 residue=0
+CHECK PROBE-PRISTINE OK - schema original: probe verde
+CHECK PROBE-MUTATED OK - 0003 sem UNIQUE: probe vermelho (can-fail)
+CHECK PROBE-MUTATED-RED OK - vermelho nomeado no teste do probe
+CHECK PROBE-RESTORE OK - 0003 restaurado byte-exact
+CHECK PROBE-GIT OK - arquivo temporario removido, git backend limpo
+CHECK PROBE-SUMMARY OK - SUMMARY do probe fails=0
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0034-* = 0
+CHECK PROBE-FILE OK - QaTask0034UniqueProbeTests.cs ausente
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-BLOB OK - blob-identity match=True = 3 de 3
+CHECK SCOPE-MTIME OK - mtime desde a baseline = 3 arquivos mutados
+CHECK QA-DOC OK - QA-0034-envio-e-leitura.md com verdict PASSED
+SUMMARY total=24 fails=0
+
+exit: 0
