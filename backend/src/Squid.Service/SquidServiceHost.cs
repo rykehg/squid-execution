@@ -19,6 +19,7 @@ using Squid.Api.Discovery;
 using Squid.Api.Media;
 using Squid.Api.Posts;
 using Squid.Api.Recovery;
+using Squid.Api.Threads;
 using Squid.Domain;
 using Squid.Grains.Actors;
 using Squid.Persistence;
@@ -124,6 +125,9 @@ public static class SquidServiceHost
         // over the same SQLite file — one document, the ETag-guarded pattern of the trail, and
         // the GAP-28 idempotency (post, reporter) enforced inside its critical section.
         builder.Services.AddSingleton<IReportStore>(_ => new SqliteReportStore(storage));
+        // Thread core (SPEC-0010 section A, TASK-0033): the store over the migrated thread tables —
+        // the GAP-29 total order is a version-guarded UPDATE in SQL, never a grain (decision 9).
+        builder.Services.AddSingleton<IThreadStore>(_ => new SqliteThreadStore(connectionString));
         // Media slice (SPEC-0009 section E, TASK-0027): the content-addressed blob volume and its
         // upload record over the same SQLite file (data-model §5: Media:BlobRoot is a NAMED
         // volume, never an external service), and the SkiaSharp pipeline whose order §2.6 fixes —
@@ -220,6 +224,9 @@ public static class SquidServiceHost
         // middleware above already guards it, and after the publish routes whose writes wake it
         // (SPEC-0009 section D, contract §5 — event: post, Last-Event-ID, ping).
         app.MapSquidStream();
+        // Threads (TASK-0033): create and list, mapped after auth so the session/CSRF middleware
+        // above already guards both routes (SPEC-0010 section A, AC-04).
+        app.MapSquidThreads();
         // Policy, trail and operator (TASK-0018): PUT /policy rides with the container routes,
         // and GET /api/admin/audit sits on the same session pipeline behind the operator gate
         // (SPEC-0008 B/C/D). The operator list is configuration — Instance:Operators, GAP-14.

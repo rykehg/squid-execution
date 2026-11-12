@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -52,10 +52,13 @@ public sealed class ProjectionPumpTests : IClassFixture<AuthHostFixture>
                     $"'{table}' was not applied by the host init");
             }
 
-            var row = Assert.Single(await ProjectionDb.QueryAsync<VersionRow>(file,
-                "SELECT version AS Version, name AS Name, checksum AS Checksum FROM schema_version"));
-            Assert.Equal(1, row.Version);
-            Assert.False(string.IsNullOrWhiteSpace(row.Checksum));
+            // Every version of the family landed with its checksum (TASK-0033 added 0002_threads).
+            var rows = await ProjectionDb.QueryAsync<VersionRow>(file,
+                "SELECT version AS Version, name AS Name, checksum AS Checksum FROM schema_version ORDER BY version");
+            Assert.Equal(SchemaMigrations.Load().Select(script => (long)script.Version),
+                rows.Select(row => row.Version));
+            Assert.Equal(1, rows[0].Version);
+            Assert.False(string.IsNullOrWhiteSpace(rows[0].Checksum));
 
             await app.DisposeAsync();
         }
