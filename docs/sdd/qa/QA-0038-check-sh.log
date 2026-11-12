@@ -1,0 +1,38 @@
+﻿# qa-check-task-0038.sh (wsl -e bash) - 2026-11-12 08:40:36
+CHECK BASELINE OK - HEAD 8903e67 na branch task/TASK-0038-reacao-whitelist
+CHECK GATE OK - 20261112-083213-test-gate.log header exit 0 e 468/468
+CHECK BASELINE-FILTER OK - 075557 exit 0 / 36 de 36 (baseline filtrada da QA)
+CHECK QA-TEMP-FILTER OK - 080317 exit 0 / 38 de 38 (com o teste temporario da QA)
+CHECK MUT-IDS OK - M1..M11 todos com linha PRE
+CHECK MUT-RED OK - M1..M11 todos com RUN vermelho no log
+CHECK MUT-RESTORE OK - RESTORE-OK = 14 (esperado >= 14)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL no ledger
+CHECK MUT-GREEN OK - GREEN 38/38 = 3
+CHECK MUT-ANOMALIA OK - nenhuma CLASSIFICACAO-ERRADA (S-22)
+CHECK MUT-SUMMARY-FULL OK - SUMMARY cycles=11 failed=0 residue=0
+CHECK MUT-SUMMARY-M4 OK - SUMMARY cycles=1 failed=0 (M4 corrigido)
+CHECK CATCH-M1 OK - M1 (sem ON CONFLICT) pego pela AC-01
+CHECK CATCH-M2 OK - M2 (chave sem o emoji) pego pela AC-01
+CHECK CATCH-M3 OK - M3 (Allows sempre true) pego pela AC-02
+CHECK CATCH-M4 OK - M4 (contador VALIDO) vermelho so na migration 0006 (37/1)
+CHECK CATCH-M5 OK - M5 (422 antes da sonda) pego pela AC-04
+CHECK CATCH-M6 OK - M6 (cache de config) pego pelo Fact A no log 20261112-080852-test-filter.log
+CHECK CATCH-M7 OK - M7 (DELETE sem actor_id) pego pela AC-03
+CHECK CATCH-M8 OK - M8 (parede desligada) pego pela AC-04
+CHECK CATCH-M9 OK - M9 (404 com traceId) pego pela byte-identidade
+CHECK CATCH-M10 OK - M10 (GET aberto) pego pelo Fact B (Expected NotFound)
+CHECK CATCH-M11 OK - M11 (401 virou 404) pego pelo Fact B (Expected Unauthorized)
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0038-* = 0
+CHECK DRIVER-BOM OK - qa-mutate-task-0038.ps1 com UTF-8 BOM (efbbbf)
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK TEMP-TEST-GONE OK - teste temporario removido da arvore
+CHECK TEMP-TEST-SOURCE OK - fonte .cs.txt preservada em docs/sdd/qa
+CHECK SCOPE-BLOB OK - blob-identity match=True = 4 de 4
+CHECK SCOPE-MTIME OK - mtime desde a baseline = 4 arquivos mutados
+CHECK SCOPE-RESIDUE OK - scope scan: residuo 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum produto fora dos touches
+CHECK QA-DOC OK - QA-0038-reacao-whitelist.md com verdict PASSED
+SUMMARY total=34 fails=0
+exit: 0
+

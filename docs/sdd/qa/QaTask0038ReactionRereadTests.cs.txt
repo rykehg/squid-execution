@@ -1,0 +1,233 @@
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Squid.Service;
+using Squid.Tests.Auth;
+using Squid.Tests.Posts;
+
+namespace Squid.Tests.Threads;
+
+/// <summary>
+/// QA-0038's own two scenarios, executed against a host this test builds and REMOVED from the tree
+/// after the mutation cycles (source preserved here): (A) AC-02's second half — the whitelist
+/// SOURCE itself is mutated at runtime (the environment variable the
+/// <c>Reactions:AllowedEmojis</c> section reads), never the code and never a restart, and the very
+/// next request must follow the new set — that is what "mudar a config muda o conjunto aceito"
+/// means when the config is instance configuration; (B) the documented ladder of the reaction
+/// route — no session answers 401 FIRST (even with an emoji outside the whitelist), and contract
+/// §6 gives GET no method on <c>.../reactions</c>, so GET stays the byte-identical shared 404 of
+/// an absent thread (§9.10, no traceId, no reaction words). DEV's suites cover the four ACs
+/// themselves; these two Facts cover the two claims no DEV test asserted.
+/// </summary>
+[Collection("ServiceHost")]
+public sealed class QaTask0038ReactionRereadTests
+{
+    [Fact] // AC-02 (second half) — re-read per request: mutate the config SOURCE, not the code
+    public async Task Mutating_the_config_source_changes_the_accepted_set_without_a_restart()
+    {
+        // The config source is the ENVIRONMENT itself — the provider every host reads (and the
+        // one an instance really configures with). It is set BEFORE the host is built; mutating
+        // it later and reloading the root is the live half of the proof.
+        var previousEmoji = Environment.GetEnvironmentVariable("Reactions:AllowedEmojis:0");
+        Environment.SetEnvironmentVariable("Reactions:AllowedEmojis:0", "🚀");
+        var storage = Path.Combine(Path.GetTempPath(), $"squid-q38a-{Guid.NewGuid():N}.db");
+        var app = SquidServiceHost.Build([
+            "--Storage:Path=" + storage,
+            "--Logging:LogLevel:Default=Warning",
+        ]);
+        app.Urls.Add("http://127.0.0.1:0");
+        await app.StartAsync();
+
+        try
+        {
+            var client = new AuthClient(new HttpClient { BaseAddress = new Uri(app.Urls.Single()) });
+            Assert.Equal(HttpStatusCode.Created,
+                (await client.RegisterAsync(PostRoutes.Handle("q38a"), PostRoutes.Password)).StatusCode);
+            var threadId = await CreateThreadAsync(client);
+            var messageId = await SendAsync(client, threadId, "fonte de config ao vivo");
+
+            // Round 1 — the instance declares ONLY 🚀: the route accepts it, refuses 🎉 (a default
+            // this instance dropped) and still accepts 👍 — GAP-34 unions the Like whatever the
+            // config says.
+            Assert.Equal(HttpStatusCode.OK,
+                (await ReactAsync(client, threadId, messageId, "🚀")).StatusCode);
+            var refusedFirst = await ReactAsync(client, threadId, messageId, "🎉");
+            Assert.Equal(HttpStatusCode.UnprocessableEntity, refusedFirst.StatusCode);
+            Assert.Contains("invalid_emoji",
+                await refusedFirst.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+            Assert.Equal(HttpStatusCode.OK,
+                (await ReactAsync(client, threadId, messageId, "👍")).StatusCode);
+
+            // Round 2 — mutate the config SOURCE (the environment variable the section reads
+            // through IConfiguration) and reload the root; no product code changes, no restart.
+            Environment.SetEnvironmentVariable("Reactions:AllowedEmojis:0", "🎉");
+            ((IConfigurationRoot)app.Configuration).Reload();
+
+            // The very next request follows the NEW set: 🚀 was 200 one request ago, now 422.
+            var nowOutside = await ReactAsync(client, threadId, messageId, "🚀");
+            Assert.Equal(HttpStatusCode.UnprocessableEntity, nowOutside.StatusCode);
+            Assert.Contains("invalid_emoji",
+                await nowOutside.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+            Assert.Equal(HttpStatusCode.OK,
+                (await ReactAsync(client, threadId, messageId, "🎉")).StatusCode);
+            Assert.Equal(HttpStatusCode.OK,
+                (await ReactAsync(client, threadId, messageId, "👍")).StatusCode);
+
+            // The derived read inside the wall shows exactly the rows that exist, in creation
+            // order: 🚀 (round 1), 👍 (round 1), 🎉 (round 2) — count 1 each, all mine.
+            var read = await PostRoutes.SendAsync(client, HttpMethod.Get,
+                $"{MessagesPath(threadId)}?since=0");
+            Assert.Equal(HttpStatusCode.OK, read.StatusCode);
+            using var json = JsonDocument.Parse(await read.Content.ReadAsStringAsync());
+            var reactions = json.RootElement.GetProperty("items").EnumerateArray()
+                .Single(item => item.GetProperty("id").GetString() == messageId)
+                .GetProperty("reactions").EnumerateArray()
+                .Select(entry => (
+                    Emoji: entry.GetProperty("emoji").GetString()!,
+                    Count: entry.GetProperty("count").GetInt64(),
+                    Mine: entry.GetProperty("mine").GetBoolean()))
+                .ToArray();
+            Assert.Equal(
+                new[]
+                {
+                    (Emoji: "🚀", Count: 1L, Mine: true),
+                    (Emoji: "👍", Count: 1L, Mine: true),
+                    (Emoji: "🎉", Count: 1L, Mine: true),
+                },
+                reactions);
+        }
+        finally
+        {
+            // No side effect left behind: the mutated config source goes back to what it was.
+            Environment.SetEnvironmentVariable("Reactions:AllowedEmojis:0", previousEmoji);
+            await app.StopAsync();
+            await app.DisposeAsync();
+            try
+            {
+                File.Delete(storage);
+            }
+            catch (IOException)
+            {
+                // A leftover temp file is not a product failure; the OS cleans it up.
+            }
+        }
+    }
+
+    [Fact] // ladder claim — 401 first; GET on .../reactions keeps the shared 404 (§6, §9.10)
+    public async Task The_reaction_ladder_answers_401_first_and_GET_stays_the_shared_404()
+    {
+        var storage = Path.Combine(Path.GetTempPath(), $"squid-q38b-{Guid.NewGuid():N}.db");
+        var app = SquidServiceHost.Build([
+            "--Storage:Path=" + storage,
+            "--Logging:LogLevel:Default=Warning",
+        ]);
+        app.Urls.Add("http://127.0.0.1:0");
+        await app.StartAsync();
+
+        try
+        {
+            var origin = app.Urls.Single();
+            var anonymous = new AuthClient(new HttpClient { BaseAddress = new Uri(origin) });
+            var owner = new AuthClient(new HttpClient { BaseAddress = new Uri(origin) });
+            Assert.Equal(HttpStatusCode.Created,
+                (await owner.RegisterAsync(PostRoutes.Handle("q38b"), PostRoutes.Password)).StatusCode);
+            var threadId = await CreateThreadAsync(owner);
+            var messageId = await SendAsync(owner, threadId, "dentro da parede");
+            Assert.Equal(HttpStatusCode.OK,
+                (await ReactAsync(owner, threadId, messageId, "👍")).StatusCode);
+
+            // 401 BEFORE anything else: no session, even with an emoji outside the whitelist —
+            // the only word the caller may learn is not_authenticated (contract §2/§8).
+            var noSession = await PostRoutes.SendAsync(anonymous, HttpMethod.Post,
+                ReactionsPath(threadId, messageId), new { emoji = "🚀" });
+            Assert.Equal(HttpStatusCode.Unauthorized, noSession.StatusCode);
+            Assert.Contains("not_authenticated",
+                await noSession.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+
+            // §6 gives the reaction route POST and DELETE only: a GET on it is the shared 404 —
+            // byte-identical with the 404 of a thread that never existed (same helper, no traceId,
+            // no reaction words), because §6 never gives the route a GET method.
+            var getReaction = await PostRoutes.SendAsync(owner, HttpMethod.Get,
+                ReactionsPath(threadId, messageId));
+            Assert.Equal(HttpStatusCode.NotFound, getReaction.StatusCode);
+            var getBody = await getReaction.Content.ReadAsByteArrayAsync();
+
+            var absentId = $"{origin}/t/{Guid.NewGuid():N}";
+            var absentGet = await PostRoutes.SendAsync(owner, HttpMethod.Get,
+                $"{MessagesPath(absentId)}?since=0");
+            Assert.Equal(HttpStatusCode.NotFound, absentGet.StatusCode);
+            Assert.Equal(getBody, await absentGet.Content.ReadAsByteArrayAsync());
+
+            var text = Encoding.UTF8.GetString(getBody);
+            Assert.Contains("not_found", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("traceId", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("reactions", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("count", text, StringComparison.Ordinal);
+
+            // Inside the wall nothing moved: the owner still reads their own 👍.
+            var read = await PostRoutes.SendAsync(owner, HttpMethod.Get,
+                $"{MessagesPath(threadId)}?since=0");
+            Assert.Equal(HttpStatusCode.OK, read.StatusCode);
+            using var json = JsonDocument.Parse(await read.Content.ReadAsStringAsync());
+            var entry = json.RootElement.GetProperty("items").EnumerateArray()
+                .Single(item => item.GetProperty("id").GetString() == messageId)
+                .GetProperty("reactions").EnumerateArray().Single();
+            Assert.Equal("👍", entry.GetProperty("emoji").GetString());
+            Assert.Equal(1, entry.GetProperty("count").GetInt64());
+            Assert.True(entry.GetProperty("mine").GetBoolean());
+        }
+        finally
+        {
+            await app.StopAsync();
+            await app.DisposeAsync();
+            try
+            {
+                File.Delete(storage);
+            }
+            catch (IOException)
+            {
+                // A leftover temp file is not a product failure; the OS cleans it up.
+            }
+        }
+    }
+
+    private static async Task<string> CreateThreadAsync(AuthClient client)
+    {
+        var created = await PostRoutes.SendAsync(client, HttpMethod.Post, "/api/threads",
+            new { kind = "direct", participantActorIds = new[] { PostRoutes.Handle("q38par") } },
+            client.Csrf);
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        using var json = JsonDocument.Parse(await created.Content.ReadAsStringAsync());
+        var threadId = json.RootElement.GetProperty("id").GetString()!;
+
+        // The §9.6 acceptance is recorded for the OWNER so a send may happen at all (a reaction
+        // never passes that gate — section D binds it to the send).
+        Assert.Equal(HttpStatusCode.OK, (await PostRoutes.SendAsync(client, HttpMethod.Post,
+            $"{AckPath(threadId)}", null, client.Csrf)).StatusCode);
+        return threadId;
+    }
+
+    private static async Task<string> SendAsync(AuthClient client, string threadId, string content)
+    {
+        var sent = await PostRoutes.SendAsync(client, HttpMethod.Post, MessagesPath(threadId),
+            new { content }, client.Csrf);
+        Assert.Equal(HttpStatusCode.OK, sent.StatusCode);
+        using var json = JsonDocument.Parse(await sent.Content.ReadAsStringAsync());
+        return json.RootElement.GetProperty("id").GetString()!;
+    }
+
+    private static Task<HttpResponseMessage> ReactAsync(
+        AuthClient client, string threadId, string messageId, string emoji) =>
+        PostRoutes.SendAsync(client, HttpMethod.Post, ReactionsPath(threadId, messageId),
+            new { emoji }, client.Csrf);
+
+    private static string MessagesPath(string threadId) =>
+        $"/api/threads/{Uri.EscapeDataString(threadId)}/messages";
+
+    private static string ReactionsPath(string threadId, string messageId) =>
+        $"{MessagesPath(threadId)}/{Uri.EscapeDataString(messageId)}/reactions";
+
+    private static string AckPath(string threadId) =>
+        $"/api/threads/{Uri.EscapeDataString(threadId)}/ack-no-e2ee";
+}

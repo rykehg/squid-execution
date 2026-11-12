@@ -1,0 +1,87 @@
+﻿# QA-0038 mutations - 2026-11-12 08:03:42
+M1 PRE D7AC889D473A | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M1 WHY AC-01: repetir a MESMA trinca grava de novo e estoura a chave - a segunda POST vira 500 em vez de 200 idempotente
+M1 RUN wrapper=1 logExit=1 aprovado=35 falha=3 constraint=no log=20261112-080439-test-filter.log
+M1 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._nothing [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.The_same_message_actor_emoji_is_one_row_and_repeating_it_changes_nothing [424 ms] | Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [FAIL] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [540 ms] | cepted_set_without_a_restart [FAIL] | Com falha Squid.Tests.Threads.QaTask0038ReactionRereadTests.Mutating_the_config_source_changes_the_accepted_set_without_a_restart [4 s]
+M1 RED-DETAIL C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Threads\ThreadStoreTests.cs(36,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Squid.Tests.csproj] ~ Squid.Tests -> C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\bin\Debug\net10.0\Squid.Tests.dll
+M1 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M2 PRE 4252719B010F | editado backend\src\Squid.Persistence\schema\0006_message_reaction.sql
+M2 PRE D7AC889D473A | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M2 WHY AC-01: unica deixou de ser a trinca - o SEGUNDO emoji diferente do mesmo ator e recusado em silencio (sem linha nova)
+M2 RUN wrapper=1 logExit=1 aprovado=33 falha=5 constraint=no log=20261112-080533-test-filter.log
+M2 RED-IN-LOG wedEmojis_changes_what_the_reaction_route_accepts [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._accepts [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadReactionWhitelistConfigTests.Changing_Reactions_AllowedEmojis_changes_what_the_reaction_route_accepts [5 s] | s_the_rows_and_a_missing_one_is_404 [FAIL] | [FAIL] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.Deleting_takes_the_actor_row_the_count_follows_the_rows_and_a_missing_one_is_404 [715 ms] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.The_same_message_actor_emoji_is_one_row_and_repeating_it_changes_nothing [536 ms] | [FAIL]
+M2 RED-DETAIL Assert.Equal() Failure: Collections differ ~ â†“ (pos 1)
+M2 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Persistence\schema\0006_message_reaction.sql
+M2 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M3 PRE A09B44176138 | editado backend\src\Squid.Api\Threads\ReactionOptions.cs
+M3 WHY AC-02: qualquer emoji (e o vazio) passa - 422 invalid_emoji nao existe mais em POST nem em DELETE
+M3 RUN wrapper=1 logExit=1 aprovado=35 falha=3 constraint=no log=20261112-080627-test-filter.log
+M3 RED-IN-LOG wedEmojis_changes_what_the_reaction_route_accepts [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._accepts [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadReactionWhitelistConfigTests.Changing_Reactions_AllowedEmojis_changes_what_the_reaction_route_accepts [5 s] | [FAIL] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.An_emoji_outside_Reactions_AllowedEmojis_is_422_and_never_reaches_a_row [311 ms] | cepted_set_without_a_restart [FAIL] | Com falha Squid.Tests.Threads.QaTask0038ReactionRereadTests.Mutating_the_config_source_changes_the_accepted_set_without_a_restart [5 s]
+M3 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: UnprocessableEntity
+M3 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ReactionOptions.cs
+M4 PRE 4252719B010F | editado backend\src\Squid.Persistence\schema\0006_message_reaction.sql
+M4 WHY AC-03: contador ARMAZENADO na tabela de reacao - a migration tem que pegar qualquer coluna de contagem
+M4 RUN wrapper=1 logExit=1 aprovado=0 falha=38 constraint=no log=20261112-080659-test-filter.log
+M4 RED-IN-LOG _and_refuses_anything_outside_two_to_fifty [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...to_fifty [FAIL]:String) [], RemoteException | Squid.Tests.Threads.ThreadRoutesTests.A_direct_thread_has_exactly_two_participants_with_the_creator_among_them [FAIL] | nd_reapplying_changes_nothing [FAIL] | [FAIL] | [FAIL] | n_and_both_counters_start_at_zero [FAIL] | [FAIL]
+M4 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Persistence\schema\0006_message_reaction.sql
+M5 PRE 5A3A180FA711 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M5 WHY AC-04: o estrangeiro com emoji FORA da lista aprende 422 invalid_emoji em vez do 404 identico (escada invertida)
+M5 RUN wrapper=1 logExit=1 aprovado=37 falha=1 constraint=no log=20261112-080756-test-filter.log
+M5 RED-IN-LOG Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...n_routes [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [416 ms]
+M5 RED-DETAIL Assert.All() Failure: 1 out of 6 items in the collection did not pass. ~ [3]: Item: StatusCode: 422, ReasonPhrase: 'Unprocessable Entity', Version: 1.1, Content: System.Net.Http.HttpConnectionResponseContent, Headers:
+M5 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M6 PRE A09B44176138 | editado backend\src\Squid.Api\Threads\ReactionOptions.cs
+M6 WHY AC-02: whitelist lida UMA vez por processo - mutar a FONTE da config nao muda mais o conjunto aceito
+M6 RUN wrapper=1 logExit=1 aprovado=34 falha=4 constraint=no log=20261112-080852-test-filter.log
+M6 RED-IN-LOG _count_follows_the_rows_and_a_missing_one_is_404 [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...e_is_404 [FAIL]:String) [], RemoteException | [FAIL] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.Deleting_takes_the_actor_row_the_count_follows_the_rows_and_a_missing_one_is_404 [636 ms] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.The_same_message_actor_emoji_is_one_row_and_repeating_it_changes_nothing [391 ms] | [FAIL] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.An_emoji_outside_Reactions_AllowedEmojis_is_422_and_never_reaches_a_row [161 ms] | cepted_set_without_a_restart [FAIL]
+M6 RED-DETAIL C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Threads\ThreadStoreTests.cs(36,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Squid.Tests.csproj] ~ Squid.Tests -> C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\bin\Debug\net10.0\Squid.Tests.dll
+M6 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ReactionOptions.cs
+M7 PRE D7AC889D473A | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M7 WHY AC-03: o DELETE do dono come TAMBEM a linha do par - a contagem cai para zero em vez de 1
+M7 RUN wrapper=1 logExit=1 aprovado=37 falha=1 constraint=no log=20261112-080949-test-filter.log
+M7 RED-IN-LOG _count_follows_the_rows_and_a_missing_one_is_404 [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...e_is_404 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.Deleting_takes_the_actor_row_the_count_follows_the_rows_and_a_missing_one_is_404 [613 ms]
+M7 RED-DETAIL C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Threads\ThreadStoreTests.cs(36,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Squid.Tests.csproj] ~ Squid.Tests -> C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\bin\Debug\net10.0\Squid.Tests.dll
+M7 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M8 PRE D7AC889D473A | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M8 WHY AC-04: o nao-participante PASSA a parede e reage com 200 - o 404 identico das rotas de reacao some
+M8 RUN wrapper=1 logExit=1 aprovado=37 falha=1 constraint=no log=20261112-081038-test-filter.log
+M8 RED-IN-LOG Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...n_routes [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [501 ms]
+M8 RED-DETAIL Assert.All() Failure: 3 out of 6 items in the collection did not pass. ~ [1]: Item: StatusCode: 200, ReasonPhrase: 'OK', Version: 1.1, Content: System.Net.Http.HttpConnectionResponseContent, Headers:
+M8 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M9 PRE 5A3A180FA711 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M9 WHY AC-04: 404 com traceId - a identidade byte-a-byte das seis recusas cai (cada corpo ganha um traceId proprio)
+M9 RUN wrapper=1 logExit=1 aprovado=29 falha=9 constraint=no log=20261112-081130-test-filter.log
+M9 RED-IN-LOG _and_the_stranger_keeps_the_byte_identical_404 [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ical_404 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadReplyRoutesTests.A_valid_reply_never_widens_the_wall_and_the_stranger_keeps_the_byte_identical_404 [295 ms] | s_the_rows_and_a_missing_one_is_404 [FAIL] | Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [FAIL] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.Deleting_takes_the_actor_row_the_count_follows_the_rows_and_a_missing_one_is_404 [571 ms] | Com falha Squid.Tests.Threads.ThreadReactionRoutesTests.A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes [368 ms] | Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [FAIL]
+M9 RED-DETAIL Assert.Equal() Failure: Collections differ ~ â†“ (pos 79)
+M9 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M10 PRE 5A3A180FA711 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M10 WHY GET em .../reactions vira 200 (leitura de mensagem) em vez do 404 do contrato (Fact B da QA)
+M10 RUN wrapper=1 logExit=1 aprovado=37 falha=1 constraint=no log=20261112-081222-test-filter.log
+M10 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ared_404 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.QaTask0038ReactionRereadTests.The_reaction_ladder_answers_401_first_and_GET_stays_the_shared_404 [4 s]
+M10 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: NotFound
+M10 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M11 PRE 5A3A180FA711 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M11 WHY roda de 401 trocada: sem sessao a rota de reacao responde 404 em vez de 401 not_authenticated (Fact B da QA)
+M11 RUN wrapper=1 logExit=1 aprovado=37 falha=1 constraint=no log=20261112-081312-test-filter.log
+M11 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ared_404 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.QaTask0038ReactionRereadTests.The_reaction_ladder_answers_401_first_and_GET_stays_the_shared_404 [5 s]
+M11 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: Unauthorized
+M11 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+GREEN wrapper=0 logExit=0 aprovado=38 falha=0 log=20261112-081404-test-filter.log
+SUMMARY cycles=11 failed=0 residue-QA-MUTATION=0 temp-backups=0
+## re-execucao seletiva (M4) - 2026-11-12 08:17:11
+M4 PRE 4252719B010F | editado backend\src\Squid.Persistence\schema\0006_message_reaction.sql
+M4 WHY AC-03: contador ARMAZENADO na tabela de reacao - a migration tem que pegar qualquer coluna de contagem
+M4 RUN wrapper=1 logExit=1 aprovado=0 falha=38 constraint=no log=20261112-081728-test-filter.log
+M4 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ts_admin [FAIL]:String) [], RemoteException | nd_reapplying_changes_nothing [FAIL] | anything_outside_two_to_fifty [FAIL] | Squid.Tests.Threads.ThreadRoutesTests.A_direct_thread_has_exactly_two_participants_with_the_creator_among_them [FAIL] | [FAIL] | n_and_both_counters_start_at_zero [FAIL] | [FAIL]
+M4 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Persistence\schema\0006_message_reaction.sql
+GREEN wrapper=0 logExit=0 aprovado=38 falha=0 log=20261112-081821-test-filter.log
+SUMMARY cycles=1 failed=0 residue-QA-MUTATION=0 temp-backups=0
+## re-execucao seletiva (M4) - 2026-11-12 08:24:00
+M4 PRE 4252719B010F | editado backend\src\Squid.Persistence\schema\0006_message_reaction.sql
+M4 WHY AC-03: contador ARMAZENADO na tabela de reacao - a migration tem que pegar qualquer coluna de contagem
+M4 RUN wrapper=1 logExit=1 aprovado=37 falha=1 constraint=no log=20261112-082449-test-filter.log
+M4 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._nothing [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadMigrationTests.The_0006_version_creates_the_reaction_table_and_reapplying_changes_nothing [65 ms]
+M4 RED-DETAIL Assert.Equal() Failure: Collections differ ~ Expected: string[] [Â·Â·Â·, "actor_id", "emoji", "kind", "created_at"]
+M4 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Persistence\schema\0006_message_reaction.sql
+GREEN wrapper=0 logExit=0 aprovado=38 falha=0 log=20261112-082537-test-filter.log
+SUMMARY cycles=1 failed=0 residue-QA-MUTATION=0 temp-backups=0
