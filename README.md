@@ -11,9 +11,12 @@ versionada, identidade recuperável e federação por ActivityPub.
 
 ## Estado atual
 
-O repositório acabou de nascer: fase **P-01 (fundação)**. O estado canônico de execução — fases,
-tarefas, QA e evidências — vive em [`docs/sdd/`](docs/sdd/README.md); o plano corrente é
-[`docs/sdd/plan/plan.md`](docs/sdd/plan/plan.md).
+Fases **P-01..P-05 fechadas** (fundação, identidade, contêineres sociais, publicação/feed e
+mensageria) — gate local de testes em **480/480**; a próxima é **P-06 (Federação)**. O estado
+canônico de execução — fases, tarefas, QA e evidências — vive em [`docs/sdd/`](docs/sdd/README.md);
+o plano corrente é [`docs/sdd/plan/plan.md`](docs/sdd/plan/plan.md). Este bloco e os ponteiros de
+fase de [`docs/runbooks/`](docs/runbooks/README.md) são atualizados a cada fecho de fase
+(prática de fecho, gate humano 2026-11-12 19:01:23).
 
 Documentação de referência neste repositório:
 

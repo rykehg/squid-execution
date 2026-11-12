@@ -39,6 +39,11 @@ Cada fase termina em entregas pequenas, funcionais por si e verdes em QA. A orde
 dependência, não a ordem de vontade. Mapeamento 1:1 com os sprints do doc 05 §12.2 (material
 adotado) — a fase muda de nome, não de conteúdo.
 
+**Checklist de fecho (gate humano 2026-11-12 19:01:23):** além da consolidação do memory bank
+e do snapshot do plano, atualizar a cada `PHASE_CLOSED` o `README.md` (§Estado atual) e os
+ponteiros de fase de `docs/runbooks/**` (índice + runbooks com "PENDENTE-fase") — ponteiro velho
+engana teste e revisão humana.
+
 | Phase | Goal | Small deliveries | Status | Closed at |
 | --- | --- | --- | --- | --- |
 | P-01 | Fundação verificável: a instância nasce com estrutura, regra de dependência no build e storage que impõe ETag | TASK-0001..TASK-0010 — todas DONE com QA PASSED (detalhe em `plan/history/0002-plan.md`) | **CLOSED** | 2026-11-07 08:30:00 |
@@ -245,3 +250,4 @@ nomes** — nenhum arquivo deles é copiado, nem como trecho.
 | 2026-11-11 21:58:46 | Abertura da P-05 (entrevista rodada 3): admin de grupo — **qualquer admin adiciona/remove/promove/demove**, admins eleitos promovem outros admins; regra de sucessão: **criador sai → admin mais antigo assume; sem admin → membro mais antigo promovido a admin/criador** (grupo nunca fica sem admin) | PHASE | Henrique |
 | 2026-11-11 22:55:32 | Abertura da P-05 (entrevista rodada 4): **corte aprovado com 8 tasks seriais** (TASK-0033..0040); **2 emendas aprovadas** — (a) data-model §2.7 ganha papéis de admin da thread, (b) contrato §6 ganha `POST .../participants` + rotas de admin + `contentHashes` na mensagem — originais intactos (precedente S-27/P-03) | PHASE | Henrique |
 | 2026-11-11 23:08:37 | Abertura da P-05 (entrevista rodada 5): estado da thread = **SQLite + ETag** (não `ThreadGrain`/Orleans — ADR-1 vale, thread não federa); rota de admin = **`POST`/`DELETE /api/threads/{id}/participants/{actorId}/admin`** | PHASE | Henrique |
+| 2026-11-12 19:01:23 | **Prática de fecho de fase**: a cada `PHASE_CLOSED` o ODEV atualiza o `README.md` (§Estado atual) e os ponteiros de fase de `docs/runbooks/**` (índice + "PENDENTE-fase") junto com a consolidação — ponteiro velho engana teste e revisão humana; rotação de chave registrada como **S-39** (sem dono de fase, candidata P-07); execução imediata: README, runbooks e gate contagem atualizados no fecho da P-05 | PHASE | Henrique |
