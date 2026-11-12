@@ -1,0 +1,102 @@
+﻿# QA-0039 mutations - 2026-11-12 09:44:06
+M1 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M1 WHY AC-01: a coluna 0007 nasce sempre NULL - a leitura devolve anexos vazios (send continua com a lista em memoria)
+M1 FILTER FullyQualifiedName~Squid.Tests.Threads
+M1 RUN wrapper=1 logExit=1 aprovado=39 falha=3 constraint=no log=20261112-094448-test-filter.log
+M1 RED-IN-LOG t_of_a_thread_referencing_the_hash_and_hides_it_from_everyone_else [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...one_else [FAIL]:String) [], RemoteException | elope_returns_the_Attachment_shape [FAIL] | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.GetMedia_serves_the_participant_of_a_thread_referencing_the_hash_and_hides_it_from_everyone_else [728 ms] | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.Send_carries_contentHashes_and_the_read_envelope_returns_the_Attachment_shape [283 ms] | _and_ten_land_as_ten_attachments [FAIL] | Com falha Squid.Tests.Threads.QaTask0039AttachmentCapTests.Eleven_references_of_one_real_hash_are_400_and_ten_land_as_ten_attachments [422 ms]
+M1 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: OK
+M1 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M2 PRE 8E9E4CECFDB4 | editado backend\src\Squid.Api\Threads\MessageView.cs
+M2 WHY AC-01: o envelope de leitura deixa de devolver `alt` (campo obrigatorio de 2.6 para image/video/gif)
+M2 FILTER FullyQualifiedName~Squid.Tests.Threads
+M2 RUN wrapper=1 logExit=1 aprovado=0 falha=0 constraint=no log=20261112-094458-test-filter.log
+M2 CLASSIFICACAO-ERRADA: o log nao mostra falha de produto (ambiente? S-22)
+M2 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\MessageView.cs
+M3 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M3 WHY AC-01: lista de 11 referencias de um hash REAL vira 10 e o envio responde 200 em vez de 400 (Fact da QA)
+M3 FILTER FullyQualifiedName~Squid.Tests.Threads
+M3 RUN wrapper=1 logExit=1 aprovado=41 falha=1 constraint=no log=20261112-094538-test-filter.log
+M3 RED-IN-LOG _hash_are_400_and_ten_land_as_ten_attachments [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...achments [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.QaTask0039AttachmentCapTests.Eleven_references_of_one_real_hash_are_400_and_ten_land_as_ten_attachments [419 ms]
+M3 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: BadRequest
+M3 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M4 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M4 WHY AC-01: hash inexistente e ignorado - a mensagem aceita hash fantasma com 200 em vez de 400
+M4 FILTER FullyQualifiedName~Squid.Tests.Threads
+M4 RUN wrapper=1 logExit=1 aprovado=41 falha=1 constraint=no log=20261112-094617-test-filter.log
+M4 RED-IN-LOG _the_read_envelope_returns_the_Attachment_shape [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...nt_shape [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.Send_carries_contentHashes_and_the_read_envelope_returns_the_Attachment_shape [177 ms]
+M4 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: BadRequest
+M4 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M5 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M5 WHY AC-01: a recusa de hash inexistente acontece DEPOIS da CAS e grava o numero - o envio limpo seguinte nasce no seq 2
+M5 FILTER FullyQualifiedName~Squid.Tests.Threads
+M5 RUN wrapper=1 logExit=1 aprovado=40 falha=2 constraint=no log=20261112-094700-test-filter.log
+M5 RED-IN-LOG _the_read_envelope_returns_the_Attachment_shape [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...nt_shape [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.Send_carries_contentHashes_and_the_read_envelope_returns_the_Attachment_shape [277 ms] | _and_ten_land_as_ten_attachments [FAIL] | Com falha Squid.Tests.Threads.QaTask0039AttachmentCapTests.Eleven_references_of_one_real_hash_are_400_and_ten_land_as_ten_attachments [480 ms]
+M5 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: 1
+M5 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M6 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M6 WHY AC-02: mensagem com midia sem Alt e aceita (200) em vez do 400 da publicacao - o upload ja bloqueia, a store direta prova o caminho do envio
+M6 FILTER FullyQualifiedName~Squid.Tests.Threads
+M6 RUN wrapper=1 logExit=1 aprovado=41 falha=1 constraint=no log=20261112-094739-test-filter.log
+M6 RED-IN-LOG Squid.Tests.Threads.ThreadAttachmentRoutesTests.An_image_without_alt_is_refused_only_after_the_428_and_the_422 [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._the_422 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.An_image_without_alt_is_refused_only_after_the_428_and_the_422 [245 ms]
+M6 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: BadRequest
+M6 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M7 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M7 WHY AC-03: enviar mensagem com anexo SOMA bytes no quota_ledger (a linha byte-identica da QA vira diferente)
+M7 FILTER FullyQualifiedName~Squid.Tests.Threads
+M7 RUN wrapper=1 logExit=1 aprovado=41 falha=1 constraint=no log=20261112-094819-test-filter.log
+M7 RED-IN-LOG edger_charge_and_the_507_stays_in_the_upload_route [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ad_route [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentQuotaTests.A_send_with_hashes_creates_no_ledger_charge_and_the_507_stays_in_the_upload_route [475 ms]
+M7 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 0)
+M7 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M8 PRE D5A5BDD7B46A | editado backend\src\Squid.Api\Media\MediaEndpoints.cs
+M8 WHY AC-04: o participante da thread que referencia o hash cai no 404 (ramo mensagem morto) - e o ramo POST segue verde no MESMO run
+M8 FILTER FullyQualifiedName~Squid.Tests.Threads|FullyQualifiedName~Squid.Tests.Media
+M8 RUN wrapper=1 logExit=1 aprovado=68 falha=1 constraint=no log=20261112-094915-test-filter.log
+M8 RED-IN-LOG t_of_a_thread_referencing_the_hash_and_hides_it_from_everyone_else [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...one_else [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.GetMedia_serves_the_participant_of_a_thread_referencing_the_hash_and_hides_it_from_everyone_else [689 ms]
+M8 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: OK
+M8 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Media\MediaEndpoints.cs
+M9 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M9 WHY AC-04: o estrangeiro (participante de OUTRA thread) le a midia da conversa alheia com 200 em vez do 404 identico
+M9 FILTER FullyQualifiedName~Squid.Tests.Threads
+M9 RUN wrapper=1 logExit=1 aprovado=41 falha=1 constraint=no log=20261112-094955-test-filter.log
+M9 RED-IN-LOG t_of_a_thread_referencing_the_hash_and_hides_it_from_everyone_else [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...one_else [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.GetMedia_serves_the_participant_of_a_thread_referencing_the_hash_and_hides_it_from_everyone_else [805 ms]
+M9 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: NotFound
+M9 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M10 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M10 WHY escada 428-400: sem aceite + anexo ruim o envio responde 400 (anexo) em vez de 428 (aceite)
+M10 FILTER FullyQualifiedName~Squid.Tests.Threads
+M10 RUN wrapper=1 logExit=1 aprovado=41 falha=1 constraint=no log=20261112-095034-test-filter.log
+M10 RED-IN-LOG Squid.Tests.Threads.ThreadAttachmentRoutesTests.An_image_without_alt_is_refused_only_after_the_428_and_the_422 [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._the_422 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.An_image_without_alt_is_refused_only_after_the_428_and_the_422 [149 ms]
+M10 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: PreconditionRequired
+M10 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M11 PRE 2570DBB75F79 | editado backend\src\Squid.Service\SqliteThreadStore.cs
+M11 WHY escada 422-400: replyToId de fora + anexo ruim o envio responde 400 (anexo) em vez de 422 (resposta)
+M11 FILTER FullyQualifiedName~Squid.Tests.Threads
+M11 RUN wrapper=1 logExit=1 aprovado=41 falha=1 constraint=no log=20261112-095114-test-filter.log
+M11 RED-IN-LOG Squid.Tests.Threads.ThreadAttachmentRoutesTests.An_image_without_alt_is_refused_only_after_the_428_and_the_422 [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._the_422 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.An_image_without_alt_is_refused_only_after_the_428_and_the_422 [204 ms]
+M11 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: UnprocessableEntity
+M11 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SqliteThreadStore.cs
+M12 PRE D5A5BDD7B46A | editado backend\src\Squid.Api\Media\MediaEndpoints.cs
+M12 WHY AC-03: o 507 some de POST /api/media - o upload acima da cota passa (200) e ainda muda o ledger
+M12 FILTER FullyQualifiedName~Squid.Tests.Threads
+M12 RUN wrapper=1 logExit=1 aprovado=41 falha=1 constraint=no log=20261112-095157-test-filter.log
+M12 RED-IN-LOG edger_charge_and_the_507_stays_in_the_upload_route [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ad_route [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentQuotaTests.A_send_with_hashes_creates_no_ledger_charge_and_the_507_stays_in_the_upload_route [584 ms]
+M12 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Media\MediaEndpoints.cs
+M13 PRE 7C017654476E | editado backend\src\Squid.Persistence\schema\0007_message_attachments.sql
+M13 WHY AC-01: coluna de CONTAGEM somada a familia 0007 - so a ThreadMigrationTests vermelha, rotas verdes
+M13 FILTER FullyQualifiedName~Squid.Tests.Threads
+M13 RUN wrapper=1 logExit=1 aprovado=39 falha=3 constraint=no log=20261112-095239-test-filter.log
+M13 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._nothing [FAIL]:String) [], RemoteException | Squid.Tests.Threads.ThreadMigrationTests.The_0005_version_adds_the_reply_column_and_reapplying_changes_nothing [FAIL] | [FAIL] | Com falha Squid.Tests.Threads.ThreadMigrationTests.The_0006_version_creates_the_reaction_table_and_reapplying_changes_nothing [71 ms] | Com falha Squid.Tests.Threads.ThreadMigrationTests.The_0005_version_adds_the_reply_column_and_reapplying_changes_nothing [56 ms] | Com falha Squid.Tests.Threads.ThreadMigrationTests.The_0007_version_adds_the_attachments_column_and_reapplying_changes_nothing [51 ms]
+M13 RED-DETAIL Assert.Equal() Failure: Collections differ ~ Expected: string[] [Â·Â·Â·, "seq", "created_at", "reply_to_id", "attachments"]
+M13 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Persistence\schema\0007_message_attachments.sql
+GREEN wrapper=0 logExit=0 aprovado=42 falha=0 log=20261112-095324-test-filter.log
+SUMMARY cycles=13 failed=1 residue-QA-MUTATION=0 temp-backups=0
+## re-execucao seletiva (M2) - 2026-11-12 09:54:58
+M2 PRE 8E9E4CECFDB4 | editado backend\src\Squid.Api\Threads\MessageView.cs
+M2 WHY AC-01: o envelope de leitura deixa de devolver `alt` (campo obrigatorio de 2.6 para image/video/gif)
+M2 FILTER FullyQualifiedName~Squid.Tests.Threads
+M2 RUN wrapper=1 logExit=1 aprovado=41 falha=1 constraint=no log=20261112-095543-test-filter.log
+M2 RED-IN-LOG _the_read_envelope_returns_the_Attachment_shape [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...nt_shape [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAttachmentRoutesTests.Send_carries_contentHashes_and_the_read_envelope_returns_the_Attachment_shape [242 ms]
+M2 RED-DETAIL Assert.Equal() Failure: Strings differ ~ Expected: "foto da mensagem"
+M2 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\MessageView.cs
+GREEN wrapper=0 logExit=0 aprovado=42 falha=0 log=20261112-095624-test-filter.log
+SUMMARY cycles=1 failed=0 residue-QA-MUTATION=0 temp-backups=0
