@@ -54,8 +54,9 @@ public enum ParticipantRemoval
 
 /// <summary>
 /// One row of <c>GET /api/threads</c>: the thread, every participant (data-model section 2.7's
-/// <c>ParticipantActorIds</c>) and the reader's own <c>lastReadSeq</c> — born 0 per participant
-/// (GAP-38; the monotonic marker itself is TASK-0036, the field exists from here).
+/// <c>ParticipantActorIds</c>) and the READER's own <c>lastReadSeq</c> — the monotonic marker of
+/// FR-033/GAP-38, one value per participant (a seat with no marker yet is born 0), never another
+/// participant's (SPEC-0010 section D: read state is per participant, visible only to participants).
 /// </summary>
 public sealed record ThreadListItem(
     ThreadState Thread,
@@ -77,6 +78,26 @@ public sealed record MessageState(
     DateTimeOffset CreatedAt);
 
 /// <summary>
+/// What one append attempt answered (SPEC-0010 section D): the row landed, the §9.6 refusal of a
+/// sender that never accepted the non-E2EE notice, or the nothing an absent thread answers with —
+/// three outcomes because the route owes three different statuses (200 / 428 / 404).
+/// </summary>
+public enum AppendOutcome
+{
+    /// <summary>Number taken and row committed in the same transaction (GAP-29).</summary>
+    Appended,
+
+    /// <summary>No <c>thread_no_e2ee_ack</c> row for (thread, sender) — the caller answers <c>428 precondition_required</c>.</summary>
+    AckRequired,
+
+    /// <summary>No such thread: nothing was written, the caller answers the byte-identical 404.</summary>
+    NoSuchThread,
+}
+
+/// <summary>One append attempt: <see cref="Message"/> is the stored row only when <see cref="Outcome"/> is <see cref="AppendOutcome.Appended"/>.</summary>
+public sealed record AppendResult(AppendOutcome Outcome, MessageState? Message);
+
+/// <summary>
 /// The thread store of SPEC-0010 section A (ADR-35: the edge declares it, <c>Squid.Service</c>
 /// implements it over SQLite). Writes are insert-only or compare-and-swap on the version column:
 /// a divergent version is refused, never overwritten — the optimistic-concurrency rule TASK-0003
@@ -93,8 +114,9 @@ public interface IThreadStore
 
     /// <summary>
     /// The threads where <paramref name="actorId"/> is a participant, in creation order, each
-    /// with all its participants and the actor's own <c>lastReadSeq</c> (0 while the marker
-    /// belongs to TASK-0036). Threads the actor is not in never appear here (FR-031).
+    /// with all its participants and the actor's own <c>lastReadSeq</c> read from the marker of
+    /// 0004 (born 0 until the actor marks one). Threads the actor is not in never appear here
+    /// (FR-031).
     /// </summary>
     Task<IReadOnlyList<ThreadListItem>> ListForAsync(string actorId);
 
@@ -145,13 +167,42 @@ public interface IThreadStore
     Task<bool> SetRoleAsync(string threadId, string actorId, string role);
 
     /// <summary>
+    /// Records the acceptance of the non-E2EE notice (SPEC-0010 section D, FR-032, GAP-37): one
+    /// row per (thread, actor), so the route is idempotent — repeating it keeps the FIRST ack and
+    /// changes nothing. The notice text the actor accepted travels in the row itself (section D:
+    /// "o aviso em si é texto registrado no registro do aceite"); showing it in the UI is P-08.
+    /// </summary>
+    Task AckNoE2eeAsync(string threadId, string actorId, string notice, DateTimeOffset ackedAt);
+
+    /// <summary>
+    /// Marks the actor's read marker up to <paramref name="seq"/> (SPEC-0010 section D, FR-033):
+    /// the marker only ever MOVES FORWARD — a smaller value is written nowhere and the stored
+    /// value comes back unchanged (GAP-38) —, and the value now in force is returned so the
+    /// answer tells the truth even when the request was a no-op. The route bounds
+    /// <paramref name="seq"/> against the thread total before calling (400 above it).
+    /// </summary>
+    Task<long> MarkReadAsync(string threadId, string actorId, long seq);
+
+    /// <summary>
+    /// The actor's stored read marker for one thread (FR-033), 0 when the actor never marked one.
+    /// The caller has already probed participation, so this value only ever leaves through a
+    /// participant's own read (SPEC-0010 section D: visible only to participants).
+    /// </summary>
+    Task<long> LastReadSeqAsync(string threadId, string actorId);
+
+    /// <summary>
     /// Appends one message (SPEC-0010 section B): the thread's next <c>seq</c> is taken under the
     /// version guard AND the row lands in the SAME transaction (GAP-29), so a number is never
-    /// committed without its message — a reader polling <c>?since=</c> can miss neither. Null means
-    /// no such thread: nothing was written. A racing append waits for the lock instead of failing,
-    /// which is why every sender of a race still gets an answer, with its own number.
+    /// committed without its message — a reader polling <c>?since=</c> can miss neither. The
+    /// §9.6 gate lives HERE, inside the same transaction and before any number is taken: a sender
+    /// with no ack row for (thread, actor) is answered <see cref="AppendOutcome.AckRequired"/>
+    /// with nothing written, which is what makes the 428 hold for EVERY path that sends. Absent
+    /// thread is decided first (<see cref="AppendOutcome.NoSuchThread"/>), so a foreign thread
+    /// still shares the byte-identical 404 whether or not the caller ever acked (SC-005). A
+    /// racing append waits for the lock instead of failing, which is why every sender of a race
+    /// still gets an answer, with its own number.
     /// </summary>
-    Task<MessageState?> AppendMessageAsync(
+    Task<AppendResult> AppendMessageAsync(
         string threadId, string messageId, string authorActorId, string content, DateTimeOffset createdAt);
 
     /// <summary>

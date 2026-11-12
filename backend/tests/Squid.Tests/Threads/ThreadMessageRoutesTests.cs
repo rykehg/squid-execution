@@ -30,6 +30,9 @@ public sealed class ThreadMessageRoutesTests : IClassFixture<AuthHostFixture>
         var (peer, peerHandle) = await PostRoutes.SignedInAsync(_host, "msgconc2");
         // The second seat belongs to the peer's own account, so both halves of the race can send.
         var threadId = await DirectThreadAsync(sender, peerHandle);
+        // TASK-0036: the 428 gate is per (actor, thread) — the creator acked inside the helper,
+        // the peer acks here, or their half of the race would be a precondition refusal.
+        Assert.Equal(HttpStatusCode.OK, (await AckAsync(peer, threadId)).StatusCode);
 
         var seqs = new List<long>();
 
@@ -201,15 +204,28 @@ public sealed class ThreadMessageRoutesTests : IClassFixture<AuthHostFixture>
             new { content = "dono continua" })).StatusCode);
     }
 
-    /// <summary>Creates a direct thread with this actor and <paramref name="participantHandle"/>.</summary>
+    /// <summary>
+    /// Creates a direct thread with this actor and <paramref name="participantHandle"/>, with the
+    /// creator's FR-032 acceptance recorded — TASK-0036's §9.6 gate refuses the first message of
+    /// any sender that never acked, so every send of this suite starts from an accepted notice.
+    /// </summary>
     private async Task<string> DirectThreadAsync(AuthClient owner, string participantHandle)
     {
         var created = await PostRoutes.SendAsync(owner, HttpMethod.Post, "/api/threads",
             new { kind = "direct", participantActorIds = new[] { participantHandle } }, owner.Csrf);
         Assert.Equal(HttpStatusCode.Created, created.StatusCode);
         using var json = JsonDocument.Parse(await created.Content.ReadAsStringAsync());
-        return json.RootElement.GetProperty("id").GetString()!;
+        var threadId = json.RootElement.GetProperty("id").GetString()!;
+        Assert.Equal(HttpStatusCode.OK, (await AckAsync(owner, threadId)).StatusCode);
+        return threadId;
     }
+
+    /// <summary>The acceptance of <c>POST .../ack-no-e2ee</c> (idempotent, required before a send).</summary>
+    private static Task<HttpResponseMessage> AckAsync(AuthClient client, string threadId) =>
+        PostRoutes.SendAsync(client, HttpMethod.Post, AckPath(threadId), null, client.Csrf);
+
+    private static string AckPath(string threadId) =>
+        $"/api/threads/{Uri.EscapeDataString(threadId)}/ack-no-e2ee";
 
     /// <summary>POST one message through the route as the contract spells it (id percent-encoded).</summary>
     private static Task<HttpResponseMessage> SendAsync(

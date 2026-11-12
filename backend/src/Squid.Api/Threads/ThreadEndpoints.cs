@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
+using Squid.Api.Posts;
 using Squid.Domain.Objects;
 
 namespace Squid.Api.Threads;
@@ -13,12 +14,13 @@ public sealed record CreateThreadRequest(string? Kind, IReadOnlyList<string>? Pa
 
 /// <summary>
 /// The body of every POST under a thread (contract §6 + emenda GAP-31): <c>{content}</c> for the
-/// message route, <c>{actorId}</c> for adding a participant. ONE record because the catch-all
-/// dispatcher binds a single body and the tail decides which field it reads; the admin routes take
-/// no body at all, and an extra field a route never reads is ignored rather than acted on — which
-/// is also how <c>replyToId</c> stays unbound until TASK-0037.
+/// message route, <c>{actorId}</c> for adding a participant, <c>{seq}</c> for the read marker of
+/// section D. ONE record because the catch-all dispatcher binds a single body and the tail decides
+/// which field it reads; the admin and ack routes take no body at all, and an extra field a route
+/// never reads is ignored rather than acted on — which is also how <c>replyToId</c> stays unbound
+/// until TASK-0037.
 /// </summary>
-public sealed record ThreadPostRequest(string? Content, string? ActorId);
+public sealed record ThreadPostRequest(string? Content, string? ActorId, long? Seq = null);
 
 /// <summary>
 /// SPEC-0010 section A — create and list conversations (FR-030 base, data-model section 2.7 +
@@ -26,11 +28,15 @@ public sealed record ThreadPostRequest(string? Content, string? ActorId);
 /// already gated by the middleware <c>MapSquidAuth</c> installs before this map runs; the
 /// participant counts of the MVP (<c>Direct</c> exactly 2, <c>Group</c> 2..50, the creator always
 /// among them and the admin of a group); and a list that only ever answers with the threads the
-/// actor participates in, <c>messageSeq</c> born 0 and the actor's own <c>lastReadSeq</c> (GAP-38,
-/// born 0 until TASK-0036's monotonic marker lands). The thread id follows the origin rule of the
-/// P-03 emenda: scheme + Host of the very request that asked. Section C rides the same catch-all:
-/// add/remove participants and the admin seat (emenda GAP-31), with GAP-32's succession enforced
-/// by the store inside the removal.
+/// actor participates in, <c>messageSeq</c> born 0 and the actor's own <c>lastReadSeq</c> read from
+/// the marker of 0004 (FR-033, GAP-38). The thread id follows the origin rule of the P-03 emenda:
+/// scheme + Host of the very request that asked. Section C rides the same catch-all: add/remove
+/// participants and the admin seat (emenda GAP-31), with GAP-32's succession enforced by the store
+/// inside the removal. Section D rides it too: <c>ack-no-e2ee</c> records the FR-032 acceptance
+/// (§9.6's gate — an append without it is 428, decided inside the store so no send path escapes
+/// it), <c>read</c> moves the monotonic marker (a smaller value is ignored, above the total is
+/// 400 — GAP-38), and a <c>Suspended</c> actor's send is denied and reaches the trail before the
+/// 403 (data-model section 3.1, the publish ladder's own rule).
 /// </summary>
 public static class ThreadEndpoints
 {
@@ -53,6 +59,26 @@ public static class ThreadEndpoints
 
     /// <summary>The tail of <c>POST/DELETE .../participants/{actorId}/admin</c>.</summary>
     private const string AdminSuffix = "/admin";
+
+    /// <summary>The tail of <c>POST .../ack-no-e2ee</c> (SPEC-0010 section D, FR-032, §9.6).</summary>
+    private const string AckNoE2eeSuffix = "/ack-no-e2ee";
+
+    /// <summary>The tail of <c>POST .../read</c> (SPEC-0010 section D, FR-033).</summary>
+    private const string ReadSuffix = "/read";
+
+    /// <summary>
+    /// The notice the acceptance of <c>ack-no-e2ee</c> is recorded against (FR-032: messages have
+    /// no end-to-end encryption and the operator can read them) — section D keeps the text in the
+    /// ack record itself; the UI that SHOWS it is P-08 (GAP-37).
+    /// </summary>
+    private const string NoticeNoE2ee =
+        "As mensagens não têm criptografia ponta a ponta e são legíveis pelo operador.";
+
+    /// <summary>
+    /// The trail word for a send decision, local exactly like <c>PostEndpoints</c>' own words —
+    /// the shared constants of <c>IPolicyAuditStore</c> live in the container files.
+    /// </summary>
+    private const string MessageDecision = "Message";
 
     /// <summary>Maps the thread routes; runs after <c>MapSquidAuth</c>, on the session pipeline.</summary>
     public static WebApplication MapSquidThreads(this WebApplication app)
@@ -152,7 +178,8 @@ public static class ThreadEndpoints
     /// <c>GET /api/threads</c> (contract §6, SPEC-0010 A): the actor's own threads only — the
     /// store's join starts from the actor's own participant row, so a conversation the caller is
     /// not in can never appear (FR-031) —, each with <c>messageSeq</c> (0 until a message is
-    /// sent) and the actor's own <c>lastReadSeq</c> (0 until TASK-0036).
+    /// sent) and the actor's own <c>lastReadSeq</c> read from the marker of 0004 (0 until the
+    /// actor marks one — FR-033, one value per participant).
     /// </summary>
     private static async Task<IResult> ListAsync(HttpContext context, IThreadStore store)
     {
@@ -169,12 +196,14 @@ public static class ThreadEndpoints
     }
 
     /// <summary>
-    /// The POST tail of <c>/api/threads</c>: <c>{id}/messages</c> and <c>{id}/participants</c> of
-    /// contract §6 + emenda GAP-31 — any other tail answers the shared 404 like nothing was ever
-    /// there (the <c>/api/posts/{*target}</c> shape).
+    /// The POST tail of <c>/api/threads</c>: <c>{id}/messages</c>, <c>{id}/participants</c> of
+    /// contract §6 + emenda GAP-31, plus <c>{id}/ack-no-e2ee</c> and <c>{id}/read</c> of section D
+    /// — any other tail answers the shared 404 like nothing was ever there (the
+    /// <c>/api/posts/{*target}</c> shape).
     /// </summary>
     private static async Task<IResult> PostTargetAsync(
-        string target, ThreadPostRequest? request, HttpContext context, IThreadStore store, TimeProvider time)
+        string target, ThreadPostRequest? request, HttpContext context, IThreadStore store,
+        IActorStatusStore statuses, IPolicyAuditStore audit, TimeProvider time)
     {
         var route = ThreadRouteOf(target);
         if (route is null)
@@ -184,10 +213,13 @@ public static class ThreadEndpoints
 
         return route.Tail switch
         {
-            ThreadTail.Messages => await MessageSendAsync(route.Id, request, context, store, time),
+            ThreadTail.Messages => await MessageSendAsync(
+                route.Id, request, context, store, statuses, audit, time),
             ThreadTail.AddParticipant => await ParticipantAddAsync(route.Id, request, context, store, time),
             ThreadTail.SetAdmin => await ParticipantAdminAsync(
                 route.Id, route.ActorId, promote: true, context, store),
+            ThreadTail.AckNoE2ee => await AckNoE2eeAsync(route.Id, context, store, time),
+            ThreadTail.Read => await ReadAsync(route.Id, request, context, store),
             _ => HiddenThread(context),
         };
     }
@@ -235,15 +267,18 @@ public static class ThreadEndpoints
     /// <c>POST /api/threads/{id}/messages</c> (contract §6, SPEC-0010 section B): session (401),
     /// then the 404 rule of FR-031 — a thread the actor is not in and a thread that does not exist
     /// share one body, decided by the single participant probe before anything else is learned
-    /// about the thread (AC-04, SC-005); then the Content ladder of data-model §2.5.1 (AC-02:
-    /// empty or above 4000 is 400, GAP-24's sanitizer runs in between); and only then the write:
-    /// the append takes the next seq under the thread's version guard and lands the row in the
-    /// SAME transaction (GAP-29), so two senders racing never take a number twice and a 200 never
-    /// names a message the delta cannot already return. The answer is 200 + seq — "entregue =
-    /// persistido" (section D), not 201.
+    /// about the thread (AC-04, SC-005); then data-model §3.1: a <c>Suspended</c> actor does not
+    /// send — the refusal reaches the append-only trail BEFORE the 403, the publish ladder's own
+    /// order (AC-05, FR-019); then the Content ladder of data-model §2.5.1 (AC-02: empty or above
+    /// 4000 is 400, GAP-24's sanitizer runs in between); and only then the write: the append takes
+    /// the next seq under the thread's version guard and lands the row in the SAME transaction
+    /// (GAP-29) — and inside that same attempt the §9.6 gate answers <c>428</c> when the sender
+    /// never recorded the FR-032 acceptance (AC-02; one actor's ack never unlocks another). The
+    /// answer is 200 + seq — "entregue = persistido" (section D), not 201.
     /// </summary>
     private static async Task<IResult> MessageSendAsync(
-        string id, ThreadPostRequest? request, HttpContext context, IThreadStore store, TimeProvider time)
+        string id, ThreadPostRequest? request, HttpContext context, IThreadStore store,
+        IActorStatusStore statuses, IPolicyAuditStore audit, TimeProvider time)
     {
         var current = AuthSessions.Current(context);
         if (current is null)
@@ -258,20 +293,36 @@ public static class ThreadEndpoints
             return HiddenThread(context);
         }
 
+        // data-model §3.1 (the rule Posts enforces on publish and reply): a suspended actor does
+        // not send — the decision is recorded like any other and reaches the trail before the 403.
+        if (await statuses.GetAsync(current.Handle) == ActorStatus.Suspended)
+        {
+            await audit.AppendAsync(new PolicyAuditEntry(
+                time.GetUtcNow(), actorId, MessageDecision, id, PolicyAudit.Deny, 0,
+                "ator suspenso não envia mensagem (data-model §3.1)"));
+            return AuthErrors.Write(context, StatusCodes.Status403Forbidden,
+                "policy_denied", "o ator está suspenso e não pode enviar mensagens (data-model §3.1).");
+        }
+
         var refusal = ContentRefusal(context, request?.Content, out var content);
         if (refusal is not null)
         {
             return refusal;
         }
 
-        var stored = await store.AppendMessageAsync(
+        var result = await store.AppendMessageAsync(
             id, $"{Origin(context)}/m/{NewToken()}", actorId, content, time.GetUtcNow());
 
-        // Defensive twin of the probe: the thread vanished between check and append (it cannot
-        // today — no route deletes one — but the answer stays the one body of FR-031 anyway).
-        return stored is null
-            ? HiddenThread(context)
-            : Results.Json(MessageView.Of(stored));
+        // Three answers of §6/§8/§9.6: the absent thread keeps FR-031's one body, the missing
+        // acceptance keeps the precondition the contract asks for, and the stored row is the 200.
+        return result.Outcome switch
+        {
+            AppendOutcome.NoSuchThread => HiddenThread(context), // defensive twin of the probe
+            AppendOutcome.AckRequired => AuthErrors.Write(context,
+                StatusCodes.Status428PreconditionRequired, "precondition_required",
+                "aceite o aviso de não-E2EE antes de enviar (POST /api/threads/{id}/ack-no-e2ee)."),
+            _ => Results.Json(MessageView.Of(result.Message!)),
+        };
     }
 
     /// <summary>
@@ -280,7 +331,9 @@ public static class ThreadEndpoints
     /// <c>seq &gt; since</c>, no duplicates, ordered by <c>seq</c>, with <c>nextSince</c> so a
     /// polling client (GAP-36) comes back exactly where it stopped: the highest number it was
     /// given, or <c>since</c> unchanged when nothing is new (AC-03). A <c>since</c> that is not a
-    /// non-negative integer is a payload this route cannot take (400).
+    /// non-negative integer is a payload this route cannot take (400). The envelope also carries
+    /// the READER's own <c>lastReadSeq</c> (section D, FR-033) — read only after the participant
+    /// probe, so a non-participant is refused with the 404 that carries no marker at all (AC-04).
     /// </summary>
     private static async Task<IResult> MessageListAsync(
         string id, HttpContext context, IThreadStore store)
@@ -292,8 +345,8 @@ public static class ThreadEndpoints
                 "not_authenticated", "sessão inválida ou expirada.");
         }
 
-        if (!await store.IsParticipantAsync(
-                id, ContainerEndpoints.ActorId(context, current.Handle)))
+        var reader = ContainerEndpoints.ActorId(context, current.Handle);
+        if (!await store.IsParticipantAsync(id, reader))
         {
             return HiddenThread(context);
         }
@@ -316,7 +369,78 @@ public static class ThreadEndpoints
         {
             items = items.Select(MessageView.Of).ToList(),
             nextSince = items.Count > 0 ? items[^1].Seq : since,
+            lastReadSeq = await store.LastReadSeqAsync(id, reader),
         });
+    }
+
+    /// <summary>
+    /// <c>POST /api/threads/{id}/ack-no-e2ee</c> (contract §6, SPEC-0010 section D, FR-032): the
+    /// consent the §9.6 gate reads. Session (401), the FR-031 probe (a thread the actor is not in
+    /// and a thread that never existed share the byte-identical 404 — an outsider cannot even
+    /// learn whether a notice exists), then the record: one row per (actor, thread) carrying the
+    /// notice text itself (section D), inserted with conflict-does-nothing so REPEATING the route
+    /// keeps the first acceptance and answers the same 200 (AC-01's idempotence). The gate that
+    /// consumes this row lives in the store's append — every send passes through it.
+    /// </summary>
+    private static async Task<IResult> AckNoE2eeAsync(
+        string id, HttpContext context, IThreadStore store, TimeProvider time)
+    {
+        var current = AuthSessions.Current(context);
+        if (current is null)
+        {
+            return AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
+                "not_authenticated", "sessão inválida ou expirada.");
+        }
+
+        var actorId = ContainerEndpoints.ActorId(context, current.Handle);
+        if (!await store.IsParticipantAsync(id, actorId))
+        {
+            return HiddenThread(context);
+        }
+
+        await store.AckNoE2eeAsync(id, actorId, NoticeNoE2ee, time.GetUtcNow());
+        return Results.Json(new { acked = true });
+    }
+
+    /// <summary>
+    /// <c>POST /api/threads/{id}/read</c> (contract §6, SPEC-0010 section D, FR-033): session
+    /// (401), the FR-031 probe on the same snapshot that carries the thread's total, then the
+    /// ladder — no <c>seq</c> or a negative one is a payload this route cannot take (400), a seq
+    /// above the thread's total is refused by GAP-38's rule (400, nothing written), and only then
+    /// the monotonic write: the answer is the marker IN FORCE, so a request that asked for a
+    /// smaller value still reads back the high-water mark (the marker only advances). No status
+    /// rule ties this route to §3.1 — reading is not publishing.
+    /// </summary>
+    private static async Task<IResult> ReadAsync(
+        string id, ThreadPostRequest? request, HttpContext context, IThreadStore store)
+    {
+        var current = AuthSessions.Current(context);
+        if (current is null)
+        {
+            return AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
+                "not_authenticated", "sessão inválida ou expirada.");
+        }
+
+        var snapshot = await store.FindAsync(id);
+        var reader = ContainerEndpoints.ActorId(context, current.Handle);
+        if (snapshot is null || !snapshot.Participants.Any(participant => participant.ActorId == reader))
+        {
+            return HiddenThread(context);
+        }
+
+        var seq = request?.Seq;
+        if (seq is null || seq < 0)
+        {
+            return Invalid(context, "seq obrigatório: informe um inteiro maior ou igual a zero");
+        }
+
+        if (seq > snapshot.Thread.MessageSeq)
+        {
+            return Invalid(context,
+                $"seq acima do total da thread ({snapshot.Thread.MessageSeq}): leia só o que existe.");
+        }
+
+        return Results.Json(new { lastReadSeq = await store.MarkReadAsync(id, reader, seq.Value) });
     }
 
     /// <summary>Which sub-route of §6 a catch-all thread target names.</summary>
@@ -326,6 +450,12 @@ public static class ThreadEndpoints
         AddParticipant,
         RemoveParticipant,
         SetAdmin,
+
+        /// <summary><c>POST .../ack-no-e2ee</c> — the FR-032 acceptance §9.6 gates sends with.</summary>
+        AckNoE2ee,
+
+        /// <summary><c>POST .../read</c> — the FR-033 monotonic marker.</summary>
+        Read,
     }
 
     /// <summary>One parsed target: the thread id, the tail it ended in and the addressed seat.</summary>
@@ -336,8 +466,10 @@ public static class ThreadEndpoints
     /// plain or percent-encoded, the same rule the post and admin routes read off theirs — so the
     /// unescape happens once here and the LAST marker decides the route. The <c>/admin</c> suffix
     /// reads as the admin route only while what stays in front of it is a local identity: a handle
-    /// of exactly <c>admin</c> (the rule allows one) then keeps spelling a plain removal. Null is
-    /// any tail no route of the contract owns (the shared 404).
+    /// of exactly <c>admin</c> (the rule allows one) then keeps spelling a plain removal. The
+    /// <c>/participants/</c> marker wins over the section-D tails for the same reason: a seat
+    /// named <c>read</c> is still that participant's removal, exactly as it was before those tails
+    /// existed. Null is any tail no route of the contract owns (the shared 404).
     /// </summary>
     private static ThreadRoute? ThreadRouteOf(string? target)
     {
@@ -356,28 +488,40 @@ public static class ThreadEndpoints
         }
 
         var marker = path.LastIndexOf(ParticipantsMarker, StringComparison.Ordinal);
-        if (marker <= 0)
+        if (marker > 0)
         {
-            return null;
-        }
-
-        var threadId = path[..marker];
-        var actor = path[(marker + ParticipantsMarker.Length)..];
-        if (actor.Length == 0)
-        {
-            return null;
-        }
-
-        if (actor.EndsWith(AdminSuffix, StringComparison.Ordinal))
-        {
-            var candidate = actor[..^AdminSuffix.Length];
-            if (ContainerEndpoints.IdentityOf(null, candidate) is not null)
+            var threadId = path[..marker];
+            var actor = path[(marker + ParticipantsMarker.Length)..];
+            if (actor.Length == 0)
             {
-                return new ThreadRoute(threadId, ThreadTail.SetAdmin, candidate);
+                return null;
             }
+
+            if (actor.EndsWith(AdminSuffix, StringComparison.Ordinal))
+            {
+                var candidate = actor[..^AdminSuffix.Length];
+                if (ContainerEndpoints.IdentityOf(null, candidate) is not null)
+                {
+                    return new ThreadRoute(threadId, ThreadTail.SetAdmin, candidate);
+                }
+            }
+
+            return new ThreadRoute(threadId, ThreadTail.RemoveParticipant, actor);
         }
 
-        return new ThreadRoute(threadId, ThreadTail.RemoveParticipant, actor);
+        if (path.EndsWith(AckNoE2eeSuffix, StringComparison.Ordinal))
+        {
+            var id = path[..^AckNoE2eeSuffix.Length];
+            return string.IsNullOrWhiteSpace(id) ? null : new ThreadRoute(id, ThreadTail.AckNoE2ee, null);
+        }
+
+        if (path.EndsWith(ReadSuffix, StringComparison.Ordinal))
+        {
+            var id = path[..^ReadSuffix.Length];
+            return string.IsNullOrWhiteSpace(id) ? null : new ThreadRoute(id, ThreadTail.Read, null);
+        }
+
+        return null;
     }
 
     /// <summary>

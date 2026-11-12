@@ -377,10 +377,24 @@ public sealed class ThreadParticipantRoutesTests : IClassFixture<AuthHostFixture
     private Task<HttpResponseMessage> DemoteAsync(AuthClient client, string threadId, string actorId) =>
         PostRoutes.SendAsync(client, HttpMethod.Delete, AdminPath(threadId, actorId), null, client.Csrf);
 
-    private static Task<HttpResponseMessage> SendAsync(
-        AuthClient client, string threadId, string content) =>
-        PostRoutes.SendAsync(client, HttpMethod.Post, MessagesPath(threadId),
+    /// <summary>
+    /// One message through the route — with the TASK-0036 precondition in front: every sender
+    /// accepts the non-E2EE notice first (idempotent), because §9.6 refuses a first message
+    /// without it. This suite is about participants, so the gate is satisfied here; its own
+    /// before/after behaviour belongs to the TASK-0036 tests.
+    /// </summary>
+    private static async Task<HttpResponseMessage> SendAsync(
+        AuthClient client, string threadId, string content)
+    {
+        var ack = await PostRoutes.SendAsync(client, HttpMethod.Post,
+            AckPath(threadId), null, client.Csrf);
+        Assert.Equal(HttpStatusCode.OK, ack.StatusCode);
+        return await PostRoutes.SendAsync(client, HttpMethod.Post, MessagesPath(threadId),
             new { content }, client.Csrf);
+    }
+
+    private static string AckPath(string threadId) =>
+        $"/api/threads/{Uri.EscapeDataString(threadId)}/ack-no-e2ee";
 
     /// <summary>The seq of every message since 0 — the whole history, in the order of §9.3.</summary>
     private async Task<long[]> SeqsAsync(AuthClient client, string threadId)
