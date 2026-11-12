@@ -1,0 +1,5 @@
+﻿HEAD: 8903e675c5f9a3855f7e87ebca4dd12202886edb
+branch: task/TASK-0038-reacao-whitelist
+status:
+ M docs/sdd/tasks/TASK-0038-reacao-whitelist.md
+wsl-dotnet: dotnet-missing

@@ -1,0 +1,43 @@
+﻿# qa-check-task-0038.ps1 - 2026-11-12 08:39:34
+CHECK BASELINE-HEAD OK - baseline HEAD = 8903e67
+CHECK BASELINE-BRANCH OK - branch task/TASK-0038-reacao-whitelist
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado na baseline (suite Linux = unverified)
+CHECK GATE-AGE OK - 20261112-083213-test-gate.log criado depois da baseline 07:52
+CHECK GATE-EXIT OK - 20261112-083213-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - 20261112-083213-test-gate.log Com falha 0 / Aprovado 468 / Total 468
+CHECK BASELINE-FILTER OK - 20261112-075557-test-filter.log
+CHECK QA-TEMP-FILTER OK - 20261112-080317-test-filter.log
+CHECK MUT-IDS OK - M1..M11 todos com linha PRE
+CHECK MUT-RED OK - M1..M11 todos com RUN vermelho classificado no log
+CHECK MUT-RESTORE OK - RESTORE-OK = 14 (esperado >= 14: 13 do run cheio + 1 do M4 corrigido)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 38/38 = 3 (fim do run cheio e do re-run do M4)
+CHECK MUT-ANOMALIA OK - nenhuma CLASSIFICACAO-ERRADA (S-22)
+CHECK MUT-SUMMARY-FULL OK - SUMMARY cycles=11 failed=0 residue=0 temp-backups=0
+CHECK MUT-SUMMARY-M4 OK - SUMMARY cycles=1 failed=0 (re-run do M4 corrigido)
+CHECK CATCH-M1 OK - M1 vermelho com The_same_message_actor_emoji_is_one_row_and_repeating_it_changes_nothing
+CHECK CATCH-M2 OK - M2 vermelho com The_same_message_actor_emoji_is_one_row_and_repeating_it_changes_nothing
+CHECK CATCH-M3 OK - M3 vermelho com An_emoji_outside_Reactions_AllowedEmojis_is_422_and_never_reaches_a_row
+CHECK CATCH-M4 OK - M4 (contador armazenado VALIDO) vermelho so na migration 0006, rotas verdes (37/1)
+CHECK CATCH-M5 OK - M5 vermelho com A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes
+CHECK CATCH-M6 OK - M6 (cache de config) pego pelo Fact A no log 20261112-080852-test-filter.log
+CHECK CATCH-M7 OK - M7 vermelho com Deleting_takes_the_actor_row_the_count_follows_the_rows_and_a_missing_one_is_404
+CHECK CATCH-M8 OK - M8 vermelho com A_stranger_gets_one_404_body_on_read_and_on_both_reaction_routes
+CHECK CATCH-M9 OK - M9 vermelho com ThreadReactionRoutesTests
+CHECK CATCH-M10 OK - M10 (GET em .../reactions aberto) pego pelo Fact B: Expected NotFound
+CHECK CATCH-M11 OK - M11 (401 virou 404) pego pelo Fact B: Expected Unauthorized
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0038-* no TEMP = 0
+CHECK DRIVER-BOM OK - qa-mutate-task-0038.ps1 com UTF-8 BOM
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK TEMP-TEST-GONE OK - teste temporario removido da arvore
+CHECK TEMP-TEST-SOURCE OK - fonte do teste temporario preservada em docs/sdd/qa
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 4/4 arquivos mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = exatamente os 4 arquivos mutados (restaurados)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo QA-MUTATION = 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum arquivo de produto fora dos touches alterado
+CHECK SDD-STATE OK - check: OK - log entries 20, evidence rows 20
+CHECK QA-DOC OK - QA-0038-reacao-whitelist.md com verdict PASSED
+SUMMARY total=39 fails=0
+exit: 0
+

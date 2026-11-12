@@ -1,0 +1,22 @@
+﻿# QA-0038 scope scan - 2026-11-12 08:32:30
+gate=20261112-083213-test-gate.log exit-header=0 summary=Com falha:     0, Aprovado:   468, Ignorado:     0, Total:   468
+git-status-all:
+ M docs/sdd/tasks/TASK-0038-reacao-whitelist.md
+?? docs/sdd/qa/QA-0038-git-baseline.txt
+?? docs/sdd/qa/QA-0038-mutations.log
+?? docs/sdd/qa/QaTask0038ReactionRereadTests.cs.txt
+?? docs/sdd/qa/qa-check-task-0038.ps1
+?? docs/sdd/qa/qa-check-task-0038.sh
+?? docs/sdd/qa/qa-mutate-task-0038.ps1
+git-backend-count=0
+backend/src/Squid.Service/SqliteThreadStore.cs work=b573ba05b087dff599ebbe6107a1a4eb05f41bc0 head=b573ba05b087dff599ebbe6107a1a4eb05f41bc0 match=True
+backend/src/Squid.Api/Threads/ThreadEndpoints.cs work=7400499b48a5a0f382d0bb9ec6869875af4a9243 head=7400499b48a5a0f382d0bb9ec6869875af4a9243 match=True
+backend/src/Squid.Api/Threads/ReactionOptions.cs work=f2344eae05e9abdca15033db79cc35ccac6c203e head=f2344eae05e9abdca15033db79cc35ccac6c203e match=True
+backend/src/Squid.Persistence/schema/0006_message_reaction.sql work=e8b48ba7f6d6dbdbcfea6b167d80c5ed72425501 head=e8b48ba7f6d6dbdbcfea6b167d80c5ed72425501 match=True
+mtime-count=4 (esperado 4)
+mtime: C:\dev\squid-squad-net\squid-execution\backend\src\Squid.Api\Threads\ReactionOptions.cs
+mtime: C:\dev\squid-squad-net\squid-execution\backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+mtime: C:\dev\squid-squad-net\squid-execution\backend\src\Squid.Persistence\schema\0006_message_reaction.sql
+mtime: C:\dev\squid-squad-net\squid-execution\backend\src\Squid.Service\SqliteThreadStore.cs
+residue=0
+fora-dos-touches=0
