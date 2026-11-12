@@ -1,13 +1,22 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
+using Squid.Domain.Objects;
 
 namespace Squid.Api.Threads;
 
 /// <summary>The create body of contracts/http-api.md §6 (SPEC-0010 inputs): the kind plus the participants.</summary>
 public sealed record CreateThreadRequest(string? Kind, IReadOnlyList<string>? ParticipantActorIds);
+
+/// <summary>
+/// The send body of contracts/http-api.md §6: the text alone. <c>replyToId</c> is deliberately not
+/// bound — it joins the body with TASK-0037, and an extra JSON field a route never reads is
+/// ignored rather than acted on.
+/// </summary>
+public sealed record SendMessageRequest(string? Content);
 
 /// <summary>
 /// SPEC-0010 section A — create and list conversations (FR-030 base, data-model section 2.7 +
@@ -31,11 +40,23 @@ public static class ThreadEndpoints
 
     private const int MaxGroupParticipants = 50;
 
+    /// <summary>data-model section 2.5.1: message <c>Content</c> caps at 4000 characters.</summary>
+    private const int MaxContentLength = 4000;
+
+    /// <summary>The tail of the message routes — the only sub-route of a thread in this delivery.</summary>
+    private const string MessagesSuffix = "/messages";
+
     /// <summary>Maps the thread routes; runs after <c>MapSquidAuth</c>, on the session pipeline.</summary>
     public static WebApplication MapSquidThreads(this WebApplication app)
     {
         app.MapPost("/api/threads", CreateAsync);
         app.MapGet("/api/threads", ListAsync);
+        // A thread id is an opaque URI (scheme + Host + /t/{token}) and cannot sit in one path
+        // segment, so the message routes ride the same catch-all shape /api/posts/{*target} and
+        // /api/admin/actors/{*target} already use: the handler reads the {id}/messages tail off
+        // the target, plain or percent-encoded, and anything else is the shared 404.
+        app.MapPost("/api/threads/{*target}", MessageSendTargetAsync);
+        app.MapGet("/api/threads/{*target}", MessageListTargetAsync);
         return app;
     }
 
@@ -139,6 +160,181 @@ public static class ThreadEndpoints
     }
 
     /// <summary>
+    /// The POST tail of <c>/api/threads</c>: the contract has <c>{id}/messages</c> under a thread
+    /// in this delivery — any other tail answers the shared 404 like nothing was ever there (the
+    /// <c>/api/posts/{*target}</c> shape; TASK-0035+ extend this dispatcher as their routes land).
+    /// </summary>
+    private static async Task<IResult> MessageSendTargetAsync(
+        string target, SendMessageRequest? request, HttpContext context, IThreadStore store, TimeProvider time)
+    {
+        var id = ThreadIdOf(target);
+        if (id is null)
+        {
+            return HiddenThread(context);
+        }
+
+        return await MessageSendAsync(id, request, context, store, time);
+    }
+
+    /// <summary>
+    /// <c>POST /api/threads/{id}/messages</c> (contract §6, SPEC-0010 section B): session (401),
+    /// then the 404 rule of FR-031 — a thread the actor is not in and a thread that does not exist
+    /// share one body, decided by the single participant probe before anything else is learned
+    /// about the thread (AC-04, SC-005); then the Content ladder of data-model §2.5.1 (AC-02:
+    /// empty or above 4000 is 400, GAP-24's sanitizer runs in between); and only then the write:
+    /// the append takes the next seq under the thread's version guard and lands the row in the
+    /// SAME transaction (GAP-29), so two senders racing never take a number twice and a 200 never
+    /// names a message the delta cannot already return. The answer is 200 + seq — "entregue =
+    /// persistido" (section D), not 201.
+    /// </summary>
+    private static async Task<IResult> MessageSendAsync(
+        string id, SendMessageRequest? request, HttpContext context, IThreadStore store, TimeProvider time)
+    {
+        var current = AuthSessions.Current(context);
+        if (current is null)
+        {
+            return AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
+                "not_authenticated", "sessão inválida ou expirada.");
+        }
+
+        var actorId = ContainerEndpoints.ActorId(context, current.Handle);
+        if (!await store.IsParticipantAsync(id, actorId))
+        {
+            return HiddenThread(context);
+        }
+
+        var refusal = ContentRefusal(context, request?.Content, out var content);
+        if (refusal is not null)
+        {
+            return refusal;
+        }
+
+        var stored = await store.AppendMessageAsync(
+            id, $"{Origin(context)}/m/{NewToken()}", actorId, content, time.GetUtcNow());
+
+        // Defensive twin of the probe: the thread vanished between check and append (it cannot
+        // today — no route deletes one — but the answer stays the one body of FR-031 anyway).
+        return stored is null
+            ? HiddenThread(context)
+            : Results.Json(MessageView.Of(stored));
+    }
+
+    /// <summary>
+    /// The GET tail of <c>/api/threads</c>: <c>{id}/messages</c> only, anything else the shared 404.
+    /// </summary>
+    private static async Task<IResult> MessageListTargetAsync(
+        string target, HttpContext context, IThreadStore store)
+    {
+        var id = ThreadIdOf(target);
+        if (id is null)
+        {
+            return HiddenThread(context);
+        }
+
+        return await MessageListAsync(id, context, store);
+    }
+
+    /// <summary>
+    /// <c>GET /api/threads/{id}/messages?since=</c> (contract §6/§9.3, SPEC-0010 section B): the
+    /// same session and the same byte-identical 404 as the POST (AC-04), then the delta — only
+    /// <c>seq &gt; since</c>, no duplicates, ordered by <c>seq</c>, with <c>nextSince</c> so a
+    /// polling client (GAP-36) comes back exactly where it stopped: the highest number it was
+    /// given, or <c>since</c> unchanged when nothing is new (AC-03). A <c>since</c> that is not a
+    /// non-negative integer is a payload this route cannot take (400).
+    /// </summary>
+    private static async Task<IResult> MessageListAsync(
+        string id, HttpContext context, IThreadStore store)
+    {
+        var current = AuthSessions.Current(context);
+        if (current is null)
+        {
+            return AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
+                "not_authenticated", "sessão inválida ou expirada.");
+        }
+
+        if (!await store.IsParticipantAsync(
+                id, ContainerEndpoints.ActorId(context, current.Handle)))
+        {
+            return HiddenThread(context);
+        }
+
+        // Absent or empty = the 0 the contract starts from; anything else has to be the integer
+        // the cursor is (StringValues joins a repeated ?since= into one unparsable string → 400).
+        var raw = context.Request.Query["since"].ToString();
+        long since;
+        if (raw.Length == 0)
+        {
+            since = 0;
+        }
+        else if (!long.TryParse(raw, NumberStyles.None, CultureInfo.InvariantCulture, out since))
+        {
+            return Invalid(context, "since inválido: use um inteiro maior ou igual a zero");
+        }
+
+        var items = await store.ListMessagesAsync(id, since);
+        return Results.Json(new
+        {
+            items = items.Select(MessageView.Of).ToList(),
+            nextSince = items.Count > 0 ? items[^1].Seq : since,
+        });
+    }
+
+    /// <summary>
+    /// The <c>{id}/messages</c> tail off a catch-all target: the id arrives as the caller spelled
+    /// it — the whole URI plain or percent-encoded, the same rule the post and admin routes read
+    /// off theirs — so the unescape happens once here, and only a target whose tail is
+    /// <c>/messages</c> names a message route. Null is any other tail (the shared 404).
+    /// </summary>
+    private static string? ThreadIdOf(string? target)
+    {
+        var path = Uri.UnescapeDataString(target ?? string.Empty).Trim().TrimEnd('/');
+        if (!path.EndsWith(MessagesSuffix, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        // No id at all (`/api/threads//messages` after a doubled separator): not a thread worth
+        // probing — the store guards its arguments, so the refusal has to happen here.
+        var id = path[..^MessagesSuffix.Length];
+        return string.IsNullOrWhiteSpace(id) ? null : id;
+    }
+
+    /// <summary>
+    /// The Content ladder of data-model §2.5.1 (AC-02), the posts' own ladder with this task's
+    /// cap: empty refuses before anything is written, the raw text has to fit 4000, then GAP-24's
+    /// sanitization runs and the SANITIZED text has to fit as well — escaping multiplies the text
+    /// (<c>&amp;</c> becomes <c>&amp;amp;</c>, five characters) while §2.5.1 caps what is PERSISTED,
+    /// and a text that sanitizes to nothing (controls only) is empty too. The checked text leaves
+    /// through <paramref name="sanitized"/> so the caller stores exactly what was validated —
+    /// running the sanitizer a second time would double-escape the entities this pass just wrote.
+    /// </summary>
+    private static IResult? ContentRefusal(HttpContext context, string? content, out string sanitized)
+    {
+        sanitized = string.Empty;
+
+        if (string.IsNullOrEmpty(content))
+        {
+            return Invalid(context, "content obrigatório: informe o texto da mensagem");
+        }
+
+        if (content.Length > MaxContentLength)
+        {
+            return Invalid(context, $"content inválido: máximo de {MaxContentLength} caracteres");
+        }
+
+        sanitized = PostSanitizer.Sanitize(content);
+        if (string.IsNullOrEmpty(sanitized))
+        {
+            return Invalid(context, "content obrigatório: informe o texto da mensagem");
+        }
+
+        return sanitized.Length > MaxContentLength
+            ? Invalid(context,
+                $"content inválido: máximo de {MaxContentLength} caracteres após a sanitização")
+            : null;
+    }
+
+    /// <summary>
     /// The identity origin of P-02/P-03: scheme + Host of the very request that asked — the same
     /// rule as <c>ContainerEndpoints</c> and <c>PostEndpoints</c>, never a configured domain
     /// (one resource, one URI, whether the instance is reached over http or https).
@@ -148,6 +344,15 @@ public static class ThreadEndpoints
 
     /// <summary>The opaque id of a thread: 128 random bits, hex — the <c>/t/{id}</c> tail.</summary>
     private static string NewToken() => Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(16));
+
+    /// <summary>
+    /// FR-031/SC-005 (AC-04): absent thread and foreign thread share ONE body — no traceId, so
+    /// the byte-identical pair holds across GET and POST and neither existence nor the participant
+    /// list can ever leak out of the refusal.
+    /// </summary>
+    private static IResult HiddenThread(HttpContext context) =>
+        AuthErrors.Write(context, StatusCodes.Status404NotFound,
+            "not_found", "thread não encontrada.", withTraceId: false);
 
     private static IResult Invalid(HttpContext context, string message) =>
         AuthErrors.Write(context, StatusCodes.Status400BadRequest, "validation_failed", message);
