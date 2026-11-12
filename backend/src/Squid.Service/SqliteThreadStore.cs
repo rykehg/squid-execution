@@ -94,17 +94,19 @@ public sealed class SqliteThreadStore : IThreadStore
         await using var connection = new SqliteConnection(_connectionString);
         await connection.OpenAsync();
 
-        // One read answers the whole list: the join starts from the caller's own participant row
-        // (threads they are not in cannot appear — FR-031) and carries every participant of the
-        // threads that match, so the grouping below only closes each item. lastReadSeq is 0 while
-        // the monotonic marker belongs to TASK-0036 (GAP-38: the field exists from here).
+        // One read answers the whole list: the semi-join keeps only the threads the caller sits
+        // in (threads they are not in cannot appear — FR-031), while the participant rows of
+        // those threads are read IN FULL — filtering the outer p by actor_id (the first shape of
+        // this query) collapsed every item to the caller's own seat, and data-model 2.7's
+        // ParticipantActorIds is the whole list. lastReadSeq is 0 while the monotonic marker
+        // belongs to TASK-0036 (GAP-38: the field exists from here).
         await using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT t.id, t.kind, t.created_by, t.message_seq, t.created_at, t.version, p.actor_id
             FROM thread AS t
             JOIN thread_participant AS p ON p.thread_id = t.id
-            WHERE p.actor_id = @ActorId
-            ORDER BY t.rowid
+            WHERE t.id IN (SELECT thread_id FROM thread_participant WHERE actor_id = @ActorId)
+            ORDER BY t.rowid, p.rowid
             """;
         command.Parameters.AddWithValue("@ActorId", actorId);
 
@@ -196,6 +198,238 @@ public sealed class SqliteThreadStore : IThreadStore
         command.Parameters.AddWithValue("@ThreadId", threadId);
         command.Parameters.AddWithValue("@ActorId", actorId);
         return Convert.ToInt64(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture) != 0;
+    }
+
+    /// <inheritdoc />
+    public async Task<ThreadSnapshot?> FindAsync(string threadId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        ThreadState? thread;
+        await using (var read = connection.CreateCommand())
+        {
+            read.CommandText =
+                "SELECT id, kind, created_by, message_seq, created_at, version FROM thread WHERE id = @Id";
+            read.Parameters.AddWithValue("@Id", threadId);
+            await using var reader = await read.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
+
+            thread = new ThreadState(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetInt64(3),
+                DateTimeOffset.Parse(reader.GetString(4),
+                    CultureInfo.InvariantCulture, DateTimeStyles.None),
+                reader.GetInt32(5));
+        }
+
+        // Every seat in join order (rowid): the participant routes need the roles and the
+        // joined_at the succession of GAP-32 ranks, and a thread nobody is in cannot exist.
+        await using (var seats = connection.CreateCommand())
+        {
+            seats.CommandText = """
+                SELECT actor_id, role, joined_at
+                FROM thread_participant
+                WHERE thread_id = @ThreadId
+                ORDER BY rowid
+                """;
+            seats.Parameters.AddWithValue("@ThreadId", threadId);
+            var participants = new List<ThreadParticipant>();
+            await using var reader = await seats.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                participants.Add(new ThreadParticipant(
+                    threadId,
+                    reader.GetString(0),
+                    reader.GetString(1),
+                    DateTimeOffset.Parse(reader.GetString(2),
+                        CultureInfo.InvariantCulture, DateTimeStyles.None)));
+            }
+
+            return new ThreadSnapshot(thread!, participants);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task AddParticipantAsync(ThreadParticipant participant)
+    {
+        ArgumentNullException.ThrowIfNull(participant);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        await BusyTimeoutAsync(connection);
+
+        // Insert only, and a seat that already exists is simply kept: the primary key of 0002 is
+        // one row per (thread, actor), and an add that races another add writes the same row.
+        await using var insert = connection.CreateCommand();
+        insert.CommandText = """
+            INSERT INTO thread_participant (thread_id, actor_id, role, joined_at)
+            VALUES (@ThreadId, @ActorId, @Role, @JoinedAt)
+            ON CONFLICT (thread_id, actor_id) DO NOTHING
+            """;
+        insert.Parameters.AddWithValue("@ThreadId", participant.ThreadId);
+        insert.Parameters.AddWithValue("@ActorId", participant.ActorId);
+        insert.Parameters.AddWithValue("@Role", participant.Role);
+        insert.Parameters.AddWithValue("@JoinedAt",
+            participant.JoinedAt.ToString("O", CultureInfo.InvariantCulture));
+        await insert.ExecuteNonQueryAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<ParticipantRemoval> RemoveParticipantAsync(string threadId, string actorId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actorId);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        await BusyTimeoutAsync(connection);
+
+        // BEGIN IMMEDIATE (deferred: false): the count, the delete and the succession below run
+        // under the write lock, so two removals queue instead of racing each other's count — and
+        // leaving the scope without commit rolls the whole refusal back, nothing written.
+        await using var transaction = connection.BeginTransaction(deferred: false);
+
+        string? createdBy;
+        await using (var read = connection.CreateCommand())
+        {
+            read.Transaction = transaction;
+            read.CommandText = "SELECT created_by FROM thread WHERE id = @Id";
+            read.Parameters.AddWithValue("@Id", threadId);
+            var found = await read.ExecuteScalarAsync();
+            if (found is null or DBNull)
+            {
+                return ParticipantRemoval.NoSuchParticipant;
+            }
+
+            createdBy = (string)found;
+        }
+
+        await using (var exists = connection.CreateCommand())
+        {
+            exists.Transaction = transaction;
+            exists.CommandText = """
+                SELECT EXISTS(
+                    SELECT 1 FROM thread_participant WHERE thread_id = @ThreadId AND actor_id = @ActorId
+                )
+                """;
+            exists.Parameters.AddWithValue("@ThreadId", threadId);
+            exists.Parameters.AddWithValue("@ActorId", actorId);
+            if (Convert.ToInt64(await exists.ExecuteScalarAsync(), CultureInfo.InvariantCulture) == 0)
+            {
+                return ParticipantRemoval.NoSuchParticipant;
+            }
+        }
+
+        int seats;
+        await using (var count = connection.CreateCommand())
+        {
+            count.Transaction = transaction;
+            count.CommandText = "SELECT COUNT(*) FROM thread_participant WHERE thread_id = @ThreadId";
+            count.Parameters.AddWithValue("@ThreadId", threadId);
+            seats = Convert.ToInt32(await count.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
+        }
+
+        if (seats <= 1)
+        {
+            return ParticipantRemoval.LastParticipant; // the refusal of GAP-38: the thread keeps its last seat
+        }
+
+        await using (var delete = connection.CreateCommand())
+        {
+            delete.Transaction = transaction;
+            delete.CommandText =
+                "DELETE FROM thread_participant WHERE thread_id = @ThreadId AND actor_id = @ActorId";
+            delete.Parameters.AddWithValue("@ThreadId", threadId);
+            delete.Parameters.AddWithValue("@ActorId", actorId);
+            if (await delete.ExecuteNonQueryAsync() == 0)
+            {
+                return ParticipantRemoval.NoSuchParticipant;
+            }
+        }
+
+        if (string.Equals(actorId, createdBy, StringComparison.Ordinal))
+        {
+            // GAP-32 succession, inside the removal's own transaction: the oldest admin assumes
+            // the creator seat, and with no admin left the oldest member becomes admin AND
+            // creator — the invariant that a Group with participants always has an admin. The
+            // string order of joined_at is chronological because every writer stores round-trip
+            // UTC ("O"); rowid breaks the tie of rows born in the same request.
+            string? successor;
+            await using (var oldestAdmin = connection.CreateCommand())
+            {
+                oldestAdmin.Transaction = transaction;
+                oldestAdmin.CommandText = """
+                    SELECT actor_id FROM thread_participant
+                    WHERE thread_id = @ThreadId AND role = @Admin
+                    ORDER BY joined_at, rowid
+                    LIMIT 1
+                    """;
+                oldestAdmin.Parameters.AddWithValue("@ThreadId", threadId);
+                oldestAdmin.Parameters.AddWithValue("@Admin", ThreadRoles.Admin);
+                successor = (string?)await oldestAdmin.ExecuteScalarAsync();
+            }
+
+            if (successor is null)
+            {
+                await using var oldestMember = connection.CreateCommand();
+                oldestMember.Transaction = transaction;
+                oldestMember.CommandText = """
+                    SELECT actor_id FROM thread_participant
+                    WHERE thread_id = @ThreadId
+                    ORDER BY joined_at, rowid
+                    LIMIT 1
+                    """;
+                oldestMember.Parameters.AddWithValue("@ThreadId", threadId);
+                successor = (string?)await oldestMember.ExecuteScalarAsync();
+
+                await using var promote = connection.CreateCommand();
+                promote.Transaction = transaction;
+                promote.CommandText =
+                    "UPDATE thread_participant SET role = @Role WHERE thread_id = @ThreadId AND actor_id = @ActorId";
+                promote.Parameters.AddWithValue("@Role", ThreadRoles.Admin);
+                promote.Parameters.AddWithValue("@ThreadId", threadId);
+                promote.Parameters.AddWithValue("@ActorId", successor ?? string.Empty);
+                await promote.ExecuteNonQueryAsync();
+            }
+
+            await using var handover = connection.CreateCommand();
+            handover.Transaction = transaction;
+            handover.CommandText = "UPDATE thread SET created_by = @Successor WHERE id = @Id";
+            handover.Parameters.AddWithValue("@Successor", successor ?? string.Empty);
+            handover.Parameters.AddWithValue("@Id", threadId);
+            await handover.ExecuteNonQueryAsync();
+        }
+
+        await transaction.CommitAsync();
+        return ParticipantRemoval.Removed;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> SetRoleAsync(string threadId, string actorId, string role)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(threadId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actorId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(role);
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        await BusyTimeoutAsync(connection);
+
+        await using var update = connection.CreateCommand();
+        update.CommandText =
+            "UPDATE thread_participant SET role = @Role WHERE thread_id = @ThreadId AND actor_id = @ActorId";
+        update.Parameters.AddWithValue("@Role", role);
+        update.Parameters.AddWithValue("@ThreadId", threadId);
+        update.Parameters.AddWithValue("@ActorId", actorId);
+        return await update.ExecuteNonQueryAsync() > 0;
     }
 
     /// <inheritdoc />

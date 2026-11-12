@@ -21,6 +21,38 @@ public sealed record ThreadState(
 public sealed record ThreadParticipant(string ThreadId, string ActorId, string Role, DateTimeOffset JoinedAt);
 
 /// <summary>
+/// The vocabulary of a <c>thread_participant.role</c> row (GAP-30): one seat per participant, and
+/// the only word the store's succession reads — shared so <c>admin</c> is never spelled twice.
+/// </summary>
+public static class ThreadRoles
+{
+    public const string Admin = "admin";
+
+    public const string Member = "member";
+}
+
+/// <summary>
+/// A thread as the participant routes read it (SPEC-0010 section C): the row of data-model
+/// section 2.7 — kind and <c>CreatedBy</c> carry the Direct/Group rule and the creator's protected
+/// seat — beside every participant row with its role and <c>joined_at</c>, in join order.
+/// </summary>
+public sealed record ThreadSnapshot(
+    ThreadState Thread,
+    IReadOnlyList<ThreadParticipant> Participants);
+
+/// <summary>What a removal answered: the row left, the seat was not there, or nobody may leave.</summary>
+public enum ParticipantRemoval
+{
+    Removed,
+
+    /// <summary>No such seat (or no thread): the caller answers the byte-identical 404.</summary>
+    NoSuchParticipant,
+
+    /// <summary>The thread would be left with nobody — the <c>409 last_participant</c> of GAP-38.</summary>
+    LastParticipant,
+}
+
+/// <summary>
 /// One row of <c>GET /api/threads</c>: the thread, every participant (data-model section 2.7's
 /// <c>ParticipantActorIds</c>) and the reader's own <c>lastReadSeq</c> — born 0 per participant
 /// (GAP-38; the monotonic marker itself is TASK-0036, the field exists from here).
@@ -81,6 +113,36 @@ public interface IThreadStore
     /// 404 without the answer ever revealing which case it was (SC-005).
     /// </summary>
     Task<bool> IsParticipantAsync(string threadId, string actorId);
+
+    /// <summary>
+    /// One thread with every participant row (SPEC-0010 section C): the read the participant and
+    /// admin routes decide from — kind, the protected <c>CreatedBy</c> seat and each role. Null
+    /// means no such thread, the same nothing the FR-031 probe answers with.
+    /// </summary>
+    Task<ThreadSnapshot?> FindAsync(string threadId);
+
+    /// <summary>
+    /// Adds one participant row as <paramref name="participant"/>'s own role (emenda GAP-31):
+    /// insert only, and an actor already in the thread is left untouched rather than refused —
+    /// one row per (thread, actor) is the primary key of 0002.
+    /// </summary>
+    Task AddParticipantAsync(ThreadParticipant participant);
+
+    /// <summary>
+    /// Removes one participant (SPEC-0010 section C) and carries GAP-32's succession in the SAME
+    /// transaction: when the removed seat is the creator, the admin with the smallest
+    /// <c>joined_at</c> assumes the creator role, and with no admin left the oldest member is
+    /// promoted to admin and becomes creator — a Group with at least one participant always keeps
+    /// at least one admin. The last seat never leaves (<see cref="ParticipantRemoval.LastParticipant"/>)
+    /// and every refusal writes nothing; history rows are never touched.
+    /// </summary>
+    Task<ParticipantRemoval> RemoveParticipantAsync(string threadId, string actorId);
+
+    /// <summary>
+    /// Writes <paramref name="role"/> onto one seat (emenda GAP-31: <c>POST/DELETE .../admin</c>) —
+    /// false when the seat is not there and nothing was written, so the caller can answer the 404.
+    /// </summary>
+    Task<bool> SetRoleAsync(string threadId, string actorId, string role);
 
     /// <summary>
     /// Appends one message (SPEC-0010 section B): the thread's next <c>seq</c> is taken under the
