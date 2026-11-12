@@ -1,0 +1,20 @@
+﻿QA-0036 scope scan (AC-06: nenhum arquivo alterado fora dos touches)
+2026-11-12 05:54:05
+git-backend-entries=0 (esperado 0)
+blob backend/src/Squid.Api/Threads/ThreadEndpoints.cs work=24cad81923740eaf9b21f27149353991f0ce55ca head=24cad81923740eaf9b21f27149353991f0ce55ca match=True
+blob backend/src/Squid.Service/SqliteThreadStore.cs work=0ba4588e5ccc5369c1a1f86e60df95c359822c74 head=0ba4588e5ccc5369c1a1f86e60df95c359822c74 match=True
+mtime-count=2 (esperado 2: os dois arquivos mutados restaurados com bump)
+  backend\src\Squid.Api\Threads\ThreadEndpoints.cs 2026-11-12 05:46:21
+  backend\src\Squid.Service\SqliteThreadStore.cs 2026-11-12 05:45:49
+residue=0 (esperado 0)
+temp-test-file-present=False (esperado False)
+temp-backups=0 (esperado 0)
+--- git status --porcelain -uall (repo inteiro) ---
+ M docs/sdd/tasks/TASK-0036-aviso-nao-e2ee-e-leitura.md
+ M docs/sdd/tasks/TASK-0037-resposta-a-mensagem.md
+ M docs/sdd/tasks/TASK-0038-reacao-whitelist.md
+ M docs/sdd/tasks/TASK-0039-anexo-em-mensagem.md
+?? docs/sdd/qa/QA-0036-git-baseline.txt
+?? docs/sdd/qa/QA-0036-mutations.log
+?? docs/sdd/qa/QaTask0036RouteCollisionTests.cs.txt
+?? docs/sdd/qa/qa-mutate-task-0036.ps1

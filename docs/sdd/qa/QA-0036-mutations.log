@@ -1,0 +1,63 @@
+﻿# QA-0036 mutations - 2026-11-12 05:38:43
+M1 PRE 08D6C193759F | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-02: 428 precondition_required vira 409 version_conflict (ThreadAckAndReadRoutesTests vermelha)
+M1 RUN wrapper=1 logExit=1 aprovado=24 falha=1 constraint=no log=20261112-053916-test-filter.log
+M1 RED-IN-LOG eptance_is_428_until_each_actor_acks_and_the_ack_is_idempotent [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...empotent [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.Sending_without_the_notice_acceptance_is_428_until_each_actor_acks_and_the_ack_is_idempotent [291 ms]
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE F529B6D0B8A4 | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-02: recusa que QUEIMA numero - message_seq avanca no 428 e o envio pos-aceite nasce em 2 (ThreadAckAndReadRoutesTests + ThreadStoreTests vermelhas)
+M2 RUN wrapper=1 logExit=1 aprovado=23 falha=2 constraint=no log=20261112-053946-test-filter.log
+M2 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...advances [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_gates_on_the_ack_of_each_sender_and_the_read_marker_only_ever_advances [60 ms] | 8_until_each_actor_acks_and_the_ack_is_idempotent [FAIL] | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.Sending_without_the_notice_acceptance_is_428_until_each_actor_acks_and_the_ack_is_idempotent [337 ms]
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE F529B6D0B8A4 | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-02: gate por thread - o aceite de UM ator libera o outro (ThreadAckAndReadRoutesTests + ThreadStoreTests vermelhas)
+M3 RUN wrapper=1 logExit=1 aprovado=23 falha=2 constraint=no log=20261112-054015-test-filter.log
+M3 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...advances [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_gates_on_the_ack_of_each_sender_and_the_read_marker_only_ever_advances [63 ms] | 8_until_each_actor_acks_and_the_ack_is_idempotent [FAIL] | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.Sending_without_the_notice_acceptance_is_428_until_each_actor_acks_and_the_ack_is_idempotent [403 ms]
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE F529B6D0B8A4 | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-01: segundo aceite estoura a PK em vez de 200-idempotente (ThreadAckAndReadRoutesTests + ThreadStoreTests vermelhas)
+M4 RUN wrapper=1 logExit=1 aprovado=22 falha=3 constraint=yes log=20261112-054044-test-filter.log
+M4 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...advances [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_gates_on_the_ack_of_each_sender_and_the_read_marker_only_ever_advances [80 ms] | its_history_readable_by_the_remaining_member [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.A_direct_thread_goes_from_two_to_one_with_its_history_readable_by_the_remaining_member [1 s] | 8_until_each_actor_acks_and_the_ack_is_idempotent [FAIL] | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.Sending_without_the_notice_acceptance_is_428_until_each_actor_acks_and_the_ack_is_idempotent [334 ms]
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE F529B6D0B8A4 | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-03: marcador REGRIDE - pedir 1 depois de 2 passa a gravar 1 (ThreadAckAndReadRoutesTests + ThreadStoreTests vermelhas)
+M5 RUN wrapper=1 logExit=1 aprovado=23 falha=2 constraint=no log=20261112-054117-test-filter.log
+M5 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...advances [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_gates_on_the_ack_of_each_sender_and_the_read_marker_only_ever_advances [90 ms] | [FAIL] | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.The_read_marker_only_advances_and_a_seq_above_the_thread_total_is_400 [271 ms]
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE 08D6C193759F | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-03: seq acima do total aceito em vez de 400 - o marcador la em cima vira 4 (ThreadAckAndReadRoutesTests vermelha)
+M6 RUN wrapper=1 logExit=1 aprovado=24 falha=1 constraint=no log=20261112-054148-test-filter.log
+M6 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...l_is_400 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.The_read_marker_only_advances_and_a_seq_above_the_thread_total_is_400 [251 ms]
+M6 RESTORE-OK hash=PRE residue=0
+M7 PRE F529B6D0B8A4 | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-04: lastReadSeq da lista deixa de ser POR PARTICIPANTE - a par le o marcador do dono (ThreadAckAndReadRoutesTests vermelha)
+M7 RUN wrapper=1 logExit=1 aprovado=24 falha=1 constraint=no log=20261112-054218-test-filter.log
+M7 RED-IN-LOG _and_envelope_of_participants_and_of_nobody_else [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ody_else [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.The_last_read_seq_reaches_list_and_envelope_of_participants_and_of_nobody_else [603 ms]
+M7 RESTORE-OK hash=PRE residue=0
+M8 PRE F529B6D0B8A4 | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-04: envelope deixa de ser POR PARTICIPANTE - a par enxerga lastReadSeq do dono (ThreadAckAndReadRoutesTests vermelha)
+M8 RUN wrapper=1 logExit=1 aprovado=23 falha=2 constraint=no log=20261112-054246-test-filter.log
+M8 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...advances [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadStoreTests.The_append_gates_on_the_ack_of_each_sender_and_the_read_marker_only_ever_advances [95 ms] | _of_participants_and_of_nobody_else [FAIL] | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.The_last_read_seq_reaches_list_and_envelope_of_participants_and_of_nobody_else [443 ms]
+M8 RESTORE-OK hash=PRE residue=0
+M9 PRE 08D6C193759F | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-04: portao de participante da rota read desligado - nao-participante grava marcador em vez de 404 (ThreadAckAndReadRoutesTests vermelha)
+M9 RUN wrapper=1 logExit=1 aprovado=24 falha=1 constraint=no log=20261112-054320-test-filter.log
+M9 RED-IN-LOG _and_envelope_of_participants_and_of_nobody_else [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ody_else [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.The_last_read_seq_reaches_list_and_envelope_of_participants_and_of_nobody_else [584 ms]
+M9 RESTORE-OK hash=PRE residue=0
+M10 PRE 08D6C193759F | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-04: 404 ganha traceId - a igualdade byte-a-byte das 4 recusas cai (ThreadAckAndReadRoutesTests vermelha)
+M10 RUN wrapper=1 logExit=1 aprovado=20 falha=5 constraint=no log=20261112-054354-test-filter.log
+M10 RED-IN-LOG Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._changes [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Any_admin_elects_admins_but_the_creator_seat_never_changes [2 s] | ory_and_never_lets_the_last_one_go [FAIL] | Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [FAIL] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Removal_ends_access_at_once_keeps_the_history_and_never_lets_the_last_one_go [1 s] | Com falha Squid.Tests.Threads.ThreadParticipantRoutesTests.Adding_a_seat_is_admin_only_group_only_and_refuses_past_fifty [711 ms] | [FAIL]
+M10 RESTORE-OK hash=PRE residue=0
+M11 PRE 08D6C193759F | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-05: escada invertida - suspenso SEM aceite recebe 428 em vez de 403, e a suspensao com aceite grava a mensagem negada (ThreadAckAndReadRoutesTests vermelha)
+M11 RUN wrapper=1 logExit=1 aprovado=24 falha=1 constraint=no log=20261112-054422-test-filter.log
+M11 RED-IN-LOG d_recorded_while_an_active_participant_keeps_sending [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._sending [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.A_suspended_actor_is_denied_and_recorded_while_an_active_participant_keeps_sending [628 ms]
+M11 RESTORE-OK hash=PRE residue=0
+M12 PRE 08D6C193759F | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-05: linha Deny nao gravada na trilha - a contagem de linhas cai de 2 para 0 (ThreadAckAndReadRoutesTests vermelha)
+M12 RUN wrapper=1 logExit=1 aprovado=24 falha=1 constraint=no log=20261112-054452-test-filter.log
+M12 RED-IN-LOG d_recorded_while_an_active_participant_keeps_sending [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._sending [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.A_suspended_actor_is_denied_and_recorded_while_an_active_participant_keeps_sending [667 ms]
+M12 RESTORE-OK hash=PRE residue=0
+M13 PRE 08D6C193759F | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | parser: sufixo /read antes do marcador /participants/ - a remocao do participante `read` vira 404 e a cadeira sobrevive (QaTask0036RouteCollisionTests vermelha)
+M13 RUN wrapper=1 logExit=1 aprovado=24 falha=1 constraint=no log=20261112-054520-test-filter.log
+M13 RED-IN-LOG a_removal_and_the_ack_row_carries_the_notice [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...e_notice [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.QaTask0036RouteCollisionTests.A_seat_called_read_is_still_a_removal_and_the_ack_row_carries_the_notice [641 ms]
+M13 RESTORE-OK hash=PRE residue=0
+M14 PRE F529B6D0B8A4 | editado backend\src\Squid.Service\SqliteThreadStore.cs | AC-01/FR-032: linha de aceite gravada SEM o texto do aviso - o assert do notice cai (QaTask0036RouteCollisionTests vermelha)
+M14 RUN wrapper=1 logExit=1 aprovado=24 falha=1 constraint=no log=20261112-054549-test-filter.log
+M14 RED-IN-LOG a_removal_and_the_ack_row_carries_the_notice [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...e_notice [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.QaTask0036RouteCollisionTests.A_seat_called_read_is_still_a_removal_and_the_ack_row_carries_the_notice [568 ms]
+M14 RESTORE-OK hash=PRE residue=0
+M15 PRE 08D6C193759F | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs | AC-03: seq negativo aceito em vez de 400 na rota read (ThreadAckAndReadRoutesTests vermelha)
+M15 RUN wrapper=1 logExit=1 aprovado=24 falha=1 constraint=no log=20261112-054621-test-filter.log
+M15 RED-IN-LOG [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...l_is_400 [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Threads.ThreadAckAndReadRoutesTests.The_read_marker_only_advances_and_a_seq_above_the_thread_total_is_400 [391 ms]
+M15 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=25 falha=0 log=20261112-054652-test-filter.log
+SUMMARY cycles=15 failed=0 residue-QA-MUTATION=0 temp-backups=0

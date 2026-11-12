@@ -1,0 +1,9 @@
+﻿QA-0036 git baseline capturado antes da QA escrever
+2026-11-12 05:32:52
+branch: task/TASK-0036-aviso-nao-e2ee-e-leitura
+HEAD: 6914bb36ec5c05ce1b508c2da518cfb0d77856a2
+--- git status --porcelain -uall ---
+ M docs/sdd/tasks/TASK-0036-aviso-nao-e2ee-e-leitura.md
+ M docs/sdd/tasks/TASK-0037-resposta-a-mensagem.md
+ M docs/sdd/tasks/TASK-0038-reacao-whitelist.md
+ M docs/sdd/tasks/TASK-0039-anexo-em-mensagem.md
