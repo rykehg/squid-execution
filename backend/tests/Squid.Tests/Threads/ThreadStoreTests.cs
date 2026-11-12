@@ -288,4 +288,73 @@ public sealed class ThreadStoreTests
             ProjectionDb.TryDelete(file);
         }
     }
+
+    [Fact] // TASK-0037 — §9.6 antes do §9.9: alvo fora da thread é UMA recusa, sem número e sem linha
+    public async Task The_append_gates_the_ack_before_the_reply_target_and_stores_a_same_thread_reference()
+    {
+        var file = ProjectionDb.NewFile();
+        try
+        {
+            await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            var store = new SqliteThreadStore(ProjectionDb.ConnectionOf(file));
+
+            const string author = "http://127.0.0.1:5199/users/autora";
+            const string peer = "http://127.0.0.1:5199/users/par";
+            var now = DateTimeOffset.UtcNow;
+            var mine = $"http://127.0.0.1:5199/t/{Guid.NewGuid():N}";
+            var other = $"http://127.0.0.1:5199/t/{Guid.NewGuid():N}";
+            await store.CreateAsync(
+                new ThreadState(mine, "direct", author, 0, now, 1),
+                [
+                    new ThreadParticipant(mine, author, "member", now),
+                    new ThreadParticipant(mine, peer, "member", now),
+                ]);
+            await store.CreateAsync(
+                new ThreadState(other, "direct", author, 0, now, 1),
+                [
+                    new ThreadParticipant(other, author, "member", now),
+                    new ThreadParticipant(other, peer, "member", now),
+                ]);
+
+            // 428 ANTES de 422: sem aceite, até um alvo impossível é o §9.6 que responde — o
+            // contrato §6 faz o pré-condicional absoluto para todo envio (decisão no log da task).
+            var unacked = await store.AppendMessageAsync(
+                mine, $"{mine}/m/recusada", author, "oi", now, $"{other}/m/inexistente");
+            Assert.Equal(AppendOutcome.AckRequired, unacked.Outcome);
+
+            await store.AckNoE2eeAsync(mine, author, "aviso", now);
+            await store.AckNoE2eeAsync(other, author, "aviso", now);
+            var root = await store.AppendMessageAsync(other, $"{other}/m/original", author, "pergunta", now);
+            Assert.Equal(AppendOutcome.Appended, root.Outcome);
+
+            // Outra thread ou mensagem inexistente: a MESMA recusa (§9.9), nada escrito e número
+            // nenhum queimado — os dois casos andam juntos para a resposta nunca revelar qual foi.
+            Assert.Equal(AppendOutcome.InvalidReplyTarget,
+                (await store.AppendMessageAsync(mine, $"{mine}/m/x1", author, "oi", now,
+                    root.Message!.Id)).Outcome);
+            Assert.Equal(AppendOutcome.InvalidReplyTarget,
+                (await store.AppendMessageAsync(mine, $"{mine}/m/x2", author, "oi", now,
+                    $"{mine}/m/fantasma")).Outcome);
+            Assert.Equal(0, await ProjectionDb.ScalarAsync<long>(file,
+                "SELECT message_seq FROM thread WHERE id = @Id", new { Id = mine }));
+            Assert.Empty(await store.ListMessagesAsync(mine, 0));
+
+            // Alvo desta MESMA thread: grava a referência e o delta a devolve intacta.
+            var first = await store.AppendMessageAsync(mine, $"{mine}/m/raiz", author, "oi", now);
+            var reply = await store.AppendMessageAsync(
+                mine, $"{mine}/m/resposta", author, "claro", now, first.Message!.Id);
+            Assert.Equal(AppendOutcome.Appended, reply.Outcome);
+            Assert.Equal(first.Message!.Id, reply.Message!.ReplyToId);
+
+            var history = await store.ListMessagesAsync(mine, 0);
+            Assert.Equal(new[] { 1L, 2L }, history.Select(stored => stored.Seq).ToArray());
+            Assert.Null(history.Single(stored => stored.Id == first.Message.Id).ReplyToId);
+            Assert.Equal(first.Message.Id,
+                history.Single(stored => stored.Id == reply.Message!.Id).ReplyToId);
+        }
+        finally
+        {
+            ProjectionDb.TryDelete(file);
+        }
+    }
 }

@@ -66,8 +66,10 @@ public sealed record ThreadListItem(
 /// <summary>
 /// One row of <c>message</c> (SPEC-0010 section B, data-model section 2.5.1): the sender, the
 /// sanitized <c>Content</c> exactly as stored and <c>Seq</c> — the position the thread's state
-/// handed out under its version guard. <c>ReplyToId</c> and the reaction counts are deliberately
-/// absent: they arrive with TASK-0037/TASK-0038, not before.
+/// handed out under its version guard. <c>ReplyToId</c> is FR-057's reference (section E): null
+/// when the message answers nothing, and always another message OF THE SAME thread — the append
+/// refuses any other target before a row exists. The reaction counts are deliberately absent:
+/// they arrive with TASK-0038, not before.
 /// </summary>
 public sealed record MessageState(
     string Id,
@@ -75,12 +77,14 @@ public sealed record MessageState(
     string AuthorActorId,
     string Content,
     long Seq,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string? ReplyToId);
 
 /// <summary>
-/// What one append attempt answered (SPEC-0010 section D): the row landed, the §9.6 refusal of a
-/// sender that never accepted the non-E2EE notice, or the nothing an absent thread answers with —
-/// three outcomes because the route owes three different statuses (200 / 428 / 404).
+/// What one append attempt answered (SPEC-0010 sections D and E): the row landed, the §9.6
+/// refusal of a sender that never accepted the non-E2EE notice, the §9.9 refusal of a reply
+/// target outside the thread, or the nothing an absent thread answers with — four outcomes
+/// because the route owes four different statuses (200 / 428 / 422 / 404).
 /// </summary>
 public enum AppendOutcome
 {
@@ -89,6 +93,14 @@ public enum AppendOutcome
 
     /// <summary>No <c>thread_no_e2ee_ack</c> row for (thread, sender) — the caller answers <c>428 precondition_required</c>.</summary>
     AckRequired,
+
+    /// <summary>
+    /// <c>replyToId</c> names no message of THIS thread (SPEC-0010 section E, FR-057, §9.9):
+    /// another thread's message and a message that does not exist share this ONE answer, so the
+    /// <c>422 invalid_reply_target</c> never tells a participant which case it was. Decided inside
+    /// the append AFTER the ack gate (contract §6 makes 428 absolute), nothing written.
+    /// </summary>
+    InvalidReplyTarget,
 
     /// <summary>No such thread: nothing was written, the caller answers the byte-identical 404.</summary>
     NoSuchThread,
@@ -196,14 +208,20 @@ public interface IThreadStore
     /// committed without its message — a reader polling <c>?since=</c> can miss neither. The
     /// §9.6 gate lives HERE, inside the same transaction and before any number is taken: a sender
     /// with no ack row for (thread, actor) is answered <see cref="AppendOutcome.AckRequired"/>
-    /// with nothing written, which is what makes the 428 hold for EVERY path that sends. Absent
+    /// with nothing written, which is what makes the 428 hold for EVERY path that sends. Section
+    /// E rides the same attempt: when <paramref name="replyToId"/> arrives it is checked against
+    /// the thread's own messages AFTER the gate (contract §6 makes 428 absolute, so a send missing
+    /// both answers 428) and a target from another thread or a target that does not exist is
+    /// <see cref="AppendOutcome.InvalidReplyTarget"/> — one answer for both, nothing written, no
+    /// sequence taken; a target of this thread is stored as the row's <c>reply_to_id</c>. Absent
     /// thread is decided first (<see cref="AppendOutcome.NoSuchThread"/>), so a foreign thread
     /// still shares the byte-identical 404 whether or not the caller ever acked (SC-005). A
     /// racing append waits for the lock instead of failing, which is why every sender of a race
     /// still gets an answer, with its own number.
     /// </summary>
     Task<AppendResult> AppendMessageAsync(
-        string threadId, string messageId, string authorActorId, string content, DateTimeOffset createdAt);
+        string threadId, string messageId, string authorActorId, string content, DateTimeOffset createdAt,
+        string? replyToId = null);
 
     /// <summary>
     /// The exact delta of contract §9.3: every message of <paramref name="threadId"/> with

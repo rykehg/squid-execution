@@ -113,4 +113,50 @@ public sealed class ThreadMigrationTests
             ProjectionDb.TryDelete(file);
         }
     }
+
+    [Fact] // TASK-0037 — a 0005 dá casa ao replyToId (FR-057) somando coluna nova, sem tocar 0002/0003/0004
+    public async Task The_0005_version_adds_the_reply_column_and_reapplying_changes_nothing()
+    {
+        var file = ProjectionDb.NewFile();
+        try
+        {
+            var first = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            Assert.Contains(5, first);
+            // A coluna nova chega POR CIMA das seis de 0003, na mesma ordem — nada do que já
+            // existia se move (é o ALTER TABLE da família 0005, não uma reescrita do 0003).
+            Assert.Equal(
+                new[] { "id", "thread_id", "author_actor_id", "content", "seq", "created_at", "reply_to_id" },
+                await ProjectionDb.QueryAsync<string>(file,
+                    "SELECT name FROM pragma_table_info('message')"));
+            Assert.Equal("message_reply_to_id", await ProjectionDb.ScalarAsync<string>(file,
+                "SELECT name FROM schema_version WHERE version = 5"));
+
+            // Uma mensagem semeada ENTRE as duas aplicações: a re-aplicação pula a versão
+            // registrada (0002/0003/0004 intactos por checksum) e a linha sai como foi escrita.
+            await using (var connection = new SqliteConnection(ProjectionDb.ConnectionOf(file)))
+            {
+                await connection.OpenAsync();
+                await using var seed = connection.CreateCommand();
+                seed.CommandText = """
+                    INSERT INTO message (id, thread_id, author_actor_id, content, seq, created_at, reply_to_id)
+                    VALUES ('http://127.0.0.1/m/semente', 'http://127.0.0.1/t/semente',
+                            'http://127.0.0.1/users/a', 'oi', 1,
+                            '2026-11-12T00:00:00.0000000+00:00', 'http://127.0.0.1/m/original');
+                    """;
+                await seed.ExecuteNonQueryAsync();
+            }
+
+            var second = await SchemaMigrator.ApplyAsync(ProjectionDb.ConnectionOf(file), SchemaMigrations.Load());
+            Assert.Empty(second);
+            Assert.Equal(1, await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM message"));
+            Assert.Equal("http://127.0.0.1/m/original", await ProjectionDb.ScalarAsync<string>(file,
+                "SELECT reply_to_id FROM message"));
+            Assert.Equal(SchemaMigrations.Load().Count,
+                await ProjectionDb.ScalarAsync<long>(file, "SELECT COUNT(*) FROM schema_version"));
+        }
+        finally
+        {
+            ProjectionDb.TryDelete(file);
+        }
+    }
 }
