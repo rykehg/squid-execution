@@ -9,12 +9,12 @@ Write responsibility: the control block, AC list and Doubts are written by ODEV 
 ```yaml
 runId: R-20261113-01
 taskId: TASK-0043
-status: TASK_READY
+status: IN_DEVELOPMENT
 agent: odev
 phase: P-06
-sequence: 1
+sequence: 2
 createdAt: 2026-11-13 13:47:25
-updatedAt: 2026-11-13 13:47:25
+updatedAt: 2026-11-13 18:33:35
 parent: SPEC-0011
 authority: SPEC
 parallel: false
@@ -35,7 +35,7 @@ humanGate:
   scope: NENHUM
   expiresAt: NENHUM
 blocker: NENHUM
-nextAction: TASK_READY - aguardando dispatch DEV
+nextAction: DEV attempt 1/2 em curso - dev-task (entrega 3 de 9 da P-06)
 evidence: []
 memoryBankFlags: []
 ```
@@ -103,6 +103,7 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 
 `- YYYY-MM-DD HH:MM:SS | ROLE | what was done or decided`
 - 2026-11-13 13:47:25 | odev | task created from SPEC-0011 (entrega 3 de 9, fecha S-26 (inbox/outbox/followers/following); blockedBy TASK-0042)
+- 2026-11-13 18:35:26 | odev | dispatch DEV attempt 1/2: TASK_READY -> IN_DEVELOPMENT, sequence 1 -> 2; runId R-20261113-01; blockedBy TASK-0042 resolve (DONE com QA-0042 PASSED 6/6, gate 503/503, merge 805bec5 em develop + docs 8f810c9); autorizacao de commit gate PHASE 2026-11-11 20:42:28 (modelo C) incluida - nova branch task/TASK-0043-superficie-activitypub desde develop
 
 ## Evidence
 

@@ -18,6 +18,7 @@ using Squid.Api.Auth;
 using Squid.Api.Containers;
 using Squid.Api.Crypto;
 using Squid.Api.Discovery;
+using Squid.Api.Federation;
 using Squid.Api.Media;
 using Squid.Api.Posts;
 using Squid.Api.Recovery;
@@ -285,6 +286,17 @@ public static class SquidServiceHost
         // bytes come from Squid.Protocols through this one delegate — the edge never sees the
         // adapter (ADR-11), and every absolute URL derives from the request's own Host (B-09a).
         app.MapSquidDiscovery(ProfileJsonLd.Serialize);
+        // Federation surface (TASK-0043, SPEC-0011 section D): the collections of an actor, the
+        // object, the container with its outbox and members, nodeinfo and the two inboxes. The
+        // same seam pattern, now five delegates — the documents are Squid.Protocols' own and the
+        // inbox gate is the one composition can build, because it is the only piece that needs an
+        // adapter, a grain and an HttpContext at once.
+        app.MapSquidFederation(new FederationSeams(
+            ObjectJsonLd.Group,
+            ObjectJsonLd.Note,
+            CollectionJsonLd.Collection,
+            CollectionJsonLd.Page,
+            InboxSignatureGate.VerifyAsync));
 
         return app;
     }
