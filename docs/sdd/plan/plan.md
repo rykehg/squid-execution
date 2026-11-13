@@ -6,7 +6,7 @@ Write responsibility: ODEV. Every other role reads it and never edits it.
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-12 12:46:09
+- lastVerified: 2026-11-13 13:56:33
 - snapshot: plan/history/0006-plan.md (fecho da P-05; 0005 é a P-04, 0004 é a P-03, 0003 é a P-02, 0002 é a P-01, 0001 é o bootstrap)
 
 # Plan — Squid
@@ -51,7 +51,7 @@ engana teste e revisão humana.
 | P-03 | Contêineres sociais: grupo/comunidade com papéis, política versada e sucessão de propriedade | TASK-0017..TASK-0022 (SPEC-0008) — **6/6 DONE com QA PASSED** (QA-0016..QA-0021); gate da casa 244/244; detalhe em `plan/history/0004-plan.md` | **CLOSED** | 2026-11-09 04:55:35 |
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
 | P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — **8/8 DONE com QA PASSED na 1ª tentativa** (QA-0033..QA-0040); gate da casa 480/480; detalhe em `plan/history/0006-plan.md` | **CLOSED** | 2026-11-12 12:46:09 |
-| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | a cortar | NOT_STARTED | — |
+| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | TASK-0041..TASK-0049 — **9 entregas** (SPEC-0011); aberta 2026-11-13, 0/9 DONE | **OPEN** | — |
 | P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) | a cortar | NOT_STARTED | — |
 | P-08 | Front web SSR, preview social e compartilhamento externo | a cortar | NOT_STARTED | — |
 
@@ -149,24 +149,41 @@ visíveis só aos participantes e idempotentes. Spec: `specs/SPEC-0010-mensageri
 Emendas ao material adotado: data-model §2.7 (admin de thread) e contrato §6 (adicionar
 participante, rotas de admin, anexo) — originais intactos, precedente S-27/P-03.
 
+### P-06 — entregas
+
+| Task | Entrega | Touches | Parallel-safe |
+| --- | --- | --- | --- |
+| TASK-0041 | Domínio canônico e proxy: `Instance:Domain` opt-in + `X-Forwarded-*` de confiança, origem canônica em helper único nos 4 pontos scheme+Host (I-11) | `backend/src/Squid.Api/{Discovery,Posts,Containers,Threads}/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/**` | no (base da fase) |
+| TASK-0042 | Chave de assinatura em runtime (fecha **GAP-09**): `Squid:RecoveryKey` no boot, desembrulho RSA só em memória + assinar/verificar HTTP (draft-cavage rsa-sha256/hs2019 + RFC 9421) | `backend/src/Squid.Api/Crypto/**`, `backend/src/Squid.Grains/Actors/**`, `backend/src/Squid.Protocols/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/**` | no (serial) |
+| TASK-0043 | Superfície ActivityPub: ator completo com `inbox`/`outbox`/`followers`/`following` (**fecha S-26**), coleções paginadas, objeto, contêiner, nodeinfo, Accept negotiation | `backend/src/Squid.Api/Discovery/**`, `backend/src/Squid.Api/Federation/**`, `backend/src/Squid.Protocols/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/**` | no (serial) |
+| TASK-0044 | Inbox: `InboxGrain` (dedupe por `activity.id`), ordem §3 (assinatura→digest→data→tamanho→rate→dedupe→remetente, FR-040) e aplicação de `Create`/`Follow`/`Undo`/`Delete`/`Like`/`Flag` | `backend/src/Squid.Grains/Inbox/**`, `backend/src/Squid.Api/Federation/**`, `backend/src/Squid.Api/Posts/**`, `backend/src/Squid.Protocols/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/**` | no (serial) |
+| TASK-0045 | Saída: fan-out por visibilidade (§3.2/§4), reavaliação R-05 → `Cancelled`, migration `0008_federation.sql` (`follow`/`peer`/`peer_delivery`) e rota `POST /api/federation/follow` (GAP-41) | `backend/src/Squid.Persistence/schema/**`, `backend/src/Squid.Api/{Posts,Federation,Containers}/**`, `backend/src/Squid.ReadModels/**`, `backend/src/Squid.Protocols/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/**` | no (serial) |
+| TASK-0046 | `PeerGrain`: fila, backoff exponencial c/ jitter (N=8, teto 6 h), circuit breaker, DLQ com motivo + rate por par (FR-036) + `PeerClient` com falha 500/timeout/lentidão | `backend/src/Squid.Grains/Peers/**`, `backend/src/Squid.PeerClient/**`, `backend/src/Squid.Service/**`, `backend/src/Squid.ReadModels/**`, `backend/tests/Squid.Tests/**` | no (serial) |
+| TASK-0047 | Facet de dois silos A→B (tests-only): contrato §7 itens 1–9, 14, 15 | `backend/tests/Squid.Tests/Federation/**` | no (serial) |
+| TASK-0048 | **Runbook pedido pelo humano**: `docs/runbooks/federacao-interop.md` (dois silos + Mastodon/Friendica em Docker + validação) + `peer-entrega-travada`/`dlq-cheia` EXECUTÁVEIS + índice | `docs/runbooks/**` | no (serial, blockedBy 0047) |
+| TASK-0049 | Interop real Mastodon/Friendica + facet de fecho do DoD (SC-016, §7 itens 11–13) — **gate humano** (pares reais, execução conjunta) | `backend/tests/Squid.Tests/Federation/**`, correções mínimas provadas por log real (`Squid.Protocols`, `Squid.Api/Federation`, `Squid.Grains`), `docs/runbooks/federacao-interop.md` | no (serial; última) |
+
+Escopo da P-06: **Sprint 5 inteiro** (entrevista 2026-11-13, 2 rodadas / 6 questões — decisões
+1..6 abaixo). Gate de saída (DoD Sprint 5): post público de A aparece em B; `membersOnly` não
+aparece; dedupe rejeita entrega repetida; peer derrubado não trava o envio; Mastodon e Friendica
+reais exibem o post público e nenhuma entrega falha por assinatura. Spec:
+`specs/SPEC-0011-federacao-p06.md`.
+
 ## Current state
 
-- phase: **P-05 (Mensageria) CLOSED** (2026-11-12 12:46:09) — 8/8 entregas DONE com QA PASSED
-  **na 1ª tentativa** (QA-0033..QA-0040, zero correções e zero bloqueios), gate final **480/480**,
-  DoD do Sprint 4 provado em cadeia; consolidação do memory bank feita (`FEATURE_CONCLUIDA` em
-  `progress/0001.md`); snapshot congelado em `plan/history/0006-plan.md`. A partir do fecho de
-  cada fase o **código é a fonte real** daquela fase (divergência = `[DIVERGENCIA]`, código
+- phase: **P-06 (Federação) OPEN** (aberta 2026-11-13 13:47:25) — 9 entregas cortadas de
+  SPEC-0011 (`TASK-0041..TASK-0049`), 0/9 DONE, todas `TASK_READY`. P-05 fechou em
+  2026-11-12 12:46:09 (8/8, gate 480/480, snapshot `0006-plan.md`); a partir do fecho de cada
+  fase o **código é a fonte real** daquela fase (divergência = `[DIVERGENCIA]`, código
   vence); P-01 fecha no 0002, P-02 no 0003, P-03 no 0004, P-04 no 0005, P-05 no 0006.
-- authority: **CODE** para P-01..P-05 (fechadas); a P-06, quando aberta, nasce com authority
-  SPEC até o próprio fecho.
+- authority: **SPEC** para P-06 (nasce SPEC, vira CODE no fecho); **CODE** para P-01..P-05.
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **PARADO no fecho da P-05** — não inicio a P-06 por conta própria. Próximo passo
-  humano: `/odev` para abrir a **P-06 (Federação)** com entrevista/corte de spec (insumos:
-  doc 05 §Sprint 5, FR-034..FR-041, data-model §2.8 Activity/§2.9 Peer+PeerDelivery/§3.2
-  regras de saída, contrato activitypub.md, ADR-28 de assinatura, GAP-09 quem destrava a `RK`,
-  backlog S-26 inbox/outbox). Nada de deploy (nenhum push é meu de fazer — a CI só roda
+- nextAction: **dispatch DEV da TASK-0041** (fila serial 0041→0049, uma task por dispatch);
+  o **manual** pedido pelo humano é a TASK-0048 (`docs/runbooks/federacao-interop.md`, antes do
+  fecho) e a **TASK-0049 executa a interop real com o humano junto** — pares Mastodon/Friendica em
+  Docker local, gate humano no dispatch. Nada de deploy (nenhum push é meu de fazer — a CI só roda
   pós-push, gate humano; último run verde 98/98 de 07/11, anterior à P-04 — considere um push
   para revalidar a CI com os testes novos da P-04/P-05: gate local está em 480/480).
 - **Git a partir da P-05 (gate PHASE 2026-11-11 20:42:28, modelo C)**: branch por task
@@ -174,12 +191,15 @@ participante, rotas de admin, anexo) — originais intactos, precedente S-27/P-0
   ODEV mergeia em `develop` no `DONE` e commita docs; push/force/`main`/apagar branch =
   proibido a agentes, merge+tag de fecho em `main` = humano. Os dispatchs DEV/QA devem incluir
   a linha de autorização de commit deste gate. Commits da P-01..P-04 não mudam.
-- blocking gaps: NENHUM — decisões da abertura da P-05 e do fecho registradas abaixo; abertos e
-  carregados: GAP-02, GAP-04/05/06, GAP-09 (P-06), GAP-13..GAP-18 (SPEC-0008),
+- blocking gaps: NENHUM — **GAP-09 fechado por decisão humana** na abertura da P-06 (SPEC-0011
+  decisão 2: `Squid:RecoveryKey` em segredo de ambiente, desembrulho só em memória); novos
+  GAP-41..GAP-47 assumidos na SPEC-0011; `S-26` fecha na TASK-0043 (inbox/outbox/followers/
+  following) e `I-11` na TASK-0041 — checagem do backlog pedida ao cortar a fase; abertos e
+  carregados: GAP-02, GAP-04/05/06, GAP-13..GAP-18 (SPEC-0008),
   GAP-21..GAP-28 (SPEC-0009), GAP-29..GAP-40 (SPEC-0010 — 29..35 resolvidos por humano,
   36..40 assumidos; 36 = ao vivo não decidido, 37 = UI do aviso é P-08),
   S-11/S-12/S-19/S-22..S-38 (backlog), suite Linux nativa unverified (CI é o executor,
-  WSL sem dotnet sondado a vivo em toda QA da P-05), I-11/S-26 (P-06/P-08).
+  WSL sem dotnet sondado a vivo em toda QA da P-05).
 
 ## Adopted legacy documentation
 
@@ -252,3 +272,5 @@ nomes** — nenhum arquivo deles é copiado, nem como trecho.
 | 2026-11-11 23:08:37 | Abertura da P-05 (entrevista rodada 5): estado da thread = **SQLite + ETag** (não `ThreadGrain`/Orleans — ADR-1 vale, thread não federa); rota de admin = **`POST`/`DELETE /api/threads/{id}/participants/{actorId}/admin`** | PHASE | Henrique |
 | 2026-11-12 19:01:23 | **Prática de fecho de fase**: a cada `PHASE_CLOSED` o ODEV atualiza o `README.md` (§Estado atual) e os ponteiros de fase de `docs/runbooks/**` (índice + "PENDENTE-fase") junto com a consolidação — ponteiro velho engana teste e revisão humana; rotação de chave registrada como **S-39** (sem dono de fase, candidata P-07); execução imediata: README, runbooks e gate contagem atualizados no fecho da P-05 | PHASE | Henrique |
 | 2026-11-12 20:21:42 | **Rotação de chave é da P-07** (dono decidido pelo humano, fecha o S-39): a fase de backup e chaves corta as tasks que criam a rota de `RK`/`RC`, a reemissão do kit e o teste de cadeia derivada — runbooks `rotacionar-chave` e índice atualizados de "sem dono" para "P-07"; linha da P-07 no plano emendada | PHASE | Henrique |
+| 2026-11-13 11:48:04 | Abertura da P-06 (entrevista rodada 1): escopo = **Sprint 5 inteiro** (8 itens + DoD, default aceito); **GAP-09 = `Squid:RecoveryKey` em segredo de ambiente no boot**, desembrulho da chave do ator só em memória no `ActorGrain`, sem rota de reidratação, kit = único caminho de recuperação, **produção = gate humano** para injetar o segredo; **interop real Mastodon/Friendica dentro da fase** como fecho + **manual** para subir as instâncias locais e fazer a comunicação real = entregável pedido pelo humano | PHASE | Henrique |
+| 2026-11-13 13:31:11 | Abertura da P-06 (entrevista rodada 2, "concordo com as sugestões dadas"): **`I-11` entra** na fase como entrega cedo (`Instance:Domain` + `ForwardedHeaders`); **manual = runbook próprio** `docs/runbooks/federacao-interop.md` + índice, escrito **antes** da validação de interop; **pares reais em Docker local** (Mastodon + Friendica na máquina do humano, sem exposição à internet) com seção opcional "instância pública real" no runbook | PHASE | Henrique |
