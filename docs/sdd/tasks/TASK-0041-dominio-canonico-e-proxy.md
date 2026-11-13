@@ -117,6 +117,7 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 - 2026-11-13 16:50:59 | odev | ODEV verificou antes de transicionar: QA-0041-dominio-canonico-e-proxy.md com verdicto PASSED lido no arquivo; gate 20261113-162146-test-gate.log exit: 0 / Aprovado 484 / Com falha 0 / 6m1s (lido no arquivo); commit QA 7f0ba03 conferido via git show --stat (10 arquivos so docs/sdd/qa/, pai 9210469, sem push, main intacta); resido QA-MUTATION 0 (QA-0041-scope.log), blob 6/6 = 9210469; sdd-state check OK (log 13, evidence 12) - veredito aceito
 - 2026-11-13 16:50:59 | odev | QA-0041 PASSED attempt 1/2 (PRODUTO+TESTES): 5/5 ACs, 12 ciclos can-fail contra o PRODUTO todos vermelhos com a AC alvo (RED-AC 12/12 EXPECT-OK, incluindo M8..M11 - um ponto de origem revertido cada), restore byte-exact 12/12, GREEN 4/4; gate 484/484; unverified registrados (suite Linux/WSL sem dotnet, proxy real de topologia da TASK-0047)
 - 2026-11-13 16:51:01 | odev | transicao AWAITING_QA -> DONE; entrega 1 de 9 da P-06 encerrada - merge em develop + docs commitados pelo ODEV, dispatch da TASK-0042 a seguir
+- 2026-11-13 16:52:09 | odev | merge em develop pelo ODEV no DONE: ad2c36e (merge --no-ff da branch task/TASK-0041-dominio-canonico-e-proxy) + 004b1be (docs da fase: SPEC-0011, TASK-0041..0049, plan.md); git status limpo, sem push, main intacta
 
 ## Evidence
 

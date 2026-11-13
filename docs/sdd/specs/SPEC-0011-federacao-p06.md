@@ -62,7 +62,10 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 
 ### B. Chave de assinatura em runtime (GAP-09, decisão 2)
 
-- `Squid:RecoveryKey` é lida no boot (env/config). Sem ela: federação de **saída** fica desabilitada
+- `Squid:RecoveryKey` é lida no boot (env/config), no formato **base64 dos 32 bytes** — a mesma
+  forma serializada do kit e dos estados (D-01 da TASK-0042, adjudicada pelo ODEV 2026-11-13 no
+  nível especificação: nenhum artefato externo fixa o formato e o runbook da TASK-0048 lê o
+  código). Sem ela: federação de **saída** fica desabilitada
   com aviso claro em log/métrica — o processo **não** cai e a instância segue servindo leitura e
   escrita local.
 - Com ela: `ActorGrain` desembrulha a RSA privada do ator (`HKDF(RK, "fed/rsa-wrap")`, regra da
