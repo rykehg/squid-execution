@@ -1,0 +1,83 @@
+T1 PRE at=202309 ac=AC-01 hash=bec7ca7e755335b40538c84790efbbda5e144b7c head-match=true find-hits=1
+T1 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202332-test-filter.log
+T1 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_actor_document_carries_both_keys_and_the_four_endpoints
+T1 EXPECT-OK expect=The_actor_document_carries_both_keys_and_the_four_endpoints
+T1 RESTORE-OK hash=PRE residue=0
+T2 PRE at=202332 ac=AC-01 hash=bec7ca7e755335b40538c84790efbbda5e144b7c head-match=true find-hits=1
+T2 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202355-test-filter.log
+T2 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_actor_document_carries_both_keys_and_the_four_endpoints
+T2 EXPECT-OK expect=The_actor_document_carries_both_keys_and_the_four_endpoints
+T2 RESTORE-OK hash=PRE residue=0
+T3 PRE at=202356 ac=AC-02 hash=baa9bd04796f2d3c8eef540b536181c89a574f6c head-match=true find-hits=1
+T3 RUN wrapper=1 logExit=1 aprovado=7 falha=2 total=0 log=20261113-202419-test-filter.log
+T3 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_three_actor_collections_answer_first_and_next_without_the_items; Squid.Tests.Federation.ActivityPubSurfaceTests.The_container_outbox_is_paged_and_the_members_page_respects_visibility
+T3 EXPECT-OK expect=The_three_actor_collections_answer_first_and_next_without_the_items
+T3 RESTORE-OK hash=PRE residue=0
+T4 PRE at=202419 ac=AC-02 hash=baa9bd04796f2d3c8eef540b536181c89a574f6c head-match=true find-hits=1
+T4 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202443-test-filter.log
+T4 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_three_actor_collections_answer_first_and_next_without_the_items
+T4 EXPECT-OK expect=The_three_actor_collections_answer_first_and_next_without_the_items
+T4 RESTORE-OK hash=PRE residue=0
+T5 PRE at=202444 ac=AC-02 hash=54418ea60abec55d6c7c6d5981e1f325e8224e61 head-match=true find-hits=1
+T5 RUN wrapper=1 logExit=1 aprovado=7 falha=2 total=0 log=20261113-202508-test-filter.log
+T5 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_three_actor_collections_answer_first_and_next_without_the_items; Squid.Tests.Federation.ActivityPubSurfaceTests.The_container_outbox_is_paged_and_the_members_page_respects_visibility
+T5 EXPECT-OK expect=The_three_actor_collections_answer_first_and_next_without_the_items
+T5 RESTORE-OK hash=PRE residue=0
+T6 PRE at=202508 ac=AC-03 hash=e0e176639190a66c67e893e08bb886ea4a99f86f head-match=true find-hits=1
+T6 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202532-test-filter.log
+T6 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_object_and_the_container_answer_jsonld_with_the_squid_fields
+T6 EXPECT-OK expect=The_object_and_the_container_answer_jsonld_with_the_squid_fields
+T6 RESTORE-OK hash=PRE residue=0
+T7 PRE at=202532 ac=AC-03 hash=e0e176639190a66c67e893e08bb886ea4a99f86f head-match=true find-hits=1
+T7 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202555-test-filter.log
+T7 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_object_and_the_container_answer_jsonld_with_the_squid_fields
+T7 EXPECT-OK expect=The_object_and_the_container_answer_jsonld_with_the_squid_fields
+T7 RESTORE-OK hash=PRE residue=0
+T8 PRE at=202555 ac=AC-03 hash=baa9bd04796f2d3c8eef540b536181c89a574f6c head-match=true find-hits=1
+T8 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202619-test-filter.log
+T8 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_container_outbox_is_paged_and_the_members_page_respects_visibility
+T8 EXPECT-OK expect=The_container_outbox_is_paged_and_the_members_page_respects_visibility
+T8 RESTORE-OK hash=PRE residue=0
+T9 PRE at=202619 ac=AC-03 hash=baa9bd04796f2d3c8eef540b536181c89a574f6c head-match=true find-hits=1
+T9 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202644-test-filter.log
+T9 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_container_outbox_is_paged_and_the_members_page_respects_visibility
+T9 EXPECT-OK expect=The_container_outbox_is_paged_and_the_members_page_respects_visibility
+T9 RESTORE-OK hash=PRE residue=0
+T10 PRE at=202644 ac=AC-04 hash=baa9bd04796f2d3c8eef540b536181c89a574f6c head-match=true find-hits=1
+T10 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202709-test-filter.log
+T10 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.Nodeinfo_reports_the_software_and_its_version
+T10 EXPECT-OK expect=Nodeinfo_reports_the_software_and_its_version
+T10 RESTORE-OK hash=PRE residue=0
+T11 PRE at=202710 ac=AC-05 hash=0e54b4ff22f6d1fe59cdf064dfbd9b172ca3c2be head-match=true find-hits=1
+T11 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202734-test-filter.log
+T11 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.Both_inboxes_refuse_without_a_verifiable_signature_and_change_nothing
+T11 EXPECT-OK expect=Both_inboxes_refuse_without_a_verifiable_signature_and_change_nothing
+T11 RESTORE-OK hash=PRE residue=0
+T12 PRE at=202734 ac=AC-05 hash=baa9bd04796f2d3c8eef540b536181c89a574f6c head-match=true find-hits=1
+T12 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202758-test-filter.log
+T12 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.Both_inboxes_refuse_without_a_verifiable_signature_and_change_nothing
+T12 EXPECT-OK expect=Both_inboxes_refuse_without_a_verifiable_signature_and_change_nothing
+T12 RESTORE-OK hash=PRE residue=0
+T13 PRE at=202759 ac=AC-05 hash=0e54b4ff22f6d1fe59cdf064dfbd9b172ca3c2be head-match=true find-hits=1
+T13 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202824-test-filter.log
+T13 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.A_locally_verifiable_signature_is_accepted_without_applying_the_activity
+T13 EXPECT-OK expect=A_locally_verifiable_signature_is_accepted_without_applying_the_activity
+T13 RESTORE-OK hash=PRE residue=0
+T14 PRE at=202824 ac=AC-06 hash=645ccb41a2123173beecf413f5c57c3de7e002b8 head-match=true find-hits=1
+T14 RUN wrapper=1 logExit=1 aprovado=7 falha=2 total=0 log=20261113-202849-test-filter.log
+T14 RED-AC Squid.Tests.Federation.QaTask0043AcceptTests.The_federation_routes_negotiate_the_accept_before_any_lookup; Squid.Tests.Federation.ActivityPubSurfaceTests.The_profile_negotiates_accept_and_webfinger_keeps_only_the_self_link
+T14 EXPECT-OK expect=The_profile_negotiates_accept_and_webfinger_keeps_only_the_self_link
+T14 RESTORE-OK hash=PRE residue=0
+T15 PRE at=202849 ac=AC-06 hash=18cbda13b1467688b64cd12baad144ddd3d2c12a head-match=true find-hits=1
+T15 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202913-test-filter.log
+T15 RED-AC Squid.Tests.Federation.ActivityPubSurfaceTests.The_profile_negotiates_accept_and_webfinger_keeps_only_the_self_link
+T15 EXPECT-OK expect=The_profile_negotiates_accept_and_webfinger_keeps_only_the_self_link
+T15 RESTORE-OK hash=PRE residue=0
+T16 PRE at=202913 ac=AC-06 hash=baa9bd04796f2d3c8eef540b536181c89a574f6c head-match=true find-hits=1
+T16 RUN wrapper=1 logExit=1 aprovado=8 falha=1 total=0 log=20261113-202937-test-filter.log
+T16 RED-AC Squid.Tests.Federation.QaTask0043AcceptTests.The_federation_routes_negotiate_the_accept_before_any_lookup
+T16 EXPECT-OK expect=The_federation_routes_negotiate_the_accept_before_any_lookup
+T16 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=9 falha=0 log=20261113-203002-test-filter.log
+UNTRACKED backend=1 (esperado 1: QaTask0043AcceptTests.cs da QA, dentro dos touches)
+SUMMARY cycles=16 failed=0 residue-backend=0 temp-backups=0 elapsed-s=413

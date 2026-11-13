@@ -1,0 +1,36 @@
+--- blob-identity (git hash-object work vs git rev-parse HEAD:) ---
+backend/src/Squid.Api/Discovery/DiscoveryEndpoints.cs work=18cbda13b1467688b64cd12baad144ddd3d2c12a head=18cbda13b1467688b64cd12baad144ddd3d2c12a match=True
+backend/src/Squid.Api/Federation/AcceptNegotiation.cs work=645ccb41a2123173beecf413f5c57c3de7e002b8 head=645ccb41a2123173beecf413f5c57c3de7e002b8 match=True
+backend/src/Squid.Api/Federation/FederationEndpoints.cs work=baa9bd04796f2d3c8eef540b536181c89a574f6c head=baa9bd04796f2d3c8eef540b536181c89a574f6c match=True
+backend/src/Squid.Protocols/ActivityPub/CollectionJsonLd.cs work=54418ea60abec55d6c7c6d5981e1f325e8224e61 head=54418ea60abec55d6c7c6d5981e1f325e8224e61 match=True
+backend/src/Squid.Protocols/ActivityPub/ObjectJsonLd.cs work=e0e176639190a66c67e893e08bb886ea4a99f86f head=e0e176639190a66c67e893e08bb886ea4a99f86f match=True
+backend/src/Squid.Protocols/ActivityPub/ProfileJsonLd.cs work=bec7ca7e755335b40538c84790efbbda5e144b7c head=bec7ca7e755335b40538c84790efbbda5e144b7c match=True
+backend/src/Squid.Service/InboxSignatureGate.cs work=0e54b4ff22f6d1fe59cdf064dfbd9b172ca3c2be head=0e54b4ff22f6d1fe59cdf064dfbd9b172ca3c2be match=True
+--- mtime (arquivos de produto/teste com mtime depois da baseline) ---
+mtime 2026-11-13 20:29:13 backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+mtime 2026-11-13 20:28:49 backend\src\Squid.Api\Federation\AcceptNegotiation.cs
+mtime 2026-11-13 20:29:37 backend\src\Squid.Api\Federation\FederationEndpoints.cs
+mtime 2026-11-13 20:25:08 backend\src\Squid.Protocols\ActivityPub\CollectionJsonLd.cs
+mtime 2026-11-13 20:25:55 backend\src\Squid.Protocols\ActivityPub\ObjectJsonLd.cs
+mtime 2026-11-13 20:23:55 backend\src\Squid.Protocols\ActivityPub\ProfileJsonLd.cs
+mtime 2026-11-13 20:28:24 backend\src\Squid.Service\InboxSignatureGate.cs
+mtime 2026-11-13 20:12:43 backend\tests\Squid.Tests\Federation\QaTask0043AcceptTests.cs
+mtime-count=8 (esperado 8: os 7 arquivos de produto mutados e restaurados + o teste novo da QA; baseline 2026-11-13 19:46:00)
+residue=0 (tokens mutantes ausentes em backend .cs fora de bin/obj: folloving / #rsa-key / rel = "profile" / ?page=9")
+git-backend-entries=1 (esperado 1: so o teste novo da QA, dentro dos touches backend/tests/Squid.Tests/**)
+--- status --porcelain -uall (classificacao, varredura final pos-checkers) ---
+entry docs/sdd/tasks/TASK-0043-superficie-activitypub.md allowed=True
+entry backend/tests/Squid.Tests/Federation/QaTask0043AcceptTests.cs allowed=True
+entry docs/sdd/qa/QA-0043-check-sh.log allowed=True
+entry docs/sdd/qa/QA-0043-check.log allowed=True
+entry docs/sdd/qa/QA-0043-git-baseline.txt allowed=True
+entry docs/sdd/qa/QA-0043-mutations.log allowed=True
+entry docs/sdd/qa/QA-0043-scope.log allowed=True
+entry docs/sdd/qa/QA-0043-superficie-activitypub.md allowed=True
+entry docs/sdd/qa/QA-0043-verify.log allowed=True
+entry docs/sdd/qa/qa-check-task-0043.ps1 allowed=True
+entry docs/sdd/qa/qa-check-task-0043.sh allowed=True
+entry docs/sdd/qa/qa-mutate-task-0043.ps1 allowed=True
+fora-dos-touches=0
+pre-existing-odev-wip=1 (task file com carimbo do ODEV, ja na baseline da QA)
+qa-artifacts=12 (1 task file WIP + 10 artefatos em docs/sdd/qa + o teste novo nos touches; varredura final depois dos checkers)

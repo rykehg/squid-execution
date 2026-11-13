@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Squid.Api.Federation;
 using Squid.Grains.Actors;
 
 namespace Squid.Api.Discovery;
@@ -11,9 +12,11 @@ namespace Squid.Api.Discovery;
 /// <c>Instance:Domain</c> when the operator published one (SPEC-0011 section A): <c>subject</c>,
 /// <c>link.href</c> and the document id all derive from that one origin
 /// (<see cref="CanonicalOrigin"/>), a foreign domain answers 404 and nothing proxies it. The
-/// JSON-LD bytes are produced by <c>Squid.Protocols</c> through the delegate the composition root
-/// passes in — the mapping lives on the protocol side of the boundary (ADR-11) and this assembly
-/// references no adapter (its .csproj is outside this task's touches).
+/// profile document is negotiated like every ActivityPub document of the instance (AC-06), while
+/// webfinger itself answers the JRD of RFC 7033 with no ActivityPub gate. The JSON-LD bytes are
+/// produced by <c>Squid.Protocols</c> through the delegate the composition root passes in — the
+/// mapping lives on the protocol side of the boundary (ADR-11) and this assembly references no
+/// adapter (its .csproj is outside this task's touches).
 /// </summary>
 public static class DiscoveryEndpoints
 {
@@ -38,6 +41,16 @@ public static class DiscoveryEndpoints
         // route binding identical to the named handlers of AuthEndpoints.
         async Task<IResult> ProfileAsync(string name, ActorGrain actors, HttpContext context)
         {
+            // AC-06 (SPEC-0011 section D): the profile is an ActivityPub document and answers only
+            // an Accept that admits one. The gate runs before the lookup, so a caller that cannot
+            // read JSON-LD learns nothing about which actors exist — the same 406 envelope the
+            // federated documents of FederationEndpoints answer with, built in one place.
+            var refused = AcceptNegotiation.RefuseUnlessAccepted(context);
+            if (refused is not null)
+            {
+                return refused;
+            }
+
             if (!ActorHandle.IsValid(name))
             {
                 return Results.NotFound();

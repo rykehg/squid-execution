@@ -6,17 +6,21 @@ using Squid.Grains.Actors;
 namespace Squid.Protocols.ActivityPub;
 
 /// <summary>
-/// Canonical ↔ JSON-LD mapping of the actor profile (SPEC-0007 B-10, B-11): the one place that
-/// knows the ActivityPub vocabulary, the fixed embedded <c>@context</c> and the two published keys.
-/// Pure functions over strings and records — no I/O and no network fetch (task Gaps), and JSON-LD
-/// stays on this side of the boundary, never in <c>Squid.Domain</c> (ADR-11).
+/// Canonical ↔ JSON-LD mapping of the actor profile (SPEC-0007 B-10, B-11, SPEC-0011 section D):
+/// the one place that knows the ActivityPub vocabulary, the fixed embedded <c>@context</c>, the
+/// two published keys and the <c>inbox</c>/<c>outbox</c>/<c>followers</c>/<c>following</c> links of
+/// contract §1.1 (S-26, closed by TASK-0043). Pure functions over strings and records — no I/O and
+/// no network fetch (task Gaps), and JSON-LD stays on this side of the boundary, never in
+/// <c>Squid.Domain</c> (ADR-11).
 /// </summary>
 public static class ProfileJsonLd
 {
     /// <summary>Media type of the profile document (contract activitypub §6).</summary>
     public const string MediaType = "application/activity+json";
 
-    private const string ActivityStreamsContext = "https://www.w3.org/ns/activitystreams";
+    /// <summary>The one ActivityStreams context every document of this adapter embeds (contract §1.1).</summary>
+    internal const string ActivityStreamsContext = "https://www.w3.org/ns/activitystreams";
+
     private const string RsaPemHeader = "-----BEGIN PUBLIC KEY-----";
     private const string RsaPemFooter = "-----END PUBLIC KEY-----";
 
@@ -79,6 +83,13 @@ public static class ProfileJsonLd
             "Person",
             profile.PreferredUsername,
             profile.Name,
+            // SPEC-0011 section D / contract §1.1: the four endpoints S-26 left open. They are
+            // derived from the id, so the round-trip of Materialize above stays lossless — the
+            // document never carries anything the canonical profile does not already know.
+            $"{id}/inbox",
+            $"{id}/outbox",
+            $"{id}/followers",
+            $"{id}/following",
             new RsaKeyDocument($"{id}#main-key", id, ToPem(profile.RsaPublicKeyBase64)),
             new Ed25519KeyDocument($"{id}#ed25519", ToMultibase(profile.Ed25519PublicKeyBase64)));
     }
@@ -150,6 +161,10 @@ internal sealed record ProfileDocument(
     [property: JsonPropertyName("preferredUsername")] string PreferredUsername,
     [property: JsonPropertyName("name")]
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Name,
+    [property: JsonPropertyName("inbox")] string Inbox,
+    [property: JsonPropertyName("outbox")] string Outbox,
+    [property: JsonPropertyName("followers")] string Followers,
+    [property: JsonPropertyName("following")] string Following,
     [property: JsonPropertyName("publicKey")] RsaKeyDocument PublicKey,
     [property: JsonPropertyName("squid:ed25519Key")] Ed25519KeyDocument Ed25519Key);
 

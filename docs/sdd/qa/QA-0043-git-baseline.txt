@@ -1,0 +1,40 @@
+git rev-parse HEAD: a658bd16e5b40e000ce6efa1d60f64d6fc865ae0
+branch: task/TASK-0043-superficie-activitypub
+--- status --porcelain -uall ---
+ M docs/sdd/tasks/TASK-0043-superficie-activitypub.md
+--- files of commit a658bd1 ---
+commit a658bd16e5b40e000ce6efa1d60f64d6fc865ae0
+Author: Henrique <henriquehg@gmail.com>
+Date:   Fri Nov 13 19:33:00 2026 -0300
+
+    TASK-0043: superficie ActivityPub - ator com inbox/outbox/followers/following (fecha S-26), colecoes paginadas, objeto, contenedor, nodeinfo, Accept e inboxes 401
+
+ .../src/Squid.Api/Discovery/DiscoveryEndpoints.cs  |  19 +-
+ .../src/Squid.Api/Federation/AcceptNegotiation.cs  | 103 +++++
+ .../Squid.Api/Federation/FederationEndpoints.cs    | 385 +++++++++++++++++
+ .../src/Squid.Api/Federation/FederationSeams.cs    |  33 ++
+ .../ActivityPub/CollectionJsonLd.cs                |  92 +++++
+ .../Squid.Protocols/ActivityPub/ObjectJsonLd.cs    | 161 ++++++++
+ .../Squid.Protocols/ActivityPub/ProfileJsonLd.cs   |  25 +-
+ backend/src/Squid.Service/InboxSignatureGate.cs    | 125 ++++++
+ backend/src/Squid.Service/SquidServiceHost.cs      |  12 +
+ .../Federation/ActivityPubSurfaceTests.cs          | 453 +++++++++++++++++++++
+ docs/sdd/tasks/TASK-0043-superficie-activitypub.md |   9 +-
+ 11 files changed, 1405 insertions(+), 12 deletions(-)
+--- commit file list ---
+backend/src/Squid.Api/Discovery/DiscoveryEndpoints.cs
+backend/src/Squid.Api/Federation/AcceptNegotiation.cs
+backend/src/Squid.Api/Federation/FederationEndpoints.cs
+backend/src/Squid.Api/Federation/FederationSeams.cs
+backend/src/Squid.Protocols/ActivityPub/CollectionJsonLd.cs
+backend/src/Squid.Protocols/ActivityPub/ObjectJsonLd.cs
+backend/src/Squid.Protocols/ActivityPub/ProfileJsonLd.cs
+backend/src/Squid.Service/InboxSignatureGate.cs
+backend/src/Squid.Service/SquidServiceHost.cs
+backend/tests/Squid.Tests/Federation/ActivityPubSurfaceTests.cs
+docs/sdd/tasks/TASK-0043-superficie-activitypub.md
+--- wsl dotnet probe ---
+wsl command -v dotnet => [] exit=1
+wsl command -v git => [/usr/sbin/git] exit=0
+--- when (local) ---
+2026-11-13 19:46:00
