@@ -1,0 +1,59 @@
+command: powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/qa/qa-check-task-0042.ps1
+exit:    0
+when:    2026-11-13 18:32:07
+---
+CHECK BASELINE-HEAD OK - baseline HEAD = 0814968
+CHECK BASELINE-BRANCH OK - branch task/TASK-0042-chave-de-assinatura-em-runtime
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado na baseline (suite Linux = unverified)
+CHECK COMMIT-TOUCHES OK - 0814968: 13 arquivos, todos nos touches (9 produto + 3 teste + task file Log/Evidence)
+CHECK BASELINE-FILTER OK - 20261113-180909-test-filter.log exit 0 / 19 de 19
+CHECK GATE-EXIT OK - 20261113-182619-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - 20261113-182619-test-gate.log Com falha 0 / Aprovado 503 / Total 503
+CHECK GATE-AGE OK - 20261113-182619-test-gate.log criado depois do GREEN 20261113-181838-test-filter.log
+CHECK MUT-IDS OK - T1..T18 (18 ciclos) todos com linha PRE
+CHECK MUT-RED OK - T1..T18 todos vermelhos DENTRO do log (logExit: 1, falha >= 1)
+CHECK MUT-LOGEXIT OK - 18/18 ciclos com logExit=1 lido no cabecalho do log (S-22)
+CHECK CATCH-T1 OK - RED-AC contem: Ac01_without_a_recovery_key
+CHECK CATCH-T2 OK - RED-AC contem: Ac01_without_a_recovery_key
+CHECK CATCH-T3 OK - RED-AC contem: Ac02_with_a_valid_recovery_key
+CHECK CATCH-T4 OK - RED-AC contem: Ac02_with_a_valid_recovery_key
+CHECK CATCH-T5 OK - RED-AC contem: Ac03_with_a_wrong_recovery_key
+CHECK CATCH-T6 OK - RED-AC contem: Ac03_with_a_wrong_recovery_key
+CHECK CATCH-T7 OK - RED-AC contem: Ac04_post_signature_matches
+CHECK CATCH-T8 OK - RED-AC contem: Ac04_post_signature_matches
+CHECK CATCH-T9 OK - RED-AC contem: Ac04_a_key_id_without
+CHECK CATCH-T10 OK - RED-AC contem: Ac04_post_signature_matches
+CHECK CATCH-T11 OK - RED-AC contem: Ac04_post_signature_matches
+CHECK CATCH-T12 OK - RED-AC contem: Ac04_get_signs_request_target
+CHECK CATCH-T13 OK - RED-AC contem: Ac05_a_date_outside_the_window
+CHECK CATCH-T14 OK - RED-AC contem: Ac05_a_digest_that_no_longer
+CHECK CATCH-T15 OK - RED-AC contem: Ac05_a_signature_of_a_key_that_is_not
+CHECK CATCH-T16 OK - RED-AC contem: Ac05_a_peers_draft_cavage
+CHECK CATCH-T17 OK - RED-AC contem: Ac05_an_rfc9421_signature_with_ed25519
+CHECK CATCH-T18 OK - RED-AC contem: Ac05_an_rfc9421_signature_with_rsa
+CHECK MUT-EXPECT OK - 18/18 EXPECT-OK e nenhum EXPECT-MISS
+CHECK MUT-CLASSIFICACAO OK - nenhuma CLASSIFICACAO-ERRADA (todo vermelho e falha de produto)
+CHECK MUT-T16-2CASES OK - T16 (theory draft) com falha=2: rsa-sha256 e hs2019 juntos
+CHECK MUT-RESTORE OK - RESTORE-OK = 18 (esperado >= 18: dezoito ciclos can-fail)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 19/19 sobre as fontes restauradas (wrapper=0 logExit=0 aprovado=19 falha=0)
+CHECK MUT-SUMMARY OK - SUMMARY cycles=18 failed=0 residue=0 temp-backups=0
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0042-* no TEMP = 0
+CHECK DRIVER-ASCII OK - qa-mutate-task-0042.ps1 sem byte > 127 (0) - nao depende de BOM
+CHECK VERIFY-RECORDED OK - QA-0042-verify.log com VERIFY total=18 bad=0
+CHECK FED-AC OK - FederationRuntimeKeyTests: 3 [Fact] marcados // AC-01..// AC-03
+CHECK SIG-AC OK - HttpSignatureTests com marcadores // AC-04 e // AC-05
+CHECK WIRE-RING OK - host le Squid:RecoveryKey no boot e avisa saida federada desabilitada
+CHECK WIRE-GRAIN OK - ActorGrain com ActivateSigningKeyAsync e SigningKeyActivationException auditavel
+CHECK WIRE-HKDF OK - KeyDerivation: HKDF info fed/rsa-wrap (regra TASK-0012, AC-02)
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 5/5 arquivos mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = exatamente os 5 arquivos mutados (restaurados)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo QA-MUTATION = 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum arquivo de produto fora dos touches alterado
+CHECK SCOPE-GIT-SCOPE OK - git status fora do WIP pre-existente e dos artefatos da QA = 0 entradas (esperado 0: nem produto, nem outra task)
+CHECK SDD-STATE OK - check: OK - log entries 8, evidence rows 4
+CHECK QA-DOC OK - QA-0042-chave-de-assinatura-em-runtime.md com verdict PASSED
+CHECK QA-DOC-ACS OK - AC-01..AC-06 presentes na tabela do doc
+SUMMARY total=54 fails=0

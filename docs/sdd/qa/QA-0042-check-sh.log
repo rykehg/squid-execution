@@ -1,0 +1,55 @@
+command: wsl -e bash docs/sdd/qa/qa-check-task-0042.sh
+exit:    0
+when:    2026-11-13 18:32:19
+---
+CHECK BASELINE OK - HEAD 0814968 na branch task/TASK-0042-chave-de-assinatura-em-runtime
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado (suite Linux = unverified)
+CHECK COMMIT-TOUCHES OK - 0814968: 13 arquivos, todos nos touches (0 fora)
+CHECK BASELINE-FILTER OK - 180909 exit 0 / 19 de 19 (baseline das tres classes novas da QA)
+CHECK GATE OK - 20261113-182619-test-gate.log header exit 0 e 503/503
+CHECK MUT-IDS OK - T1..T18 (18 ciclos) todos com linha PRE
+CHECK MUT-RED OK - T1..T18 todos vermelhos dentro do log
+CHECK MUT-LOGEXIT OK - 18/18 ciclos com logExit=1 lido no cabecalho do log (S-22) achou 18
+CHECK CATCH-T1 OK - T1 vermelho na AC esperada (Ac01_without_a_recovery_key)
+CHECK CATCH-T2 OK - T2 vermelho na AC esperada (Ac01_without_a_recovery_key)
+CHECK CATCH-T3 OK - T3 vermelho na AC esperada (Ac02_with_a_valid_recovery_key)
+CHECK CATCH-T4 OK - T4 vermelho na AC esperada (Ac02_with_a_valid_recovery_key)
+CHECK CATCH-T5 OK - T5 vermelho na AC esperada (Ac03_with_a_wrong_recovery_key)
+CHECK CATCH-T6 OK - T6 vermelho na AC esperada (Ac03_with_a_wrong_recovery_key)
+CHECK CATCH-T7 OK - T7 vermelho na AC esperada (Ac04_post_signature_matches)
+CHECK CATCH-T8 OK - T8 vermelho na AC esperada (Ac04_post_signature_matches)
+CHECK CATCH-T9 OK - T9 vermelho na AC esperada (Ac04_a_key_id_without)
+CHECK CATCH-T10 OK - T10 vermelho na AC esperada (Ac04_post_signature_matches)
+CHECK CATCH-T11 OK - T11 vermelho na AC esperada (Ac04_post_signature_matches)
+CHECK CATCH-T12 OK - T12 vermelho na AC esperada (Ac04_get_signs_request_target)
+CHECK CATCH-T13 OK - T13 vermelho na AC esperada (Ac05_a_date_outside_the_window)
+CHECK CATCH-T14 OK - T14 vermelho na AC esperada (Ac05_a_digest_that_no_longer)
+CHECK CATCH-T15 OK - T15 vermelho na AC esperada (Ac05_a_signature_of_a_key_that_is_not)
+CHECK CATCH-T16 OK - T16 vermelho na AC esperada (Ac05_a_peers_draft_cavage)
+CHECK CATCH-T17 OK - T17 vermelho na AC esperada (Ac05_an_rfc9421_signature_with_ed25519)
+CHECK CATCH-T18 OK - T18 vermelho na AC esperada (Ac05_an_rfc9421_signature_with_rsa)
+CHECK MUT-EXPECT OK - 18/18 EXPECT-OK e 0 EXPECT-MISS (esperado 18, achou 18)
+CHECK MUT-CLASSIFICACAO OK - nenhuma CLASSIFICACAO-ERRADA (0)
+CHECK MUT-T16-2CASES OK - T16 (theory draft) com falha=2: rsa-sha256 e hs2019 juntos
+CHECK MUT-RESTORE OK - RESTORE-OK = 18 (esperado >= 18)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL no ledger
+CHECK MUT-GREEN OK - GREEN 19/19 sobre as fontes restauradas
+CHECK MUT-SUMMARY OK - SUMMARY cycles=18 failed=0 residue=0 temp-backups=0 (run cheio)
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0042-* = 0
+CHECK DRIVER-ASCII OK - qa-mutate-task-0042.ps1 sem byte > 127 (0)
+CHECK VERIFY-RECORDED OK - QA-0042-verify.log com VERIFY total=18 bad=0
+CHECK FED-AC OK - FederationRuntimeKeyTests: 3 [Fact] marcados AC-01..AC-03
+CHECK SIG-AC OK - HttpSignatureTests com marcadores // AC-04 e // AC-05
+CHECK WIRE-RING OK - host le Squid:RecoveryKey no boot e avisa saida federada desabilitada
+CHECK WIRE-GRAIN OK - ActorGrain com ActivateSigningKeyAsync e SigningKeyActivationException auditavel
+CHECK WIRE-HKDF OK - KeyDerivation: HKDF info fed/rsa-wrap (regra TASK-0012, AC-02)
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-BLOB OK - blob-identity match=True = 5 de 5
+CHECK SCOPE-MTIME OK - mtime desde a baseline = 5 arquivos mutados
+CHECK SCOPE-RESIDUE OK - scope scan: residuo 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum produto fora dos touches
+CHECK SCOPE-GIT-SCOPE OK - git status fora do WIP pre-existente e dos artefatos da QA = 0 entradas (esperado 0)
+CHECK QA-DOC OK - QA-0042-chave-de-assinatura-em-runtime.md com verdict PASSED
+CHECK QA-DOC-ACS OK - AC-01..AC-06 presentes na tabela do doc
+SUMMARY total=50 fails=0

@@ -1,0 +1,25 @@
+command: powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/qa/qa-mutate-task-0042.ps1 -VerifyOnly
+exit:    0
+when:    2026-11-13 18:13:48
+---
+T1 hits=1 expected=1 OK backend\src\Squid.Service\SquidServiceHost.cs
+T2 hits=1 expected=1 OK backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+T3 hits=1 expected=1 OK backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+T4 hits=1 expected=1 OK backend\src\Squid.Service\SquidServiceHost.cs
+T4 hits=1 expected=1 OK backend\src\Squid.Service\SquidServiceHost.cs
+T5 hits=1 expected=1 OK backend\src\Squid.Grains\Actors\ActorGrain.cs
+T6 hits=1 expected=1 OK backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+T7 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T8 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T9 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T10 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T11 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T12 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T13 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T14 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T15 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T16 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T17 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T18 hits=1 expected=1 OK backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+ASCII non-ascii-bytes=0 OK (no BOM needed)
+VERIFY total=18 bad=0

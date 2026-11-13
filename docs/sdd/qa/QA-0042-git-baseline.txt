@@ -1,0 +1,39 @@
+git rev-parse HEAD: 0814968ece8d23a810078f3a93282c28296a407f
+branch: task/TASK-0042-chave-de-assinatura-em-runtime
+--- status --porcelain -uall ---
+ M docs/sdd/specs/SPEC-0011-federacao-p06.md
+ M docs/sdd/tasks/TASK-0041-dominio-canonico-e-proxy.md
+ M docs/sdd/tasks/TASK-0042-chave-de-assinatura-em-runtime.md
+--- files of commit 0814968 ---
+ .../src/Squid.Api/Crypto/RuntimeSigningKeyRing.cs  |  73 ++
+ backend/src/Squid.Grains/Actors/ActorErrors.cs     |  15 +
+ backend/src/Squid.Grains/Actors/ActorGrain.cs      |  62 +-
+ backend/src/Squid.Grains/Actors/ActorSigner.cs     |  18 +
+ .../Squid.Grains/Actors/IActorSigningKeyRing.cs    |  17 +
+ .../ActivityPub/HttpSignatureSigner.cs             |  86 +++
+ .../ActivityPub/HttpSignatureVerifier.cs           | 813 +++++++++++++++++++++
+ backend/src/Squid.Protocols/Squid.Protocols.csproj |   7 +
+ backend/src/Squid.Service/SquidServiceHost.cs      |  19 +
+ .../Crypto/RuntimeSigningKeyRingTests.cs           |  57 ++
+ .../Squid.Tests/Protocols/HttpSignatureTests.cs    | 344 +++++++++
+ .../ServiceHost/FederationRuntimeKeyTests.cs       | 278 +++++++
+ .../TASK-0042-chave-de-assinatura-em-runtime.md    |  16 +-
+ 13 files changed, 1798 insertions(+), 7 deletions(-)
+--- commit file list ---
+backend/src/Squid.Api/Crypto/RuntimeSigningKeyRing.cs
+backend/src/Squid.Grains/Actors/ActorErrors.cs
+backend/src/Squid.Grains/Actors/ActorGrain.cs
+backend/src/Squid.Grains/Actors/ActorSigner.cs
+backend/src/Squid.Grains/Actors/IActorSigningKeyRing.cs
+backend/src/Squid.Protocols/ActivityPub/HttpSignatureSigner.cs
+backend/src/Squid.Protocols/ActivityPub/HttpSignatureVerifier.cs
+backend/src/Squid.Protocols/Squid.Protocols.csproj
+backend/src/Squid.Service/SquidServiceHost.cs
+backend/tests/Squid.Tests/Crypto/RuntimeSigningKeyRingTests.cs
+backend/tests/Squid.Tests/Protocols/HttpSignatureTests.cs
+backend/tests/Squid.Tests/ServiceHost/FederationRuntimeKeyTests.cs
+docs/sdd/tasks/TASK-0042-chave-de-assinatura-em-runtime.md
+--- wsl dotnet probe ---
+wsl command -v dotnet => [] exit=1
+--- when (local) ---
+2026-11-13 18:08:11
