@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
+using Squid.Api.Discovery;
 using Squid.Api.Posts;
 using Squid.Domain.Objects;
 
@@ -944,12 +945,12 @@ public static class ThreadEndpoints
     }
 
     /// <summary>
-    /// The identity origin of P-02/P-03: scheme + Host of the very request that asked — the same
-    /// rule as <c>ContainerEndpoints</c> and <c>PostEndpoints</c>, never a configured domain
-    /// (one resource, one URI, whether the instance is reached over http or https).
+    /// The identity origin of P-02/P-03 (SPEC-0011 section A): the one canonical helper —
+    /// <c>Instance:Domain</c> over https when the operator published one, else scheme + Host of
+    /// the very request that asked, the same rule as <c>ContainerEndpoints</c> and
+    /// <c>PostEndpoints</c>.
     /// </summary>
-    private static string Origin(HttpContext context) =>
-        $"{context.Request.Scheme}://{context.Request.Host.Value}";
+    private static string Origin(HttpContext context) => CanonicalOrigin.Of(context);
 
     /// <summary>The opaque id of a thread: 128 random bits, hex — the <c>/t/{id}</c> tail.</summary>
     private static string NewToken() => Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(16));
