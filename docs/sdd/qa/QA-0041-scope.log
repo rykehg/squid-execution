@@ -1,0 +1,19 @@
+﻿baseline-status-entries=11 (WIP do ODEV capturado antes da QA escrever)
+blob backend/src/Squid.Api/Containers/ContainerEndpoints.cs work=1b4491afbf21 head=1b4491afbf21 match=True
+blob backend/src/Squid.Api/Discovery/CanonicalOrigin.cs work=025b462cff77 head=025b462cff77 match=True
+blob backend/src/Squid.Api/Discovery/DiscoveryEndpoints.cs work=f8246c6e4954 head=f8246c6e4954 match=True
+blob backend/src/Squid.Api/Posts/PostEndpoints.cs work=d0da52ed180d head=d0da52ed180d match=True
+blob backend/src/Squid.Api/Threads/ThreadEndpoints.cs work=c039a5c382ac head=c039a5c382ac match=True
+blob backend/src/Squid.Service/SquidServiceHost.cs work=ab7c173d5ba9 head=ab7c173d5ba9 match=True
+mtime-count=6 (esperado 6: os arquivos mutados e restaurados)
+mtime 16:12:18 backend\src\Squid.Api\Containers\ContainerEndpoints.cs
+mtime 16:05:58 backend\src\Squid.Api\Discovery\CanonicalOrigin.cs
+mtime 16:10:53 backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+mtime 16:11:36 backend\src\Squid.Api\Posts\PostEndpoints.cs
+mtime 16:13:01 backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+mtime 16:09:26 backend\src\Squid.Service\SquidServiceHost.cs
+residue=0
+git-backend-entries=0 (produto byte-identico a 9210469)
+fora-dos-touches=0 (entradas novas desde a baseline que nao sao artefatos desta QA; o WIP de docs do ODEV ja estava na baseline)
+pre-existing-odev-wip=11 (inalterado pela QA: mesmo conjunto da baseline)
+qa-artifacts=7

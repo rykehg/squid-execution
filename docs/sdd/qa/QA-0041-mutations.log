@@ -1,0 +1,123 @@
+﻿# QA-0041 mutations - 2026-11-13 16:04:33
+M1 PRE 7A4E5B818C7E | editado backend\src\Squid.Api\Discovery\CanonicalOrigin.cs
+M1 WHY AC-01: sem config a origem vira https://host em vez de scheme+Host - a identidade byte-a-byte morre
+M1 EXPECT Ac01_without_configuration|Ac03_forwarded_headers
+M1 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M1 RUN wrapper=1 logExit=1 aprovado=2 falha=2 constraint=no log=20261113-160513-test-filter.log
+M1 RED-IN-LOG Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...y_is_set [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set [7 s] | Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac01_without_configuration_every_point_stays_scheme_plus_host [FAIL] | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac01_without_configuration_every_point_stays_scheme_plus_host [5 s]
+M1 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 4)
+M1 RED-AC Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set,Ac01_without_configuration_every_point_stays_scheme_plus_host
+M1 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Discovery\CanonicalOrigin.cs
+M1 EXPECT-OK anchors='Ac01_without_configuration|Ac03_forwarded_headers'
+M2 PRE 7A4E5B818C7E | editado backend\src\Squid.Api\Discovery\CanonicalOrigin.cs
+M2 WHY AC-02: a chave Instance:Domain deixa de ser lida - os ids nascem no Host da request
+M2 EXPECT Ac02_with_instance_domain
+M2 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M2 RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-160558-test-filter.log
+M2 RED-IN-LOG ry_published_id_uses_the_configured_domain [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_domain [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac02_with_instance_domain_every_published_id_uses_the_configured_domain [4 s]
+M2 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 4)
+M2 RED-AC Ac02_with_instance_domain_every_published_id_uses_the_configured_domain
+M2 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Discovery\CanonicalOrigin.cs
+M2 EXPECT-OK anchors='Ac02_with_instance_domain'
+M3 PRE 5D29109F40F0 | editado backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M3 WHY AC-02/D-01: o subject volta acct:handle@localhost:5001 em vez do canonico @squid.test
+M3 EXPECT Ac02_with_instance_domain
+M3 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M3 RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-160643-test-filter.log
+M3 RED-IN-LOG ry_published_id_uses_the_configured_domain [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_domain [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac02_with_instance_domain_every_published_id_uses_the_configured_domain [5 s]
+M3 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 18)
+M3 RED-AC Ac02_with_instance_domain_every_published_id_uses_the_configured_domain
+M3 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M3 EXPECT-OK anchors='Ac02_with_instance_domain'
+M4a PRE 5D29109F40F0 | editado backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M4a WHY AC-02/D-01a: o Host alcancado nao e mais aceito - sem Instance:Domain TODO webfinger vira 404
+M4a EXPECT Ac01_without_configuration|Ac02_with_instance_domain|Ac03_forwarded_headers
+M4a FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M4a RUN wrapper=1 logExit=1 aprovado=1 falha=3 constraint=no log=20261113-160720-test-filter.log
+M4a RED-IN-LOG Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...y_is_set [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set [6 s] | Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac01_without_configuration_every_point_stays_scheme_plus_host [FAIL] | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac01_without_configuration_every_point_stays_scheme_plus_host [5 s] | id_uses_the_configured_domain [FAIL]
+M4a RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: OK
+M4a RED-AC Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set,Ac01_without_configuration_every_point_stays_scheme_plus_host,Ac02_with_instance_domain_every_published_id_uses_the_configured_domain
+M4a RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M4a EXPECT-OK anchors='Ac01_without_configuration|Ac02_with_instance_domain|Ac03_forwarded_headers'
+M4b PRE 5D29109F40F0 | editado backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M4b WHY AC-02/D-01b: o dominio canonico nao e mais aceito - acct:handle@squid.test responde 404
+M4b EXPECT Ac02_with_instance_domain
+M4b FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M4b RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-160804-test-filter.log
+M4b RED-IN-LOG ry_published_id_uses_the_configured_domain [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_domain [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac02_with_instance_domain_every_published_id_uses_the_configured_domain [4 s]
+M4b RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: OK
+M4b RED-AC Ac02_with_instance_domain_every_published_id_uses_the_configured_domain
+M4b RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M4b EXPECT-OK anchors='Ac02_with_instance_domain'
+M5 PRE 135C91FCDDFD | editado backend\src\Squid.Service\SquidServiceHost.cs
+M5 WHY AC-03a: sem a chave os headers sao honrados - o Host forjado vira a origem publicada
+M5 EXPECT Ac03_forwarded_headers
+M5 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M5 RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-160843-test-filter.log
+M5 RED-IN-LOG Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...y_is_set [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set [6 s]
+M5 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 4)
+M5 RED-AC Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set
+M5 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SquidServiceHost.cs
+M5 EXPECT-OK anchors='Ac03_forwarded_headers'
+M6 PRE 135C91FCDDFD | editado backend\src\Squid.Service\SquidServiceHost.cs
+M6 WHY AC-03b: com a chave o middleware nao instala - o proxy de confianca e ignorado
+M6 EXPECT Ac03_forwarded_headers
+M6 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M6 RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-160926-test-filter.log
+M6 RED-IN-LOG Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...y_is_set [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set [12 s]
+M6 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 4)
+M6 RED-AC Ac03_forwarded_headers_are_ignored_unless_the_trust_key_is_set
+M6 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SquidServiceHost.cs
+M6 EXPECT-OK anchors='Ac03_forwarded_headers'
+M7 PRE 5D29109F40F0 | editado backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M7 WHY AC-04/FR-053: o 404 do webfinger passa a nomear a origem - o corpo deixa de ser identico e carrega o dominio
+M7 EXPECT Ac04_error_answers_carry_neither_the_configured_domain_nor_a_stack_trace
+M7 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M7 RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-161010-test-filter.log
+M7 RED-IN-LOG her_the_configured_domain_nor_a_stack_trace [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ck_trace [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac04_error_answers_carry_neither_the_configured_domain_nor_a_stack_trace [9 s]
+M7 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 22)
+M7 RED-AC Ac04_error_answers_carry_neither_the_configured_domain_nor_a_stack_trace
+M7 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M7 EXPECT-OK anchors='Ac04_error_answers_carry_neither_the_configured_domain_nor_a_stack_trace'
+M8 PRE 5D29109F40F0 | editado backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M8 WHY AC-02 ponto Discovery: o profile id e o href voltam ao Host da request em vez de squid.test
+M8 EXPECT Ac02_with_instance_domain
+M8 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M8 RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-161053-test-filter.log
+M8 RED-IN-LOG ry_published_id_uses_the_configured_domain [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_domain [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac02_with_instance_domain_every_published_id_uses_the_configured_domain [4 s]
+M8 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 4)
+M8 RED-AC Ac02_with_instance_domain_every_published_id_uses_the_configured_domain
+M8 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M8 EXPECT-OK anchors='Ac02_with_instance_domain'
+M9 PRE 42F744596ED2 | editado backend\src\Squid.Api\Posts\PostEndpoints.cs
+M9 WHY AC-02 ponto Posts: o id do objeto nasce no Host da request em vez de squid.test
+M9 EXPECT Ac02_with_instance_domain
+M9 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M9 RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-161136-test-filter.log
+M9 RED-IN-LOG ry_published_id_uses_the_configured_domain [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_domain [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac02_with_instance_domain_every_published_id_uses_the_configured_domain [5 s]
+M9 RED-DETAIL Assert.StartsWith() Failure: String start does not match ~ String: "http://localhost:5001/o/56bf11d1693175b32"Â·Â·Â·
+M9 RED-AC Ac02_with_instance_domain_every_published_id_uses_the_configured_domain
+M9 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Posts\PostEndpoints.cs
+M9 EXPECT-OK anchors='Ac02_with_instance_domain'
+M10 PRE BB6D95DD4173 | editado backend\src\Squid.Api\Containers\ContainerEndpoints.cs
+M10 WHY AC-02 ponto Containers: o id da colecao nasce no Host da request em vez de squid.test
+M10 EXPECT Ac02_with_instance_domain
+M10 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M10 RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-161218-test-filter.log
+M10 RED-IN-LOG ry_published_id_uses_the_configured_domain [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_domain [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac02_with_instance_domain_every_published_id_uses_the_configured_domain [4 s]
+M10 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 4)
+M10 RED-AC Ac02_with_instance_domain_every_published_id_uses_the_configured_domain
+M10 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Containers\ContainerEndpoints.cs
+M10 EXPECT-OK anchors='Ac02_with_instance_domain'
+M11 PRE 3CDE08BEFCD4 | editado backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M11 WHY AC-02 ponto Threads: o id da thread e da mensagem nascem no Host da request em vez de squid.test
+M11 EXPECT Ac02_with_instance_domain
+M11 FILTER FullyQualifiedName~CanonicalOriginConfigTests
+M11 RUN wrapper=1 logExit=1 aprovado=3 falha=1 constraint=no log=20261113-161301-test-filter.log
+M11 RED-IN-LOG ry_published_id_uses_the_configured_domain [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...d_domain [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Discovery.CanonicalOriginConfigTests.Ac02_with_instance_domain_every_published_id_uses_the_configured_domain [5 s]
+M11 RED-DETAIL Assert.StartsWith() Failure: String start does not match ~ String: "http://localhost:5001/t/cf1a0267c83519167"Â·Â·Â·
+M11 RED-AC Ac02_with_instance_domain_every_published_id_uses_the_configured_domain
+M11 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+M11 EXPECT-OK anchors='Ac02_with_instance_domain'
+GREEN wrapper=0 logExit=0 aprovado=4 falha=0 log=20261113-161344-test-filter.log
+SUMMARY cycles=12 failed=0 residue-QA-MUTATION=0 temp-backups=0
