@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+
 namespace Squid.Grains.Actors;
 
 /// <summary>
@@ -8,6 +10,8 @@ namespace Squid.Grains.Actors;
 /// It is a plain class on purpose: <c>Squid.Grains</c> carries no Orleans package and may not
 /// gain one inside this task's scope, so the composition root registers it (or wraps it in a
 /// grain) without this module knowing anything about a silo.
+/// SPEC-0011 section B (GAP-09) adds one duty: activating the runtime signing key of an actor —
+/// unwrapped with the configured <c>Squid:RecoveryKey</c> and kept only in this instance.
 /// </summary>
 public sealed class ActorGrain
 {
@@ -17,20 +21,38 @@ public sealed class ActorGrain
     private readonly IActorEventStore _store;
     private readonly int _snapshotThreshold;
 
-    /// <summary>Builds the aggregate that snapshots at <see cref="DefaultSnapshotThreshold"/>.</summary>
+    /// <summary>Runtime key ring of the composition root; null when the test built the grain without one.</summary>
+    private readonly IActorSigningKeyRing? _signingKeys;
+
+    /// <summary>The activated private key itself — memory only, never a field of any state or record.</summary>
+    private RSA? _signingKey;
+
+    /// <summary>Builds the aggregate with no runtime key: federated output disabled (SPEC-0011 section B).</summary>
     public ActorGrain(IActorEventStore store)
-        : this(store, DefaultSnapshotThreshold)
+        : this(store, DefaultSnapshotThreshold, null)
     {
     }
 
-    /// <summary>Builds the aggregate that snapshots when <paramref name="snapshotThreshold"/> events sit in the open log.</summary>
+    /// <summary>Builds the aggregate that snapshots at <paramref name="snapshotThreshold"/> events, without a runtime key.</summary>
     public ActorGrain(IActorEventStore store, int snapshotThreshold)
+        : this(store, snapshotThreshold, null)
+    {
+    }
+
+    /// <summary>Builds the aggregate bound to the runtime key ring the composition root registered.</summary>
+    public ActorGrain(IActorEventStore store, IActorSigningKeyRing? signingKeys)
+        : this(store, DefaultSnapshotThreshold, signingKeys)
+    {
+    }
+
+    private ActorGrain(IActorEventStore store, int snapshotThreshold, IActorSigningKeyRing? signingKeys)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _snapshotThreshold = snapshotThreshold >= 1
             ? snapshotThreshold
             : throw new ArgumentOutOfRangeException(
                 nameof(snapshotThreshold), snapshotThreshold, "the snapshot threshold must be at least 1");
+        _signingKeys = signingKeys;
     }
 
     /// <summary>Threshold this instance snapshots at.</summary>
@@ -75,6 +97,40 @@ public sealed class ActorGrain
     {
         var record = await _store.ReadAsync(handle);
         return record is null ? null : Replay(record.Stream);
+    }
+
+    /// <summary>
+    /// Activation of the runtime signing key (SPEC-0011 section B, GAP-09, AC-02/AC-03): opens the
+    /// wrapped RSA private key of <paramref name="handle"/> with the configured
+    /// <c>Squid:RecoveryKey</c> and keeps it only in this instance's memory — the returned signer
+    /// signs, it never hands the key back. Returns null when no secret is configured: the federated
+    /// output is disabled while local reads and writes keep working (AC-01). A secret that does not
+    /// open the key fails here as <see cref="SigningKeyActivationException"/> with no key material in
+    /// the message (AC-03); an unknown handle stays <see cref="ActorNotFoundException"/>.
+    /// </summary>
+    public async Task<ActorSigner?> ActivateSigningKeyAsync(string handle)
+    {
+        if (_signingKeys is null)
+        {
+            return null; // no runtime secret: only the federated output stays disabled
+        }
+
+        var state = await GetStateAsync(handle) ?? throw new ActorNotFoundException(handle);
+        if (_signingKey is null)
+        {
+            try
+            {
+                _signingKey = _signingKeys.OpenSigningKey(state.Keys.WrappedSigningKey);
+            }
+            catch (Exception failure) when (failure is CryptographicException or FormatException or ArgumentException)
+            {
+                // Auditability without leakage: the typed failure names the actor and the cause,
+                // and neither the wrapped bytes nor the configured secret travel with it.
+                throw new SigningKeyActivationException(handle, failure);
+            }
+        }
+
+        return _signingKey is null ? null : new ActorSigner(_signingKey);
     }
 
     /// <summary>Folds the open log over the snapshot (or over nothing, while no snapshot exists).</summary>

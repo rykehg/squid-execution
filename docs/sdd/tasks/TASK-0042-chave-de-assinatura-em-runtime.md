@@ -9,12 +9,12 @@ Write responsibility: the control block, AC list and Doubts are written by ODEV 
 ```yaml
 runId: R-20261113-01
 taskId: TASK-0042
-status: TASK_READY
+status: IN_DEVELOPMENT
 agent: odev
 phase: P-06
-sequence: 1
+sequence: 2
 createdAt: 2026-11-13 13:47:25
-updatedAt: 2026-11-13 13:47:25
+updatedAt: 2026-11-13 16:49:36
 parent: SPEC-0011
 authority: SPEC
 parallel: false
@@ -35,7 +35,7 @@ humanGate:
   scope: NENHUM
   expiresAt: NENHUM
 blocker: NENHUM
-nextAction: TASK_READY - aguardando dispatch DEV
+nextAction: DEV attempt 1/2 em curso - dev-task (entrega 2 de 9 da P-06)
 evidence: []
 memoryBankFlags: []
 ```
@@ -103,6 +103,10 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 
 `- YYYY-MM-DD HH:MM:SS | ROLE | what was done or decided`
 - 2026-11-13 13:47:25 | odev | task created from SPEC-0011 (entrega 2 de 9, fecha GAP-09 por decisao humana; blockedBy TASK-0041)
+- 2026-11-13 16:52:11 | odev | dispatch DEV attempt 1/2: TASK_READY -> IN_DEVELOPMENT, sequence 1 -> 2; runId R-20261113-01; blockedBy TASK-0041 resolve (DONE com QA-0041 PASSED 5/5, gate 484/484, merge ad2c36e em develop + docs 004b1be); autorizacao de commit gate PHASE 2026-11-11 20:42:28 (modelo C) incluida - nova branch task/TASK-0042-chave-de-assinatura-em-runtime desde develop
+- 2026-11-13 17:56:24 | dev | feasibilidade round 1/2: unit ActorGrain, callers (Auth/Recovery/Discovery) e CompositionRoot mapeados; touches confirmado sem acrescimo; baseline gate 484/484 exit 0 em runs/test-runs/20261113-170856-test-gate.log; formato do valor de Squid:RecoveryKey decidido como base64 dos 32 bytes (mesma forma serializada do repositorio) por nao ser duvida bloqueante; nenhuma duvida bloqueante
+- 2026-11-13 17:56:24 | dev | implementacao: port IActorSigningKeyRing + ActorSigner + ActivateSigningKeyAsync no ActorGrain (chave privada so em memoria, SigningKeyActivationException auditavel); RuntimeSigningKeyRing le Squid:RecoveryKey no boot e o host avisa saida federada desabilitada; Squid.Protocols ganha HttpSignatureSigner (draft-cavage rsa-sha256 do contrato 5) e HttpSignatureVerifier (rsa-sha256/hs2019 + RFC 9421 RSA/Ed25519 na ordem do contrato 3); BouncyCastle ja pinado referenciado pelo Squid.Protocols
+- 2026-11-13 18:00:35 | dev | gate AC-06: sdd-test.ps1 test exit 0 com 503/503 (baseline 484 + 19 casos novos) em runs/test-runs/20261113-180003-test-gate.log; unico vermelho do caminho foi a captura de console do proprio teste (StringWriter x log do host em thread de fundo), corrigida com writer travado e re-executada; nenhum arquivo de produto alterado fora dos touches
 
 ## Evidence
 
@@ -111,3 +115,7 @@ Commands actually run, with exit code, and where the proof lives. No evidence, n
 | Date/Time | Role | Command | Exit | Artifact |
 | --- | --- | --- | --- | --- |
 | — | — | — | — | — |
+| 2026-11-13 17:57:20 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test | 0 | docs/sdd/runs/test-runs/20261113-170856-test-gate.log (baseline pre-mudanca 484/484) |
+| 2026-11-13 17:57:21 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test -TestFilter (3 classes novas: Crypto + Protocols + FederationRuntimeKeyTests; OR com pipes, comando exato no log) | 1 | docs/sdd/runs/test-runs/20261113-174934-test-filter.log (24/25; captura de console x log concorrente em AC-03, corrigida) |
+| 2026-11-13 17:57:21 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test -TestFilter (3 classes novas: Crypto + Protocols + FederationRuntimeKeyTests; OR com pipes, comando exato no log) | 0 | docs/sdd/runs/test-runs/20261113-175324-test-filter.log (25/25, exit 0) |
+| 2026-11-13 18:00:35 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test | 0 | docs/sdd/runs/test-runs/20261113-180003-test-gate.log (gate AC-06, 503/503) |

@@ -9,4 +9,11 @@
     <ProjectReference Include="..\Squid.Grains\Squid.Grains.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Ed25519 verification of the inbound RFC 9421 path (SPEC-0011 section C, ADR-28): the same
+         single crypto package Squid.Api already pins (human gate 2026-11-07) — no new package for
+         the repo, and the version lives only in backend/Directory.Packages.props (ADR-25). -->
+    <PackageReference Include="BouncyCastle.Cryptography" />
+  </ItemGroup>
+
 </Project>
