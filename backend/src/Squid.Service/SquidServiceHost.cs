@@ -16,6 +16,7 @@ using Squid.Api;
 using Squid.Api.Admin;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
+using Squid.Api.Crypto;
 using Squid.Api.Discovery;
 using Squid.Api.Media;
 using Squid.Api.Posts;
@@ -195,6 +196,13 @@ public static class SquidServiceHost
 
         configure?.Invoke(builder);
 
+        // SPEC-0011 section B (GAP-09, TASK-0042): `Squid:RecoveryKey` read at boot and bound to
+        // the port the actor aggregate opens its wrapped signing key through. Absent or malformed
+        // disables the federated OUTPUT only — warned about after the app is built, never a boot
+        // failure (AC-01); a present secret is first exercised at grain activation (AC-03).
+        var federationKeys = RuntimeSigningKeyRing.FromConfiguration(configuration["Squid:RecoveryKey"]);
+        builder.Services.AddSingleton<IActorSigningKeyRing>(federationKeys);
+
         // SPEC-0011 section A (I-11, GAP-45): X-Forwarded-Proto/Host is honoured ONLY when the
         // operator declares a trusted proxy with Instance:ForwardedHeaders — without the key the
         // middleware is not even installed, so Scheme/Host stay the request's own and the four
@@ -213,6 +221,17 @@ public static class SquidServiceHost
         }
 
         var app = builder.Build();
+
+        // AC-01: without a usable secret the instance still boots and serves local reads and
+        // writes — this Warning is what registers that only the federated output stays disabled.
+        if (!federationKeys.OutputEnabled)
+        {
+            app.Services.GetRequiredService<ILoggerFactory>()
+                .CreateLogger("Squid.Service.Federation")
+                .LogWarning(
+                    "federation output disabled: Squid:RecoveryKey is missing or invalid; "
+                    + "local reads and writes keep working");
+        }
 
         if (trustProxy)
         {

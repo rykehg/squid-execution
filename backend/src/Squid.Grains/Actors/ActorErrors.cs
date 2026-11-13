@@ -37,3 +37,18 @@ public sealed class ActorStoreConflictException(string handle, Exception? inner 
     /// <summary>The handle whose row was not written.</summary>
     public string Handle { get; } = handle;
 }
+
+/// <summary>
+/// Activation of the runtime signing key failed (SPEC-0011 section B, AC-03): the configured
+/// <c>Squid:RecoveryKey</c> does not open the actor's wrapped key. The message names the handle
+/// and the cause only — key material never travels in it, nothing was persisted and nothing was
+/// written to a response; the inner exception carries the typed crypto failure for the audit.
+/// </summary>
+public sealed class SigningKeyActivationException(string handle, Exception? inner = null)
+    : Exception(
+        $"signing key activation failed for handle '{handle}': the configured Squid:RecoveryKey does not open the wrapped key",
+        inner)
+{
+    /// <summary>The handle whose activation was refused.</summary>
+    public string Handle { get; } = handle;
+}

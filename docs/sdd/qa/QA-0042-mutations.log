@@ -1,0 +1,178 @@
+﻿# QA-0042 mutations - 2026-11-13 18:14:01
+T1 PRE D0B72D8285A4 | editado backend\src\Squid.Service\SquidServiceHost.cs
+T1 WHY AC-01: o aviso muda de texto - a captura nunca encontra a frase que registra saida federada desabilitada
+T1 EXPECT Ac01_without_a_recovery_key
+T1 FILTER FullyQualifiedName~FederationRuntimeKeyTests.Ac01_without_a_recovery_key
+T1 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181446-test-filter.log
+T1 RED-IN-LOG the_instance_boots_serves_local_traffic_and_warns [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...nd_warns [FAIL]:String) [], RemoteException | Com falha Squid.Tests.ServiceHost.FederationRuntimeKeyTests.Ac01_without_a_recovery_key_the_instance_boots_serves_local_traffic_and_warns [33 s]
+T1 RED-DETAIL Assert.Contains() Failure: Sub-string not found ~ String: "{"Timestamp":"2026-11-13T18:14:12.7819197"Â·Â·Â·
+T1 RED-AC Ac01_without_a_recovery_key_the_instance_boots_serves_local_traffic_and_warns
+T1 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SquidServiceHost.cs
+T1 EXPECT-OK anchors='Ac01_without_a_recovery_key' falha=1
+T2 PRE 7C4908A92675 | editado backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+T2 WHY AC-01: sem RK a instancia deixa de subir - a excecao estoura no Build do host
+T2 EXPECT Ac01_without_a_recovery_key
+T2 FILTER FullyQualifiedName~FederationRuntimeKeyTests.Ac01_without_a_recovery_key
+T2 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181457-test-filter.log
+T2 RED-IN-LOG the_instance_boots_serves_local_traffic_and_warns [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...nd_warns [FAIL]:String) [], RemoteException | Com falha Squid.Tests.ServiceHost.FederationRuntimeKeyTests.Ac01_without_a_recovery_key_the_instance_boots_serves_local_traffic_and_warns [300 ms]
+T2 RED-AC Ac01_without_a_recovery_key_the_instance_boots_serves_local_traffic_and_warns
+T2 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+T2 EXPECT-OK anchors='Ac01_without_a_recovery_key' falha=1
+T3 PRE 7C4908A92675 | editado backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+T3 WHY AC-02: o desembrulho nao acontece - a assinatura nao confere com a chave publicada do ator
+T3 EXPECT Ac02_with_a_valid_recovery_key
+T3 FILTER FullyQualifiedName~FederationRuntimeKeyTests.Ac02_with_a_valid_recovery_key
+T3 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181511-test-filter.log
+T3 RED-IN-LOG ey_the_grain_activates_the_key_in_memory_only [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ory_only [FAIL]:String) [], RemoteException | Com falha Squid.Tests.ServiceHost.FederationRuntimeKeyTests.Ac02_with_a_valid_recovery_key_the_grain_activates_the_key_in_memory_only [2 s]
+T3 RED-DETAIL Assert.True() Failure ~ Expected: True
+T3 RED-AC Ac02_with_a_valid_recovery_key_the_grain_activates_the_key_in_memory_only
+T3 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+T3 EXPECT-OK anchors='Ac02_with_a_valid_recovery_key' falha=1
+T4 PRE D0B72D8285A4 | editado backend\src\Squid.Service\SquidServiceHost.cs
+T4 WHY AC-02: o log de boot passa a carregar o Squid:RecoveryKey - o canal de log vaza material
+T4 EXPECT Ac02_with_a_valid_recovery_key
+T4 FILTER FullyQualifiedName~FederationRuntimeKeyTests.Ac02_with_a_valid_recovery_key
+T4 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181529-test-filter.log
+T4 RED-IN-LOG ey_the_grain_activates_the_key_in_memory_only [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...ory_only [FAIL]:String) [], RemoteException | Com falha Squid.Tests.ServiceHost.FederationRuntimeKeyTests.Ac02_with_a_valid_recovery_key_the_grain_activates_the_key_in_memory_only [6 s]
+T4 RED-DETAIL Assert.DoesNotContain() Failure: Sub-string found ~ â†“ (pos 3725)
+T4 RED-AC Ac02_with_a_valid_recovery_key_the_grain_activates_the_key_in_memory_only
+T4 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Service\SquidServiceHost.cs
+T4 EXPECT-OK anchors='Ac02_with_a_valid_recovery_key' falha=1
+T5 PRE 867EE6D091B6 | editado backend\src\Squid.Grains\Actors\ActorGrain.cs
+T5 WHY AC-03: a recusa deixa de ser auditavel - a excecao tipada SigningKeyActivationException nao nasce
+T5 EXPECT Ac03_with_a_wrong_recovery_key
+T5 FILTER FullyQualifiedName~FederationRuntimeKeyTests.Ac03_with_a_wrong_recovery_key
+T5 RUN wrapper=3 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181542-test-filter.log
+T5 RED-IN-LOG ey_activation_refuses_without_leaking_anything [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...anything [FAIL]:String) [], RemoteException | Com falha Squid.Tests.ServiceHost.FederationRuntimeKeyTests.Ac03_with_a_wrong_recovery_key_activation_refuses_without_leaking_anything [2 s]
+T5 RED-DETAIL Assert.Throws() Failure: Exception type was not an exact match ~ Expected: typeof(Squid.Grains.Actors.SigningKeyActivationException)
+T5 RED-AC Ac03_with_a_wrong_recovery_key_activation_refuses_without_leaking_anything
+T5 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Grains\Actors\ActorGrain.cs
+T5 EXPECT-OK anchors='Ac03_with_a_wrong_recovery_key' falha=1
+T6 PRE 7C4908A92675 | editado backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+T6 WHY AC-03: a mensagem da falha passa a conter o segredo configurado - vazamento no canal da mensagem
+T6 EXPECT Ac03_with_a_wrong_recovery_key
+T6 FILTER FullyQualifiedName~FederationRuntimeKeyTests.Ac03_with_a_wrong_recovery_key
+T6 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181600-test-filter.log
+T6 RED-IN-LOG ey_activation_refuses_without_leaking_anything [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...anything [FAIL]:String) [], RemoteException | Com falha Squid.Tests.ServiceHost.FederationRuntimeKeyTests.Ac03_with_a_wrong_recovery_key_activation_refuses_without_leaking_anything [7 s]
+T6 RED-DETAIL Assert.DoesNotContain() Failure: Sub-string found ~ â†“ (pos 198)
+T6 RED-AC Ac03_with_a_wrong_recovery_key_activation_refuses_without_leaking_anything
+T6 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+T6 EXPECT-OK anchors='Ac03_with_a_wrong_recovery_key' falha=1
+T7 PRE 52D63D6960E5 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T7 WHY AC-04: as linhas assinadas divergem da ordem declarada em headers - o verificador independente recusa
+T7 EXPECT Ac04_post_signature_matches
+T7 FILTER FullyQualifiedName~HttpSignatureTests.Ac04_post_signature_matches
+T7 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181611-test-filter.log
+T7 RED-IN-LOG 5_and_an_independent_verifier_accepts_the_pair [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...the_pair [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac04_post_signature_matches_contract_5_and_an_independent_verifier_accepts_the_pair [70 ms]
+T7 RED-DETAIL the independent verifier did not accept the signature our signer produced ~ Rastreamento de pilha:
+T7 RED-AC Ac04_post_signature_matches_contract_5_and_an_independent_verifier_accepts_the_pair
+T7 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T7 EXPECT-OK anchors='Ac04_post_signature_matches' falha=1
+T8 PRE 52D63D6960E5 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T8 WHY AC-04: a saida sai com algorithm=hs2019 em vez de rsa-sha256 (contrato 5, ADR-28)
+T8 EXPECT Ac04_post_signature_matches
+T8 FILTER FullyQualifiedName~HttpSignatureTests.Ac04_post_signature_matches
+T8 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181624-test-filter.log
+T8 RED-IN-LOG 5_and_an_independent_verifier_accepts_the_pair [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...the_pair [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac04_post_signature_matches_contract_5_and_an_independent_verifier_accepts_the_pair [81 ms]
+T8 RED-DETAIL C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Threads\ThreadStoreTests.cs(37,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Squid.Tests.csproj] ~ Squid.Tests -> C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\bin\Debug\net10.0\Squid.Tests.dll
+T8 RED-AC Ac04_post_signature_matches_contract_5_and_an_independent_verifier_accepts_the_pair
+T8 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T8 EXPECT-OK anchors='Ac04_post_signature_matches' falha=1
+T9 PRE 52D63D6960E5 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T9 WHY AC-04: keyId sem #main-key deixa de ser recusado - o signer assina com qualquer chave
+T9 EXPECT Ac04_a_key_id_without
+T9 FILTER FullyQualifiedName~HttpSignatureTests.Ac04_a_key_id_without
+T9 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181638-test-filter.log
+T9 RED-IN-LOG Squid.Tests.Protocols.HttpSignatureTests.Ac04_a_key_id_without_the_main_key_fragment_is_refused [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0..._refused [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac04_a_key_id_without_the_main_key_fragment_is_refused [9 ms]
+T9 RED-DETAIL C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Threads\ThreadStoreTests.cs(37,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\Squid.Tests.csproj] ~ Squid.Tests -> C:\dev\squid-squad-net\squid-execution\backend\tests\Squid.Tests\bin\Debug\net10.0\Squid.Tests.dll
+T9 RED-AC Ac04_a_key_id_without_the_main_key_fragment_is_refused
+T9 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T9 EXPECT-OK anchors='Ac04_a_key_id_without' falha=1
+T10 PRE 52D63D6960E5 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T10 WHY AC-04: a saida publica Digest: SHA-512= - o verificador independente (SHA-256) nao confere
+T10 EXPECT Ac04_post_signature_matches
+T10 FILTER FullyQualifiedName~HttpSignatureTests.Ac04_post_signature_matches
+T10 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181649-test-filter.log
+T10 RED-IN-LOG 5_and_an_independent_verifier_accepts_the_pair [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...the_pair [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac04_post_signature_matches_contract_5_and_an_independent_verifier_accepts_the_pair [73 ms]
+T10 RED-DETAIL Assert.Equal() Failure: Strings differ ~ â†“ (pos 4)
+T10 RED-AC Ac04_post_signature_matches_contract_5_and_an_independent_verifier_accepts_the_pair
+T10 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T10 EXPECT-OK anchors='Ac04_post_signature_matches' falha=1
+T11 PRE 52D63D6960E5 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T11 WHY AC-04: a saida deixa de ser HTTP-date GMT - termina com Z em vez de GMT
+T11 EXPECT Ac04_post_signature_matches
+T11 FILTER FullyQualifiedName~HttpSignatureTests.Ac04_post_signature_matches
+T11 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181659-test-filter.log
+T11 RED-IN-LOG 5_and_an_independent_verifier_accepts_the_pair [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...the_pair [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac04_post_signature_matches_contract_5_and_an_independent_verifier_accepts_the_pair [64 ms]
+T11 RED-AC Ac04_post_signature_matches_contract_5_and_an_independent_verifier_accepts_the_pair
+T11 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T11 EXPECT-OK anchors='Ac04_post_signature_matches' falha=1
+T12 PRE 52D63D6960E5 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T12 WHY AC-04: GET passa a declarar digest em headers - o contrato exige so (request-target) host date
+T12 EXPECT Ac04_get_signs_request_target
+T12 FILTER FullyQualifiedName~HttpSignatureTests.Ac04_get_signs_request_target
+T12 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181709-test-filter.log
+T12 RED-IN-LOG Squid.Tests.Protocols.HttpSignatureTests.Ac04_get_signs_request_target_host_date_and_no_digest [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...o_digest [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac04_get_signs_request_target_host_date_and_no_digest [141 ms]
+T12 RED-DETAIL Assert.Equal() Failure: Strings differ ~ Expected: "(request-target) host date"
+T12 RED-AC Ac04_get_signs_request_target_host_date_and_no_digest
+T12 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+T12 EXPECT-OK anchors='Ac04_get_signs_request_target' falha=1
+T13 PRE D0AD1AF538F9 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T13 WHY AC-05: Date fora da janela de +-5 min nao rejeita mais - replay aceito
+T13 EXPECT Ac05_a_date_outside_the_window
+T13 FILTER FullyQualifiedName~HttpSignatureTests.Ac05_a_date_outside_the_window
+T13 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181719-test-filter.log
+T13 RED-IN-LOG Squid.Tests.Protocols.HttpSignatureTests.Ac05_a_date_outside_the_window_is_rejected [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...rejected [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac05_a_date_outside_the_window_is_rejected [85 ms]
+T13 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: StaleDate
+T13 RED-AC Ac05_a_date_outside_the_window_is_rejected
+T13 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T13 EXPECT-OK anchors='Ac05_a_date_outside_the_window' falha=1
+T14 PRE D0AD1AF538F9 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T14 WHY AC-05: corpo divergente do Digest nao rejeita - corpo trocado no caminho e aceito
+T14 EXPECT Ac05_a_digest_that_no_longer
+T14 FILTER FullyQualifiedName~HttpSignatureTests.Ac05_a_digest_that_no_longer
+T14 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181729-test-filter.log
+T14 RED-IN-LOG Squid.Tests.Protocols.HttpSignatureTests.Ac05_a_digest_that_no_longer_matches_the_body_is_rejected [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...rejected [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac05_a_digest_that_no_longer_matches_the_body_is_rejected [123 ms]
+T14 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: DigestMismatch
+T14 RED-AC Ac05_a_digest_that_no_longer_matches_the_body_is_rejected
+T14 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T14 EXPECT-OK anchors='Ac05_a_digest_that_no_longer' falha=1
+T15 PRE D0AD1AF538F9 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T15 WHY AC-05: assinatura de chave que nao e a publicada no keyId e aceita
+T15 EXPECT Ac05_a_signature_of_a_key_that_is_not
+T15 FILTER FullyQualifiedName~HttpSignatureTests.Ac05_a_signature_of_a_key_that_is_not
+T15 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181739-test-filter.log
+T15 RED-IN-LOG Squid.Tests.Protocols.HttpSignatureTests.Ac05_a_signature_of_a_key_that_is_not_the_published_one_is_rejected [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...rejected [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac05_a_signature_of_a_key_that_is_not_the_published_one_is_rejected [167 ms]
+T15 RED-DETAIL Assert.Equal() Failure: Values differ ~ Expected: SignatureInvalid
+T15 RED-AC Ac05_a_signature_of_a_key_that_is_not_the_published_one_is_rejected
+T15 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T15 EXPECT-OK anchors='Ac05_a_signature_of_a_key_that_is_not' falha=1
+T16 PRE D0AD1AF538F9 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T16 WHY AC-05: draft-cavage rsa-sha256 e hs2019 deixam de ser aceitos na entrada
+T16 EXPECT Ac05_a_peers_draft_cavage
+T16 FILTER FullyQualifiedName~HttpSignatureTests.Ac05_a_peers_draft_cavage
+T16 RUN wrapper=1 logExit=1 aprovado=0 falha=2 constraint=no log=20261113-181750-test-filter.log
+T16 RED-IN-LOG Squid.Tests.Protocols.HttpSignatureTests.Ac05_a_peers_draft_cavage_signature_is_accepted(algorithm: "hs2019") [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...hs2019") [FAIL]:String) [], RemoteException | [FAIL] | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac05_a_peers_draft_cavage_signature_is_accepted(algorithm: "hs2019") [70 ms] | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac05_a_peers_draft_cavage_signature_is_accepted(algorithm: "rsa-sha256") [59 ms]
+T16 RED-AC Ac05_a_peers_draft_cavage_signature_is_accepted
+T16 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T16 EXPECT-OK anchors='Ac05_a_peers_draft_cavage' falha=2
+T17 PRE D0AD1AF538F9 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T17 WHY AC-05: Ed25519 deixa de ser aceito - cai no default UnsupportedAlgorithm
+T17 EXPECT Ac05_an_rfc9421_signature_with_ed25519
+T17 FILTER FullyQualifiedName~HttpSignatureTests.Ac05_an_rfc9421_signature_with_ed25519
+T17 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181800-test-filter.log
+T17 RED-IN-LOG Squid.Tests.Protocols.HttpSignatureTests.Ac05_an_rfc9421_signature_with_ed25519_is_accepted [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...accepted [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac05_an_rfc9421_signature_with_ed25519_is_accepted [52 ms]
+T17 RED-AC Ac05_an_rfc9421_signature_with_ed25519_is_accepted
+T17 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T17 EXPECT-OK anchors='Ac05_an_rfc9421_signature_with_ed25519' falha=1
+T18 PRE D0AD1AF538F9 | editado backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T18 WHY AC-05: RFC 9421 com RSA vai parar no parser draft - o par sem keyid draft vira Malformed
+T18 EXPECT Ac05_an_rfc9421_signature_with_rsa
+T18 FILTER FullyQualifiedName~HttpSignatureTests.Ac05_an_rfc9421_signature_with_rsa
+T18 RUN wrapper=1 logExit=1 aprovado=0 falha=1 constraint=no log=20261113-181810-test-filter.log
+T18 RED-IN-LOG Squid.Tests.Protocols.HttpSignatureTests.Ac05_an_rfc9421_signature_with_rsa_is_accepted [FAIL] | + CategoryInfo : NotSpecified: ([xUnit.net 00:0...accepted [FAIL]:String) [], RemoteException | Com falha Squid.Tests.Protocols.HttpSignatureTests.Ac05_an_rfc9421_signature_with_rsa_is_accepted [62 ms]
+T18 RED-AC Ac05_an_rfc9421_signature_with_rsa_is_accepted
+T18 RESTORE-OK hash=PRE residue=0 file=backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+T18 EXPECT-OK anchors='Ac05_an_rfc9421_signature_with_rsa' falha=1
+GREEN wrapper=0 logExit=0 aprovado=19 falha=0 log=20261113-181838-test-filter.log
+SUMMARY cycles=18 failed=0 residue-QA-MUTATION=0 temp-backups=0

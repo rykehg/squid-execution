@@ -1,0 +1,32 @@
+﻿QA-0042 scope scan - 2026-11-13 18:22:32
+baseline (QA-0042-git-baseline.txt): 2026-11-13 18:08:11 | HEAD 0814968 | 5 arquivos mutados pela QA
+--- blob-identity worktree vs HEAD ---
+backend/src/Squid.Service/SquidServiceHost.cs work=f583a86789cc head=f583a86789cc match=True
+backend/src/Squid.Api/Crypto/RuntimeSigningKeyRing.cs work=c625264962ef head=c625264962ef match=True
+backend/src/Squid.Grains/Actors/ActorGrain.cs work=a0c52fd375e4 head=a0c52fd375e4 match=True
+backend/src/Squid.Protocols/ActivityPub/HttpSignatureSigner.cs work=d638a5c48ded head=d638a5c48ded match=True
+backend/src/Squid.Protocols/ActivityPub/HttpSignatureVerifier.cs work=a81b368e49be head=a81b368e49be match=True
+blob-match=5 de 5
+mtime-count=5 (esperado 5 arquivos mutados e restaurados pela QA)
+  mtime: backend\src\Squid.Api\Crypto\RuntimeSigningKeyRing.cs
+  mtime: backend\src\Squid.Grains\Actors\ActorGrain.cs
+  mtime: backend\src\Squid.Protocols\ActivityPub\HttpSignatureSigner.cs
+  mtime: backend\src\Squid.Protocols\ActivityPub\HttpSignatureVerifier.cs
+  mtime: backend\src\Squid.Service\SquidServiceHost.cs
+residue=0 (QA-MUTATION em backend cs)
+--- git status --porcelain -uall (todo o repo) ---
+ M docs/sdd/specs/SPEC-0011-federacao-p06.md
+ M docs/sdd/tasks/TASK-0041-dominio-canonico-e-proxy.md
+ M docs/sdd/tasks/TASK-0042-chave-de-assinatura-em-runtime.md
+?? docs/sdd/qa/QA-0042-git-baseline.txt
+?? docs/sdd/qa/QA-0042-mutations.log
+?? docs/sdd/qa/QA-0042-scope.log
+?? docs/sdd/qa/QA-0042-verify.log
+?? docs/sdd/qa/qa-check-task-0042.ps1
+?? docs/sdd/qa/qa-check-task-0042.sh
+?? docs/sdd/qa/qa-mutate-task-0042.ps1
+baseline-status-entries=3
+pre-existing-odev-wip=3 (SPEC-0011 + TASK-0041 + TASK-0042 ja na baseline da QA)
+qa-artifacts-0042=7 (docs/sdd/qa desta QA)
+fora-dos-touches=0
+git-backend-entries=0
