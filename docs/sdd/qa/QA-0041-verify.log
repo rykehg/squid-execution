@@ -1,0 +1,14 @@
+M1 hits=1 expected=1 OK backend\src\Squid.Api\Discovery\CanonicalOrigin.cs
+M2 hits=1 expected=1 OK backend\src\Squid.Api\Discovery\CanonicalOrigin.cs
+M3 hits=1 expected=1 OK backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M4a hits=1 expected=1 OK backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M4b hits=1 expected=1 OK backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M5 hits=1 expected=1 OK backend\src\Squid.Service\SquidServiceHost.cs
+M6 hits=1 expected=1 OK backend\src\Squid.Service\SquidServiceHost.cs
+M7 hits=1 expected=1 OK backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M8 hits=1 expected=1 OK backend\src\Squid.Api\Discovery\DiscoveryEndpoints.cs
+M9 hits=1 expected=1 OK backend\src\Squid.Api\Posts\PostEndpoints.cs
+M10 hits=1 expected=1 OK backend\src\Squid.Api\Containers\ContainerEndpoints.cs
+M11 hits=1 expected=1 OK backend\src\Squid.Api\Threads\ThreadEndpoints.cs
+ASCII non-ascii-bytes=0 OK (no BOM needed)
+VERIFY total=12 bad=0

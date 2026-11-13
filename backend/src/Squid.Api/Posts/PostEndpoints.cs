@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
+using Squid.Api.Discovery;
 using Squid.Api.Media;
 using Squid.Domain;
 using Squid.Domain.Containers;
@@ -630,9 +631,12 @@ public static class PostEndpoints
         return current is null ? PolicyAudit.AnonymousActor : ContainerEndpoints.ActorId(context, current.Handle);
     }
 
-    /// <summary>The identity origin of P-02/P-03: scheme + Host of the very request that asked. Internal for the feed routes' trail ids.</summary>
-    internal static string Origin(HttpContext context) =>
-        $"{context.Request.Scheme}://{context.Request.Host.Value}";
+    /// <summary>
+    /// The identity origin of P-02/P-03 (SPEC-0011 section A): the one canonical helper —
+    /// <c>Instance:Domain</c> over https when the operator published one, else scheme + Host of
+    /// the very request that asked.
+    /// </summary>
+    internal static string Origin(HttpContext context) => CanonicalOrigin.Of(context);
 
     /// <summary>The trail row itself — one call site, so every decision of this slice is shaped alike.</summary>
     private static Task RecordAsync(

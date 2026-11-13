@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -193,7 +194,30 @@ public static class SquidServiceHost
         builder.Services.AddSingleton(new StorageReadiness(connectionString));
 
         configure?.Invoke(builder);
+
+        // SPEC-0011 section A (I-11, GAP-45): X-Forwarded-Proto/Host is honoured ONLY when the
+        // operator declares a trusted proxy with Instance:ForwardedHeaders — without the key the
+        // middleware is not even installed, so Scheme/Host stay the request's own and the four
+        // origin points answer byte-identically to before (AC-01/AC-03). With the key the direct
+        // peer IS the declared proxy: the loopback-only default would silently ignore a proxy
+        // running in another container, which is exactly the deployment this phase builds for.
+        var trustProxy = bool.TryParse(configuration["Instance:ForwardedHeaders"], out var forwarded) && forwarded;
+        if (trustProxy)
+        {
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+                options.KnownIPNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+        }
+
         var app = builder.Build();
+
+        if (trustProxy)
+        {
+            app.UseForwardedHeaders();
+        }
 
         app.UseRouting();
 

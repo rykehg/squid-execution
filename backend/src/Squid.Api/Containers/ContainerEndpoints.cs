@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Squid.Api.Auth;
+using Squid.Api.Discovery;
 using Squid.Domain;
 using Squid.Domain.Containers;
 using Squid.Grains.Actors;
@@ -1320,13 +1321,12 @@ public static class ContainerEndpoints
                 && policy.PublisherIds.Contains(membership.ActorId, StringComparer.Ordinal));
 
     /// <summary>
-    /// The identity origin of P-02 and SPEC-0008 section A: scheme + Host of the very request that
-    /// asked — the same rule as <c>DiscoveryEndpoints</c>, never a configured domain and never a
-    /// fixed scheme (AC-07, human gate 2026-11-08 15:57:34: one resource, one URI, whether the
-    /// instance is reached over http or https).
+    /// The identity origin of P-02 and SPEC-0008 section A (SPEC-0011 section A): the one
+    /// canonical helper — <c>Instance:Domain</c> over https when the operator published one,
+    /// else scheme + Host of the very request that asked (AC-07, human gate 2026-11-08 15:57:34:
+    /// one resource, one URI, whether the instance is reached over http or https).
     /// </summary>
-    private static string Origin(HttpContext context) =>
-        $"{context.Request.Scheme}://{context.Request.Host.Value}";
+    private static string Origin(HttpContext context) => CanonicalOrigin.Of(context);
 
     /// <summary>The canonical actor id of the member, shaped like the P-02 profile id.</summary>
     internal static string ActorId(HttpContext context, string handle) => $"{Origin(context)}/users/{handle}";

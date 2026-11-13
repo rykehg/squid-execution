@@ -1,0 +1,46 @@
+CHECK BASELINE-HEAD OK - baseline HEAD = 9210469
+CHECK BASELINE-BRANCH OK - branch task/TASK-0041-dominio-canonico-e-proxy
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado na baseline (suite Linux = unverified)
+CHECK BASELINE-TOUCHES OK - commit 9210469: 7 arquivos, todos nos touches (nenhum em web/)
+CHECK BASELINE-FILTER OK - 20261113-153601-test-filter.log exit 0 / 4 de 4
+CHECK GATE-EXIT OK - 20261113-162146-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - 20261113-162146-test-gate.log Com falha 0 / Aprovado 484 / Total 484
+CHECK GATE-AGE OK - 20261113-162146-test-gate.log criado depois do GREEN 20261113-161344-test-filter.log
+CHECK MUT-IDS OK - M1..M11 (12 ciclos) todos com linha PRE
+CHECK MUT-RED OK - M1..M11 todos vermelhos DENTRO do log (exit: 1, falha >= 1)
+CHECK MUT-LOGEXIT OK - 12/12 ciclos com logExit=1 lido no cabecalho do log (S-22)
+CHECK CATCH-M1 OK - RED-AC contem: Ac01_without_configuration|Ac03_forwarded_headers
+CHECK CATCH-M2 OK - RED-AC contem: Ac02_with_instance_domain
+CHECK CATCH-M3 OK - RED-AC contem: Ac02_with_instance_domain
+CHECK CATCH-M4a OK - RED-AC contem: Ac01_without_configuration|Ac02_with_instance_domain|Ac03_forwarded_headers
+CHECK CATCH-M4b OK - RED-AC contem: Ac02_with_instance_domain
+CHECK CATCH-M5 OK - RED-AC contem: Ac03_forwarded_headers
+CHECK CATCH-M6 OK - RED-AC contem: Ac03_forwarded_headers
+CHECK CATCH-M7 OK - RED-AC contem: Ac04_error_answers_carry_neither_the_configured_domain_nor_a_stack_trace
+CHECK CATCH-M8 OK - RED-AC contem: Ac02_with_instance_domain
+CHECK CATCH-M9 OK - RED-AC contem: Ac02_with_instance_domain
+CHECK CATCH-M10 OK - RED-AC contem: Ac02_with_instance_domain
+CHECK CATCH-M11 OK - RED-AC contem: Ac02_with_instance_domain
+CHECK MUT-EXPECT OK - 12/12 EXPECT-OK e nenhum EXPECT-MISS
+CHECK MUT-CLASSIFICACAO OK - nenhuma CLASSIFICACAO-ERRADA (todo vermelho e falha de produto)
+CHECK MUT-RESTORE OK - RESTORE-OK = 12 (esperado >= 12: doze ciclos can-fail)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 4/4 sobre as fontes restauradas (wrapper=0 logExit=0 aprovado=4 falha=0)
+CHECK MUT-SUMMARY OK - SUMMARY cycles=12 failed=0 residue=0 temp-backups=0
+CHECK RESIDUE OK - QA-MUTATION em backend = 0
+CHECK TEMP-BACKUPS OK - backups qa0041-* no TEMP = 0
+CHECK DRIVER-ASCII OK - qa-mutate-task-0041.ps1 sem byte > 127 (0) - nao depende de BOM
+CHECK VERIFY-RECORDED OK - QA-0041-verify.log com VERIFY total=12 bad=0
+CHECK CFG-FACTS OK - CanonicalOriginConfigTests com 4 [Fact] (AC-01..AC-04)
+CHECK CFG-AC-MARKERS OK - os quatro Fact marcados // AC-01..// AC-04
+CHECK FOUR-POINTS OK - os quatro pontos com Origin => CanonicalOrigin.Of: 4/4
+CHECK TRUST-GATE OK - UseForwardedHeaders instalado so dentro de if (trustProxy) com a chave Instance:ForwardedHeaders
+CHECK GIT-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 6/6 arquivos mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = exatamente os 6 arquivos mutados (restaurados)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo QA-MUTATION = 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum arquivo de produto fora dos touches alterado
+CHECK SCOPE-GIT-SCOPE OK - git status fora do WIP pre-existente e dos artefatos da QA = 0 entradas (esperado 0: nem produto, nem outra task)
+CHECK SDD-STATE OK - check: OK - log entries 13, evidence rows 12
+CHECK QA-DOC OK - QA-0041-dominio-canonico-e-proxy.md com verdict PASSED
+SUMMARY total=45 fails=0

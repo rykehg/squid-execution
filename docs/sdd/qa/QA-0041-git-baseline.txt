@@ -1,0 +1,23 @@
+﻿HEAD: 9210469b3dec6866466f34e97babcde3adffc2c1
+branch: task/TASK-0041-dominio-canonico-e-proxy
+status-entries: 11
+   M docs/sdd/plan/plan.md
+  ?? docs/sdd/specs/SPEC-0011-federacao-p06.md
+  ?? docs/sdd/tasks/TASK-0041-dominio-canonico-e-proxy.md
+  ?? docs/sdd/tasks/TASK-0042-chave-de-assinatura-em-runtime.md
+  ?? docs/sdd/tasks/TASK-0043-superficie-activitypub.md
+  ?? docs/sdd/tasks/TASK-0044-inbox-verificacao-e-aplicacao.md
+  ?? docs/sdd/tasks/TASK-0045-saida-fan-out-e-follow.md
+  ?? docs/sdd/tasks/TASK-0046-peer-grain-fila-e-dlq.md
+  ?? docs/sdd/tasks/TASK-0047-facet-dois-silos.md
+  ?? docs/sdd/tasks/TASK-0048-runbook-de-federacao.md
+  ?? docs/sdd/tasks/TASK-0049-interop-real-e-fecho.md
+wsl-dotnet: dotnet-missing
+commit-9210469 files:
+  backend/src/Squid.Api/Containers/ContainerEndpoints.cs
+  backend/src/Squid.Api/Discovery/CanonicalOrigin.cs
+  backend/src/Squid.Api/Discovery/DiscoveryEndpoints.cs
+  backend/src/Squid.Api/Posts/PostEndpoints.cs
+  backend/src/Squid.Api/Threads/ThreadEndpoints.cs
+  backend/src/Squid.Service/SquidServiceHost.cs
+  backend/tests/Squid.Tests/Discovery/CanonicalOriginConfigTests.cs
