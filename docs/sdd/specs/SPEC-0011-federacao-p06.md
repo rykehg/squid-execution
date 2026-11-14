@@ -72,6 +72,17 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
   TASK-0012) na ativação e a mantém **somente em memória**; nunca persiste em claro, nunca loga,
   nunca devolve em rota. `RK` errada → falha auditável na ativação, sem vazar material.
 - A Ed25519 continua derivada da `RK` (GAP-01) e é publicada como chave adicional.
+- **Duplo embrulho no registro** (decisão humana 2026-11-14 09:10:08 — opção 1; fecha a
+  contradição spec × código levantada na TASK-0045: o registro cria `RK` **própria por ator**,
+  então a `Squid:RecoveryKey` de boot não abria a RSA de nenhum usuário registrado): quando
+  `Squid:RecoveryKey` está configurada, o registro embrulha a **mesma RSA do ator também** com
+  `HKDF(RK_instância, "fed/rsa-wrap")` e persiste **só essa cópia embrulhada** em tabela própria
+  (`0009_*` idempotente — nada muda no event-sourcing do ator nem no embrulho do kit); o runtime
+  desembrulha com o segredo de boot e assina **sempre com a chave do ator** (contrato §5, `keyId`
+  `#main-key`). Sem `Squid:RecoveryKey` no registro → sem cópia (registro segue como hoje); com
+  `Squid:RecoveryKey` no boot mas ator registrado **antes** da config → sem cópia, saída
+  desabilitada com aviso auditável (**limite aceito pelo humano** — instância nova resolve).
+  Cópia nunca em claro, nunca logada, nunca servida. Entrega: **TASK-0051**.
 
 ### C. Assinatura HTTP (FR-039, ADR-28, contrato §3/§5)
 
@@ -253,6 +264,7 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 | GAP-46 | ASSUMED | `Accept` de `Follow` é automático quando a política do ator/contêiner permite seguir; sem UI de aprovação nesta fase |
 | GAP-47 | ASSUMED | runbook de interop e validação com pares reais em Docker local na máquina do humano; instância pública real é seção opcional do runbook e gate humano à parte |
 | GAP-49 | ASSUMED | `Federation:TrustedPeerHosts` (allowlist exata, vazia por padrão) libera loopback/rede privada **só** nos clientes de federação; unfurl continua bloqueado; harness/runbook nomeiam os pares locais, produção = gate humano — TASK-0050 (decisão do ODEV 2026-11-13, resposta ao parked do DEV da TASK-0044) |
+| GAP-50 | RESOLVED (HUMAN) | duplo embrulho no registro (decisão 2026-11-14 09:10:08, opção 1): RSA do ator embrulhada também com a `Squid:RecoveryKey` de instância, cópia em tabela própria `0009_*`, runtime desembrulha com o segredo de boot, kit/GAP-01 intactos; atores antigos à config não federam (aceito) — TASK-0051; a alternativa (embrulhar a RK do ator) foi rejeitada por privilégio mínimo |
 
 ## Tasks
 
@@ -265,6 +277,8 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 | TASK-0045 | Saída: fan-out por visibilidade, reavaliação R-05 e rota de follow | no — serial | TASK_READY |
 | TASK-0046 | PeerGrain: fila, backoff, circuit breaker, DLQ + `PeerClient` com falha | no — serial | TASK_READY |
 | TASK-0050 | Pares confiáveis: `Federation:TrustedPeerHosts` nas guardas dos clientes de federação (GAP-49) | no — serial, blockedBy 0044+0046, blocks 0047 | TASK_READY |
+| TASK-0051 | Assinatura de ator registrado: duplo embrulho com `Squid:RecoveryKey` (GAP-50) | no — serial, blockedBy 0050, blocks 0047 | TASK_READY |
+| TASK-0052 | PEM blindado: chave de ator remoto resolve (S-41, defeito provado na 0051) | no — serial, blockedBy 0051, blocks 0047 | TASK_READY |
 | TASK-0047 | Facet de dois silos (A→B, contrato §7 itens 1–9/14/15) | no — serial | TASK_READY |
 | TASK-0048 | Runbook de federação (manual + runbooks P-06 executáveis) | no — serial, blockedBy 0047 | TASK_READY |
 | TASK-0049 | Interop real Mastodon/Friendica + facet de fecho do DoD | no — última, gate humano | TASK_READY |

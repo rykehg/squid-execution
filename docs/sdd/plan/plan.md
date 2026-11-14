@@ -51,7 +51,7 @@ engana teste e revisão humana.
 | P-03 | Contêineres sociais: grupo/comunidade com papéis, política versada e sucessão de propriedade | TASK-0017..TASK-0022 (SPEC-0008) — **6/6 DONE com QA PASSED** (QA-0016..QA-0021); gate da casa 244/244; detalhe em `plan/history/0004-plan.md` | **CLOSED** | 2026-11-09 04:55:35 |
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
 | P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — **8/8 DONE com QA PASSED na 1ª tentativa** (QA-0033..QA-0040); gate da casa 480/480; detalhe em `plan/history/0006-plan.md` | **CLOSED** | 2026-11-12 12:46:09 |
-| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | TASK-0041..TASK-0050 — **10 entregas** (SPEC-0011; TASK-0050 cortada em 2026-11-13 do parked SSRF da TASK-0044); aberta 2026-11-13, **7/10 DONE** | **OPEN** | — |
+| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | TASK-0041..TASK-0052 — **12 entregas** (SPEC-0011; 0050 do parked SSRF da 0044, 0051 do gate humano GAP-50, 0052 do defeito S-41 provado na 0051); aberta 2026-11-13, **7/12 DONE** | **OPEN** | — |
 | P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) | a cortar | NOT_STARTED | — |
 | P-08 | Front web SSR, preview social e compartilhamento externo | a cortar | NOT_STARTED | — |
 
@@ -160,6 +160,8 @@ participante, rotas de admin, anexo) — originais intactos, precedente S-27/P-0
 | TASK-0045 | Saída: fan-out por visibilidade (§3.2/§4), reavaliação R-05 → `Cancelled`, migration `0008_federation.sql` (`follow`/`peer`/`peer_delivery`) e rota `POST /api/federation/follow` (GAP-41) | `backend/src/Squid.Persistence/schema/**`, `backend/src/Squid.Api/{Posts,Federation,Containers}/**`, `backend/src/Squid.ReadModels/**`, `backend/src/Squid.Protocols/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/**` | no (serial) |
 | TASK-0046 | `PeerGrain`: fila, backoff exponencial c/ jitter (N=8, teto 6 h), circuit breaker, DLQ com motivo + rate por par (FR-036) + `PeerClient` com falha 500/timeout/lentidão | `backend/src/Squid.Grains/Peers/**`, `backend/src/Squid.PeerClient/**`, `backend/src/Squid.Service/**`, `backend/src/Squid.ReadModels/**`, `backend/tests/Squid.Tests/**` | no (serial) |
 | TASK-0050 | **Pares confiáveis** (GAP-49, cortada 2026-11-13 do parked SSRF da TASK-0044): allowlist `Federation:TrustedPeerHosts` vazia por padrão, só nos clientes de federação — destrava 0047/0048/0049 em loopback/Docker | `backend/src/Squid.Api/Posts/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/**` | no (serial, blockedBy 0044+0046, blocks 0047) |
+| TASK-0051 | **Assinatura de ator registrado** (GAP-50, gate humano 2026-11-14 09:10:08): duplo embrulho da RSA com `Squid:RecoveryKey` em tabela `0009_*` — fecha a contradição spec × código e destrava 0047/0049 | `backend/src/Squid.Api/{Auth,Crypto}/**`, `backend/src/Squid.Grains/Actors/**`, `backend/src/Squid.Persistence/schema/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/**` | no (serial, blockedBy 0050, blocks 0047) |
+| TASK-0052 | **PEM blindado** (S-41, defeito provado pela 0051): chave pública de ator remoto resolve de verdade — sem ela 0047/0049 caem na verificação real | `backend/src/Squid.Protocols/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/**` | no (serial, blockedBy 0051, blocks 0047) |
 | TASK-0047 | Facet de dois silos A→B (tests-only): contrato §7 itens 1–9, 14, 15 | `backend/tests/Squid.Tests/Federation/**` | no (serial) |
 | TASK-0048 | **Runbook pedido pelo humano**: `docs/runbooks/federacao-interop.md` (dois silos + Mastodon/Friendica em Docker + validação) + `peer-entrega-travada`/`dlq-cheia` EXECUTÁVEIS + índice | `docs/runbooks/**` | no (serial, blockedBy 0047) |
 | TASK-0049 | Interop real Mastodon/Friendica + facet de fecho do DoD (SC-016, §7 itens 11–13) — **gate humano** (pares reais, execução conjunta) | `backend/tests/Squid.Tests/Federation/**`, correções mínimas provadas por log real (`Squid.Protocols`, `Squid.Api/Federation`, `Squid.Grains`), `docs/runbooks/federacao-interop.md` | no (serial; última) |
@@ -173,11 +175,10 @@ reais exibem o post público e nenhuma entrega falha por assinatura. Spec:
 ## Current state
 
 - phase: **P-06 (Federação) OPEN** (aberta 2026-11-13 13:47:25) — 10 entregas cortadas de
-  SPEC-0011 (`TASK-0041..TASK-0050`; a 0050 nasceu 22:45:47 do parked SSRF da 0044), **7/10
-  DONE** (0041..0046+0050 com QA PASSED na 1ª tentativa; gates 484 → 559), D-01 fechada por gate
-  humano (21:23:34, só destino nomeado). **Em aberto**: gate humano sobre a assinatura de
-  atores registrados (RK por ator × `Squid:RecoveryKey` — resposta vira TASK-0051 antes da
-  0047). P-05 fechou em 2026-11-12 12:46:09 (8/8, gate 480/480, snapshot `0006-plan.md`); a
+  SPEC-0011 (`TASK-0041..TASK-0052`; 0050 nasceu 22:45:47 do parked SSRF da 0044, 0051 nasceu
+  2026-11-14 09:10:08 do gate humano GAP-50, 0052 do defeito S-41 provado na 0051), **7/12
+  DONE** (0041..0046+0050 com QA PASSED na 1ª tentativa; gates 484 → 559), D-01 fechada por gate humano (21:23:34, só destino nomeado).
+  **GAP-50 resolvido** (2026-11-14 09:10:08, opção 1 = duplo embrulho → TASK-0051 cortada). P-05 fechou em 2026-11-12 12:46:09 (8/8, gate 480/480, snapshot `0006-plan.md`); a
   partir do fecho de cada fase o **código é a fonte real** daquela fase (divergência =
   `[DIVERGENCIA]`, código vence); P-01 fecha no 0002, P-02 no 0003, P-03 no 0004, P-04 no
   0005, P-05 no 0006.
@@ -185,12 +186,11 @@ reais exibem o post público e nenhuma entrega falha por assinatura. Spec:
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **PARADO esperando o gate humano da TASK-0051** (assinatura de ator registrado —
-  pergunta feita na sessão: 1 = duplo embrulho da RSA com `Squid:RecoveryKey` × 2 = embrulho da
-  RK do ator). Respondida a pergunta: 0051 → **0047 (dois silos) → 0048 (runbook/manual) → 0049
-  (interop real, gate humano com pares Docker locais)**. Nada de deploy (nenhum push é meu de
-  fazer — a CI só roda pós-push, gate humano; último run verde 98/98 de 07/11, anterior às
-  P-04..P-06 — considere um push para revalidar a CI: gate local está em 559/559).
+- nextAction: **QA-0051 em curso** (duplo embrulho); fila: **0052 (PEM blindado) → 0047 (dois
+  silos) → 0048 (runbook/manual) → 0049 (interop real, gate humano com pares Docker locais)**.
+  Nada de deploy (nenhum push é meu de fazer — a CI só roda pós-push, gate humano; último run
+  verde 98/98 de 07/11, anterior às P-04..P-06 — considere um push para revalidar a CI: gate
+  local está em 573/573).
 - **Git a partir da P-05 (gate PHASE 2026-11-11 20:42:28, modelo C)**: branch por task
   `task/TASK-NNNN-<slug>` desde `develop`; DEV commita ao fim da entrega, QA commita no PASSED,
   ODEV mergeia em `develop` no `DONE` e commita docs; push/force/`main`/apagar branch =
@@ -280,3 +280,4 @@ nomes** — nenhum arquivo deles é copiado, nem como trecho.
 | 2026-11-13 11:48:04 | Abertura da P-06 (entrevista rodada 1): escopo = **Sprint 5 inteiro** (8 itens + DoD, default aceito); **GAP-09 = `Squid:RecoveryKey` em segredo de ambiente no boot**, desembrulho da chave do ator só em memória no `ActorGrain`, sem rota de reidratação, kit = único caminho de recuperação, **produção = gate humano** para injetar o segredo; **interop real Mastodon/Friendica dentro da fase** como fecho + **manual** para subir as instâncias locais e fazer a comunicação real = entregável pedido pelo humano | PHASE | Henrique |
 | 2026-11-13 13:31:11 | Abertura da P-06 (entrevista rodada 2, "concordo com as sugestões dadas"): **`I-11` entra** na fase como entrega cedo (`Instance:Domain` + `ForwardedHeaders`); **manual = runbook próprio** `docs/runbooks/federacao-interop.md` + índice, escrito **antes** da validação de interop; **pares reais em Docker local** (Mastodon + Friendica na máquina do humano, sem exposição à internet) com seção opcional "instância pública real" no runbook | PHASE | Henrique |
 | 2026-11-13 21:23:34 | **D-01 da TASK-0044 (gate humano)**: destino de um `Create` remoto = **só destino nomeado** — inbox `/c/{slug}`, ou `squid:slug`/caminho `/c/{slug}` em `audience`/`to`/`cc`/`inReplyTo`; sem destino → `202` sem aplicar; fallback de membria (menor slug) **rejeitado**; a saída da TASK-0045 nomeia o destino (`audience` + `squid:slug`) — SPEC-0011 §E e AC-01/GAP-48 da TASK-0045 emendados, contrato não muda | TASK | Henrique |
+| 2026-11-14 09:10:08 | **GAP-50 da P-06 (gate humano, opção 1 — "seguir com 1")**: **duplo embrulho** — o registro embrulha a mesma RSA do ator também com a `Squid:RecoveryKey` de instância e guarda a cópia em tabela própria `0009_*`; runtime desembrulha com o segredo de boot e assina **sempre com a chave do ator** (contrato §5); kit/GAP-01 intactos; **atores registrados antes da config não federam** (limite aceito); alternativa 2 (embrulhar a RK do ator) rejeitada por privilégio mínimo — SPEC-0011 §B emendada, TASK-0051 cortada e colocada antes da 0047 | TASK | Henrique |
