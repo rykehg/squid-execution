@@ -1,0 +1,58 @@
+CHECK BASELINE-HEAD OK - baseline HEAD = 92db2c7
+CHECK BASELINE-BRANCH OK - branch task/TASK-0044-inbox-verificacao-e-aplicacao
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado na baseline (suite Linux = unverified)
+CHECK COMMIT-TOUCHES OK - 92db2c7: 24 arquivos, todos nos touches (produto + testes)
+CHECK BASELINE-FILTER OK - 20261113-225032-test-filter.log exit 0 / 24 de 24 (antes de qualquer escrita da QA)
+CHECK QA-TEST-FILTER OK - 20261113-225836-test-filter.log exit 0 / 26 de 26 (2 testes novos da QA executados)
+CHECK VERIFY-RUN OK - QA-0044-verify.log VERIFY total=20 bad=0
+CHECK VERIFY-HITS OK - 20/20 padroes hits=1 + ASCII do driver OK
+CHECK GATE-EXIT OK - 20261113-233508-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - Com falha 0 / Aprovado 529 / Total 529 (527 do DEV + 2 da QA)
+CHECK GATE-AGE OK - 20261113-233508-test-gate.log criado depois do GREEN 20261113-232748-test-filter.log
+CHECK MUT-IDS OK - T1..T20 (20 ciclos) todos com linha PRE
+CHECK MUT-HEAD-MATCH OK - 20/20 PRE com hash = blob do commit 92db2c7 (head-match=true)
+CHECK MUT-RED OK - T1..T20 todos vermelhos DENTRO do log (logExit: 1, falha >= 1)
+CHECK CATCH-T1 OK - RED-AC contem: A_remote_create_with_valid_headers_becomes_a_post_in_the_named_container
+CHECK CATCH-T2 OK - RED-AC contem: The_same_activity_id_delivered_twice_is_accepted_without_reprocessing
+CHECK CATCH-T3 OK - RED-AC contem: The_contract_order_refuses_each_step_with_the_state_intact
+CHECK CATCH-T4 OK - RED-AC contem: The_contract_order_refuses_each_step_with_the_state_intact
+CHECK CATCH-T5 OK - RED-AC contem: The_contract_order_refuses_each_step_with_the_state_intact
+CHECK CATCH-T6 OK - RED-AC contem: The_contract_order_refuses_each_step_with_the_state_intact
+CHECK CATCH-T7 OK - RED-AC contem: Over_the_per_domain_quota_the_inbox_answers_429_with_retry_after
+CHECK CATCH-T8 OK - RED-AC contem: The_default_quota_is_sixty_per_domain_without_configuration
+CHECK CATCH-T9 OK - RED-AC contem: A_follow_creates_the_relation_answers_accept_and_undo_removes_it
+CHECK CATCH-T10 OK - RED-AC contem: A_follow_creates_the_relation_answers_accept_and_undo_removes_it
+CHECK CATCH-T11 OK - RED-AC contem: A_follow_creates_the_relation_answers_accept_and_undo_removes_it
+CHECK CATCH-T12 OK - RED-AC contem: A_remote_delete_tombstones_the_post_and_it_leaves_the_feed
+CHECK CATCH-T13 OK - RED-AC contem: The_same_actor_liking_twice_keeps_the_count_at_one
+CHECK CATCH-T14 OK - RED-AC contem: A_flag_files_one_denunciation_and_a_repeat_files_no_second
+CHECK CATCH-T15 OK - RED-AC contem: A_members_only_create_applies_for_a_member_and_not_for_a_stranger
+CHECK CATCH-T16 OK - RED-AC contem: A_private_create_is_never_applied
+CHECK CATCH-T17 OK - RED-AC contem: An_unknown_type_is_accepted_and_counted_by_the_metric
+CHECK CATCH-T18 OK - RED-AC contem: Remote_attachments_are_verified_by_sha256_and_a_failed_one_stays_absent
+CHECK CATCH-T19 OK - RED-AC contem: The_production_media_client_never_touches_a_blocked_address
+CHECK CATCH-T20 OK - RED-AC contem: A_create_without_any_named_destination_is_accepted_without_applying
+CHECK MUT-EXPECT OK - 20/20 EXPECT-OK e nenhum EXPECT-MISS
+CHECK MUT-TOOLING OK - nenhum TOOLING-FAIL ou BUILD-FAIL (todo vermelho e falha de produto)
+CHECK MUT-RESTORE OK - RESTORE-OK = 20 (esperado >= 20: vinte ciclos can-fail)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 26/26 sobre as fontes restauradas (wrapper=0 logExit=0 aprovado=26 falha=0)
+CHECK MUT-SUMMARY OK - SUMMARY cycles=20 failed=0 residue-backend=0
+CHECK MUT-UNTRACKED OK - UNTRACKED backend=1 (so o teste novo da QA)
+CHECK RESIDUE OK - tokens mutantes em backend/src+tests (.cs, fora de bin/obj) = 0
+CHECK TEMP-BACKUPS OK - backups qa0044-* no TEMP = 0
+CHECK GIT-BACKEND OK - git status backend = 1 entradas (esperado 1: so ?? backend/tests/Squid.Tests/Federation/QaTask0044InboxGapTests.cs)
+CHECK TEST-AC OK - InboxReceiveTests: 14 [Fact] marcados // AC-01..// AC-07 + // D-01
+CHECK TEST-AC04 OK - InboxRateLimitTests: 1 [Fact] marcado // AC-04
+CHECK TEST-QA OK - QaTask0044InboxGapTests: 2 [Fact] marcados // AC-03 (assinatura forjada) e // AC-04 (padrao 60)
+CHECK WIRE-ORDER OK - ordem 1 assinatura -> 5 taxa -> 6 janela no InboxPipeline.ReceiveAsync
+CHECK WIRE-DESTINATIONS OK - guarda de destino nomeado (D-01) e gate membersOnly presentes no produto
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 7/7 arquivos de produto mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = os 7 arquivos mutados/restaurados + o teste novo da QA (8)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo mutante = 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum arquivo fora dos touches alterado
+CHECK SCOPE-GIT-SCOPE OK - git status backend = 1 entrada (so o teste novo da QA, dentro dos touches)
+CHECK SDD-STATE OK - check: OK - log entries 32, evidence rows 9
+CHECK QA-DOC OK - QA-0044-inbox-verificacao-e-aplicacao.md com verdict PASSED
+CHECK QA-DOC-ACS OK - AC-01..AC-08 presentes na tabela do doc
+SUMMARY total=57 fails=0

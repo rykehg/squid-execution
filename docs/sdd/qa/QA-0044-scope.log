@@ -1,0 +1,41 @@
+baseline=2026-11-13 22:50:32 (20261113-225032-test-filter.log)
+blob work=8a53079354b4dd58a75494c5a2c26b34cc310976 head=8a53079354b4dd58a75494c5a2c26b34cc310976 match=True file=backend\src\Squid.Service\InboxPipeline.cs
+blob work=6c689763d465fbb90bc1bc7cbe71a39d5d09dd76 head=6c689763d465fbb90bc1bc7cbe71a39d5d09dd76 match=True file=backend\src\Squid.Service\FederationRateLimiter.cs
+blob work=fe22b3831862db28db501dade1076a7942c21537 head=fe22b3831862db28db501dade1076a7942c21537 match=True file=backend\src\Squid.Service\SqliteLikeStore.cs
+blob work=cec239536717d750d69cee4a7bc9ce899ad02b70 head=cec239536717d750d69cee4a7bc9ce899ad02b70 match=True file=backend\src\Squid.Api\Federation\FederationEndpoints.cs
+blob work=f64ea3e2f1eddfb50d45cbc49068960aece42387 head=f64ea3e2f1eddfb50d45cbc49068960aece42387 match=True file=backend\src\Squid.Api\Posts\RemoteActivities.cs
+blob work=dd25cb7d1cfc8d72139662303042af927b2806fa head=dd25cb7d1cfc8d72139662303042af927b2806fa match=True file=backend\src\Squid.Api\Posts\RemoteMediaClient.cs
+blob work=684ee617070ce23aa824cb074f205f86e9060819 head=684ee617070ce23aa824cb074f205f86e9060819 match=True file=backend\src\Squid.Service\SqliteInboxWindowStore.cs
+mtime backend\src\Squid.Api\Federation\FederationEndpoints.cs = 23:18:54
+mtime backend\src\Squid.Api\Posts\RemoteActivities.cs = 23:26:02
+mtime backend\src\Squid.Api\Posts\RemoteMediaClient.cs = 23:26:37
+mtime backend\src\Squid.Service\FederationRateLimiter.cs = 23:20:08
+mtime backend\src\Squid.Service\InboxPipeline.cs = 23:27:14
+mtime backend\src\Squid.Service\SqliteInboxWindowStore.cs = 23:01:43
+mtime backend\src\Squid.Service\SqliteLikeStore.cs = 23:23:05
+mtime backend\tests\Squid.Tests\Federation\QaTask0044InboxGapTests.cs = 22:57:39
+mtime-count=8 (esperado 8: 7 mutados/restaurados + QaTask0044InboxGapTests.cs)
+residue=0 (tokens=18, backend .cs fora de bin/obj)
+git-backend-entries=1
+git-backend ?? backend/tests/Squid.Tests/Federation/QaTask0044InboxGapTests.cs
+git-all [baseline-odev-wip]  M docs/sdd/ideas/BACKLOG.md
+git-all [baseline-odev-wip]  M docs/sdd/plan/plan.md
+git-all [baseline-odev-wip]  M docs/sdd/specs/SPEC-0011-federacao-p06.md
+git-all [baseline-odev-wip]  M docs/sdd/tasks/TASK-0044-inbox-verificacao-e-aplicacao.md
+git-all [baseline-odev-wip]  M docs/sdd/tasks/TASK-0045-saida-fan-out-e-follow.md
+git-all [touches] ?? backend/tests/Squid.Tests/Federation/QaTask0044InboxGapTests.cs
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0044-check-sh.log
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0044-check.log
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0044-git-baseline.txt
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0044-inbox-verificacao-e-aplicacao.md
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0044-mutations-run1.log
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0044-mutations.log
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0044-scope.log
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0044-verify.log
+git-all [qa-artifact] ?? docs/sdd/qa/qa-check-task-0044.ps1
+git-all [qa-artifact] ?? docs/sdd/qa/qa-check-task-0044.sh
+git-all [qa-artifact] ?? docs/sdd/qa/qa-mutate-task-0044.ps1
+git-all [qa-artifact] ?? docs/sdd/qa/qa-scope-task-0044.ps1
+git-all [baseline-odev-wip] ?? docs/sdd/tasks/TASK-0050-pares-confiaveis-ssrf.md
+fora-dos-touches=0 (0 = so touches, wip do ODEV da baseline e artefatos desta QA)
+baseline-odev-wip-count=6 (esperado 6)

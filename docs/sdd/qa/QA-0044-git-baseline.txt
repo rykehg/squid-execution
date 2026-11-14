@@ -1,0 +1,64 @@
+HEAD: 92db2c7413c3a1a4c92c63b09bbbffe0c7dbba1a
+branch: task/TASK-0044-inbox-verificacao-e-aplicacao
+--- status ---
+ M docs/sdd/ideas/BACKLOG.md
+ M docs/sdd/plan/plan.md
+ M docs/sdd/specs/SPEC-0011-federacao-p06.md
+ M docs/sdd/tasks/TASK-0044-inbox-verificacao-e-aplicacao.md
+ M docs/sdd/tasks/TASK-0045-saida-fan-out-e-follow.md
+?? docs/sdd/tasks/TASK-0050-pares-confiaveis-ssrf.md
+--- commit stat ---
+92db2c7 TASK-0044: inbox de entrada - ordem do contrato 3 (assinatura, digest, data, 1 MB, taxa por dominio, dedupe no InboxGrain, remetente), Create remoto so com destino nomeado (D-01) e aplicacao de Create/Follow/Accept/Undo/Delete/Like/Flag
+ .../Squid.Api/Federation/FederationEndpoints.cs    | 132 ++--
+ .../src/Squid.Api/Federation/FederationSeams.cs    |  15 +-
+ backend/src/Squid.Api/Federation/IFollowStore.cs   |  43 ++
+ backend/src/Squid.Api/Federation/IInboxPipeline.cs |  74 +++
+ backend/src/Squid.Api/Posts/ILikeStore.cs          |  20 +
+ backend/src/Squid.Api/Posts/RemoteActivities.cs    | 234 ++++++++
+ backend/src/Squid.Api/Posts/RemoteMediaClient.cs   | 128 ++++
+ backend/src/Squid.Api/Posts/StreamEndpoints.cs     |  10 +-
+ .../src/Squid.Grains/Inbox/IInboxWindowStore.cs    |  16 +
+ backend/src/Squid.Grains/Inbox/InboxGrain.cs       |  29 +
+ .../Squid.Protocols/ActivityPub/ActivityJsonLd.cs  | 295 +++++++++
+ .../Squid.Protocols/ActivityPub/ProfileJsonLd.cs   |  53 ++
+ backend/src/Squid.Service/FederationMetrics.cs     |  27 +
+ backend/src/Squid.Service/FederationRateLimiter.cs |  78 +++
+ .../src/Squid.Service/HttpFederatedActorClient.cs  | 245 ++++++++
+ backend/src/Squid.Service/InboxPipeline.cs         | 525 ++++++++++++++++
+ backend/src/Squid.Service/InboxSignatureGate.cs    | 120 ++--
+ backend/src/Squid.Service/SqliteFollowStore.cs     | 172 ++++++
+ .../src/Squid.Service/SqliteInboxWindowStore.cs    |  71 +++
+ backend/src/Squid.Service/SqliteLikeStore.cs       |  86 +++
+ backend/src/Squid.Service/SquidServiceHost.cs      |  29 +-
+ backend/tests/Squid.Tests/Federation/InboxHost.cs  | 236 ++++++++
+ .../Squid.Tests/Federation/InboxRateLimitTests.cs  |  57 ++
+ .../Squid.Tests/Federation/InboxReceiveTests.cs    | 664 +++++++++++++++++++++
+ 24 files changed, 3222 insertions(+), 137 deletions(-)
+--- commit files ---
+backend/src/Squid.Api/Federation/FederationEndpoints.cs
+backend/src/Squid.Api/Federation/FederationSeams.cs
+backend/src/Squid.Api/Federation/IFollowStore.cs
+backend/src/Squid.Api/Federation/IInboxPipeline.cs
+backend/src/Squid.Api/Posts/ILikeStore.cs
+backend/src/Squid.Api/Posts/RemoteActivities.cs
+backend/src/Squid.Api/Posts/RemoteMediaClient.cs
+backend/src/Squid.Api/Posts/StreamEndpoints.cs
+backend/src/Squid.Grains/Inbox/IInboxWindowStore.cs
+backend/src/Squid.Grains/Inbox/InboxGrain.cs
+backend/src/Squid.Protocols/ActivityPub/ActivityJsonLd.cs
+backend/src/Squid.Protocols/ActivityPub/ProfileJsonLd.cs
+backend/src/Squid.Service/FederationMetrics.cs
+backend/src/Squid.Service/FederationRateLimiter.cs
+backend/src/Squid.Service/HttpFederatedActorClient.cs
+backend/src/Squid.Service/InboxPipeline.cs
+backend/src/Squid.Service/InboxSignatureGate.cs
+backend/src/Squid.Service/SqliteFollowStore.cs
+backend/src/Squid.Service/SqliteInboxWindowStore.cs
+backend/src/Squid.Service/SqliteLikeStore.cs
+backend/src/Squid.Service/SquidServiceHost.cs
+backend/tests/Squid.Tests/Federation/InboxHost.cs
+backend/tests/Squid.Tests/Federation/InboxRateLimitTests.cs
+backend/tests/Squid.Tests/Federation/InboxReceiveTests.cs
+--- wsl probes ---
+wsl command -v dotnet => [] exit=1
+wsl command -v git => [/usr/sbin/git] exit=0

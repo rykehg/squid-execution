@@ -1,0 +1,22 @@
+VERIFY T1 ac=AC-01 hits=1 ok=true
+VERIFY T2 ac=AC-02 hits=1 ok=true
+VERIFY T3 ac=AC-03 hits=1 ok=true
+VERIFY T4 ac=AC-03 hits=1 ok=true
+VERIFY T5 ac=AC-03 hits=1 ok=true
+VERIFY T6 ac=AC-03 hits=1 ok=true
+VERIFY T7 ac=AC-04 hits=1 ok=true
+VERIFY T8 ac=AC-04 hits=1 ok=true
+VERIFY T9 ac=AC-05 hits=1 ok=true
+VERIFY T10 ac=AC-05 hits=1 ok=true
+VERIFY T11 ac=AC-05 hits=1 ok=true
+VERIFY T12 ac=AC-05 hits=1 ok=true
+VERIFY T13 ac=AC-05 hits=1 ok=true
+VERIFY T14 ac=AC-05 hits=1 ok=true
+VERIFY T15 ac=AC-06 hits=1 ok=true
+VERIFY T16 ac=AC-06 hits=1 ok=true
+VERIFY T17 ac=AC-06 hits=1 ok=true
+VERIFY T18 ac=AC-07 hits=1 ok=true
+VERIFY T19 ac=AC-07 hits=1 ok=true
+VERIFY T20 ac=D-01 hits=1 ok=true
+VERIFY-ASCII non-ascii-bytes=0 ok=true
+VERIFY total=20 bad=0
