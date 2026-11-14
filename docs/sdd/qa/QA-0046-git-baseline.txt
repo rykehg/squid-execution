@@ -1,0 +1,30 @@
+--- git baseline (QA-0046, before any QA writing) ---
+HEAD: 61c12cecc1e6b14e370b6a861122595a2e021348
+branch: task/TASK-0046-peer-grain-fila-e-dlq
+--- status (porcelain -uall) ---
+ M docs/sdd/tasks/TASK-0046-peer-grain-fila-e-dlq.md
+--- commit files (HEAD) ---
+backend/src/Squid.Grains/Peers/IPeerStateStore.cs
+backend/src/Squid.Grains/Peers/PeerGrain.cs
+backend/src/Squid.Grains/Peers/PeerState.cs
+backend/src/Squid.PeerClient/PeerScenarioServer.cs
+backend/src/Squid.PeerClient/Program.cs
+backend/src/Squid.ReadModels/Federation/SqlitePeerQueue.cs
+backend/src/Squid.Service/FederationMetrics.cs
+backend/src/Squid.Service/FederationTrace.cs
+backend/src/Squid.Service/HttpPeerSender.cs
+backend/src/Squid.Service/IPeerStatusSender.cs
+backend/src/Squid.Service/OutboundPipeline.cs
+backend/src/Squid.Service/PeerDeliveryPump.cs
+backend/src/Squid.Service/SqlitePeerStateStore.cs
+backend/src/Squid.Service/SquidServiceHost.cs
+backend/tests/Squid.Tests/Containers/SuccessionHost.cs
+backend/tests/Squid.Tests/Federation/InboxHost.cs
+backend/tests/Squid.Tests/Federation/PeerDeliveryMotorTests.cs
+backend/tests/Squid.Tests/Federation/PeerGrainTests.cs
+--- touches of TASK-0046 ---
+backend/src/Squid.Grains/Peers/** backend/src/Squid.PeerClient/** backend/src/Squid.Service/** backend/src/Squid.ReadModels/** backend/tests/Squid.Tests/**
+--- platform probes (linux twin) ---
+wsl dotnet: [] exit=1
+wsl git: [/usr/sbin/git] exit=0
+powershell edition: Desktop 5.1.26100.9818

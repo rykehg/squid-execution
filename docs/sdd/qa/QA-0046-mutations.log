@@ -1,0 +1,73 @@
+T1 PRE at=031519 ac=AC-01 hash=ac98c6955fbf057fa68df26a3463add977fa442a head-match=true find-hits=1
+T1 RUN wrapper=1 logExit=1 aprovado=47 falha=4 total=0 log=20261114-031616-test-filter.log
+T1 RED-AC Squid.Tests.Federation.PeerDeliveryMotorTests.Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac01_a_500_goes_back_to_pending_with_attempts_and_a_growing_backoff; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac05_the_slow_scenario_loses_to_the_send_budget; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac05_the_timeout_scenario_fails_the_send_and_keeps_the_row_scheduled
+T1 EXPECT-OK expect=Ac01_a_500_goes_back_to_pending_with_attempts_and_a_growing_backoff; Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert
+T1 RESTORE-OK hash=PRE residue=0
+T2 PRE at=031617 ac=AC-01 hash=49d0bd8e7d09ab11e700e6c415fd0b3c41275f3f head-match=true find-hits=1
+T2 RUN wrapper=1 logExit=1 aprovado=49 falha=2 total=0 log=20261114-031708-test-filter.log
+T2 RED-AC Squid.Tests.Federation.PeerGrainTests.Backoff_doubles_with_jitter_and_hits_the_six_hour_ceiling_exactly; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac01_a_500_goes_back_to_pending_with_attempts_and_a_growing_backoff
+T2 EXPECT-OK expect=Ac01_a_500_goes_back_to_pending_with_attempts_and_a_growing_backoff; Backoff_doubles_with_jitter_and_hits_the_six_hour_ceiling_exactly
+T2 RESTORE-OK hash=PRE residue=0
+T3 PRE at=031709 ac=AC-02 hash=49d0bd8e7d09ab11e700e6c415fd0b3c41275f3f head-match=true find-hits=1
+T3 RUN wrapper=1 logExit=1 aprovado=50 falha=1 total=0 log=20261114-031803-test-filter.log
+T3 RED-AC Squid.Tests.Federation.PeerDeliveryMotorTests.Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert
+T3 EXPECT-OK expect=Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert
+T3 RESTORE-OK hash=PRE residue=0
+T4 PRE at=031804 ac=AC-02 hash=ac98c6955fbf057fa68df26a3463add977fa442a head-match=true find-hits=1
+T4 RUN wrapper=1 logExit=1 aprovado=50 falha=1 total=0 log=20261114-031857-test-filter.log
+T4 RED-AC Squid.Tests.Federation.PeerDeliveryMotorTests.Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert
+T4 EXPECT-OK expect=Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert
+T4 RESTORE-OK hash=PRE residue=0
+T5 PRE at=031858 ac=AC-02 hash=73947667668ad56ad26ec0d7361cde274992cef5 head-match=true find-hits=1
+T5 RUN wrapper=1 logExit=1 aprovado=50 falha=1 total=0 log=20261114-031945-test-filter.log
+T5 RED-AC Squid.Tests.Federation.PeerDeliveryMotorTests.Ac02_a_permanent_404_dead_letters_the_delivery_on_the_first_attempt
+T5 EXPECT-OK expect=Ac02_a_permanent_404_dead_letters_the_delivery_on_the_first_attempt
+T5 RESTORE-OK hash=PRE residue=0
+T6 PRE at=031946 ac=AC-02 hash=73947667668ad56ad26ec0d7361cde274992cef5 head-match=true find-hits=1
+T6 RUN wrapper=1 logExit=1 aprovado=49 falha=2 total=0 log=20261114-032034-test-filter.log
+T6 RED-AC Squid.Tests.Federation.PeerDeliveryMotorTests.Ac02_a_401_is_dead_lettered_as_signature_rejected; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac02_a_permanent_404_dead_letters_the_delivery_on_the_first_attempt
+T6 EXPECT-OK expect=Ac02_a_permanent_404_dead_letters_the_delivery_on_the_first_attempt; Ac02_a_401_is_dead_lettered_as_signature_rejected
+T6 RESTORE-OK hash=PRE residue=0
+T7 PRE at=032034 ac=AC-03 hash=49d0bd8e7d09ab11e700e6c415fd0b3c41275f3f head-match=true find-hits=1
+T7 RUN wrapper=1 logExit=1 aprovado=49 falha=2 total=0 log=20261114-032123-test-filter.log
+T7 RED-AC Squid.Tests.Federation.PeerGrainTests.An_open_circuit_defers_to_its_window_and_a_success_heals_the_peer; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac03_an_open_circuit_pushes_a_new_delivery_straight_to_pending
+T7 EXPECT-OK expect=Ac03_an_open_circuit_pushes_a_new_delivery_straight_to_pending; An_open_circuit_defers_to_its_window_and_a_success_heals_the_peer
+T7 RESTORE-OK hash=PRE residue=0
+T8 PRE at=032123 ac=AC-03 hash=49d0bd8e7d09ab11e700e6c415fd0b3c41275f3f head-match=true find-hits=1
+T8 RUN wrapper=1 logExit=1 aprovado=50 falha=1 total=0 log=20261114-032210-test-filter.log
+T8 RED-AC Squid.Tests.Federation.PeerGrainTests.Backoff_doubles_with_jitter_and_hits_the_six_hour_ceiling_exactly
+T8 EXPECT-OK expect=Backoff_doubles_with_jitter_and_hits_the_six_hour_ceiling_exactly
+T8 RESTORE-OK hash=PRE residue=0
+T9 PRE at=032211 ac=AC-04 hash=49d0bd8e7d09ab11e700e6c415fd0b3c41275f3f head-match=true find-hits=1
+T9 RUN wrapper=1 logExit=1 aprovado=49 falha=2 total=0 log=20261114-032258-test-filter.log
+T9 RED-AC Squid.Tests.Federation.PeerGrainTests.A_blocked_pair_is_never_admitted; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac04_a_blocked_peer_receives_nothing
+T9 EXPECT-OK expect=Ac04_a_blocked_peer_receives_nothing; A_blocked_pair_is_never_admitted
+T9 RESTORE-OK hash=PRE residue=0
+T10 PRE at=032258 ac=AC-04 hash=49d0bd8e7d09ab11e700e6c415fd0b3c41275f3f head-match=true find-hits=1
+T10 RUN wrapper=1 logExit=1 aprovado=49 falha=2 total=0 log=20261114-032350-test-filter.log
+T10 RED-AC Squid.Tests.Federation.PeerGrainTests.The_per_pair_rate_limit_admits_only_the_quota_inside_one_minute; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac04_the_per_pair_rate_limit_decides_who_leaves
+T10 EXPECT-OK expect=Ac04_the_per_pair_rate_limit_decides_who_leaves; The_per_pair_rate_limit_admits_only_the_quota_inside_one_minute
+T10 RESTORE-OK hash=PRE residue=0
+T11 PRE at=032350 ac=AC-05 hash=7b7112dff384c76c343659ef943c67241e6d85cb head-match=true find-hits=1
+T11 RUN wrapper=1 logExit=1 aprovado=48 falha=3 total=0 log=20261114-032448-test-filter.log
+T11 RED-AC Squid.Tests.Federation.PeerDeliveryMotorTests.Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac01_a_500_goes_back_to_pending_with_attempts_and_a_growing_backoff; Squid.Tests.Federation.PeerDeliveryMotorTests.Ac03_an_open_circuit_pushes_a_new_delivery_straight_to_pending
+T11 EXPECT-OK expect=Ac01_a_500_goes_back_to_pending_with_attempts_and_a_growing_backoff; Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert
+T11 RESTORE-OK hash=PRE residue=0
+T12 PRE at=032449 ac=AC-05 hash=7b7112dff384c76c343659ef943c67241e6d85cb head-match=true find-hits=1
+T12 RUN wrapper=1 logExit=1 aprovado=50 falha=1 total=0 log=20261114-032550-test-filter.log
+T12 RED-AC Squid.Tests.Federation.PeerDeliveryMotorTests.Ac05_the_timeout_scenario_fails_the_send_and_keeps_the_row_scheduled
+T12 EXPECT-OK expect=Ac05_the_timeout_scenario_fails_the_send_and_keeps_the_row_scheduled
+T12 RESTORE-OK hash=PRE residue=0
+T13 PRE at=032551 ac=AC-05 hash=7b7112dff384c76c343659ef943c67241e6d85cb head-match=true find-hits=1
+T13 RUN wrapper=1 logExit=1 aprovado=50 falha=1 total=0 log=20261114-032639-test-filter.log
+T13 RED-AC Squid.Tests.Federation.PeerDeliveryMotorTests.Ac05_the_slow_scenario_loses_to_the_send_budget
+T13 EXPECT-OK expect=Ac05_the_slow_scenario_loses_to_the_send_budget
+T13 RESTORE-OK hash=PRE residue=0
+T14 PRE at=032639 ac=AC-06 hash=73947667668ad56ad26ec0d7361cde274992cef5 head-match=true find-hits=1
+T14 RUN wrapper=1 logExit=1 aprovado=50 falha=1 total=0 log=20261114-032728-test-filter.log
+T14 RED-AC Squid.Tests.Federation.PeerDeliveryMotorTests.Ac06_every_send_carries_the_peer_domain_trace_attribute_without_pii
+T14 EXPECT-OK expect=Ac06_every_send_carries_the_peer_domain_trace_attribute_without_pii
+T14 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=51 falha=0 log=20261114-032817-test-filter.log
+UNTRACKED backend=0 (esperado 0: a QA nao acrescentou arquivos em backend)
+SUMMARY cycles=14 failed=0 residue-backend=0 temp-backups=0 elapsed-s=778
