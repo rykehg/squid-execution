@@ -1,0 +1,8 @@
+probe: task=QA-0046 ac=AC-05 project=C:\dev\squid-squad-net\squid-execution\backend\src\Squid.PeerClient
+CHECK HELP-EXIT OK - dotnet run -- --help exit=0
+CHECK HELP-TOKENS OK - usage declara os cenarios 500/timeout/slow: usage: Squid.PeerClient --scenario=ok|500|401|404|timeout|slow [--delay=3000] [--help]
+CHECK SCENARIO-500 OK - porta 53197: http=500 curl-exit=0 elapsed=84ms
+CHECK SCENARIO-TIMEOUT FAIL - porta 53197: curl-exit=0 (28 = tempo esgotado sem resposta) http=500 elapsed=56ms
+CHECK SCENARIO-SLOW FAIL - porta 53197: http=500 elapsed=45ms (esperado >= 1200 pelo --delay=1500)
+CLEANUP processos-ancora restantes=0 stray-app=0 temporarios=0
+SUMMARY checks=5 fails=2

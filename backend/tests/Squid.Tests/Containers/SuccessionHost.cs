@@ -12,8 +12,11 @@ public sealed class FakeClock : TimeProvider
 
     public override DateTimeOffset GetUtcNow() => _now;
 
+    /// <summary>Moves the clock forward by any span — the minutes of a backoff window, the seconds of a rate window.</summary>
+    public void Advance(TimeSpan by) => _now += by;
+
     /// <summary>Moves the clock forward: the 90 days of succession and the 30 of grace, instantly.</summary>
-    public void AdvanceDays(int days) => _now += TimeSpan.FromDays(days);
+    public void AdvanceDays(int days) => Advance(TimeSpan.FromDays(days));
 }
 
 /// <summary>

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,8 +27,10 @@ using Squid.Api.Threads;
 using Squid.Domain;
 using Squid.Grains.Actors;
 using Squid.Grains.Inbox;
+using Squid.Grains.Peers;
 using Squid.Persistence;
 using Squid.Protocols.ActivityPub;
+using Squid.ReadModels.Federation;
 using Squid.ReadModels.Projections;
 using Squid.ReadModels.Quota;
 
@@ -73,6 +76,8 @@ public static class SquidServiceHost
             Environment.GetEnvironmentVariable(OtlpEndpoint.EnvironmentVariable)));
         builder.Services.AddOpenTelemetry().WithTracing(tracing => tracing
             .AddAspNetCoreInstrumentation()
+            // The outbound federation spans of SPEC-0011 (SC-015): every send carries peer.domain.
+            .AddSource(FederationTrace.SourceName)
             .AddProcessor(serviceProvider =>
             {
                 var exporter = new OtlpTraceExporter(new OtlpExporterOptions { Endpoint = otlpEndpoint });
@@ -211,6 +216,34 @@ public static class SquidServiceHost
         builder.Services.AddSingleton<IPeerDeliveryStore>(_ => new SqlitePeerDeliveryStore(connectionString));
         builder.Services.AddSingleton<IPeerSender, HttpPeerSender>();
         builder.Services.AddTransient<IOutboundPipeline, OutboundPipeline>();
+
+        // Delivery motor (SPEC-0011 section G, TASK-0046): the peer row of data-model §2.9 behind
+        // its own port, the grain that decides whether a domain may be spoken to (circuit,
+        // blocked pair, per-pair quota), the queue/DLQ reader the pass selects from, and the pump
+        // itself. The hosted loop honours Federation:DeliveryPumpSeconds (default 1 s; <= 0 keeps
+        // the pump registered but idle, which is how a suite drives RunOnceAsync by hand). All
+        // registered BEFORE the test seam below, so a configure callback can still replace the
+        // clock every decision reads (GAP-17).
+        builder.Services.AddSingleton<IPeerStateStore>(_ => new SqlitePeerStateStore(connectionString));
+        builder.Services.AddSingleton<PeerGrain>();
+        builder.Services.AddSingleton(_ => new SqlitePeerQueue(connectionString));
+        var pumpSeconds = 1d;
+        if (double.TryParse(
+                configuration["Federation:DeliveryPumpSeconds"], NumberStyles.Float,
+                CultureInfo.InvariantCulture, out var configuredPumpSeconds))
+        {
+            pumpSeconds = configuredPumpSeconds;
+        }
+
+        builder.Services.AddSingleton(provider => new PeerDeliveryPump(
+            provider.GetRequiredService<SqlitePeerQueue>(),
+            provider.GetRequiredService<IPeerDeliveryStore>(),
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            provider.GetRequiredService<PeerGrain>(),
+            provider.GetRequiredService<TimeProvider>(),
+            TimeSpan.FromSeconds(pumpSeconds),
+            provider.GetRequiredService<ILogger<PeerDeliveryPump>>()));
+        builder.Services.AddSingleton<IHostedService>(provider => provider.GetRequiredService<PeerDeliveryPump>());
 
         builder.UseOrleans(silo =>
         {

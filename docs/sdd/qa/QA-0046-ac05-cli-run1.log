@@ -1,0 +1,4 @@
+probe: task=QA-0046 ac=AC-05 project=C:\dev\squid-squad-net\squid-execution\backend\src\Squid.PeerClient
+CHECK HELP-EXIT FAIL - dotnet run -- --help exit=
+CHECK HELP-TOKENS OK - usage declara os cenarios 500/timeout/slow: usage: Squid.PeerClient --scenario=ok|500|401|404|timeout|slow [--delay=3000] [--help]
+CLEANUP processos-ancora restantes=0 temporarios=0

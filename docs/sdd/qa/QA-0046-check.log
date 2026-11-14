@@ -1,0 +1,58 @@
+CHECK BASELINE-HEAD OK - baseline HEAD = 61c12ce
+CHECK BASELINE-BRANCH OK - branch task/TASK-0046-peer-grain-fila-e-dlq
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado na baseline (suite Linux = unverified)
+CHECK BASELINE-CLEAN OK - na baseline so o task file do ODEV estava modificado
+CHECK COMMIT-TOUCHES OK - 61c12ce: 18 arquivos, todos nos touches (produto + testes)
+CHECK BASELINE-FILTER OK - 20261114-024950-test-filter.log exit 0 / 51 de 51 (antes de qualquer escrita da QA)
+CHECK VERIFY-RUN OK - QA-0046-verify.log VERIFY total=14 bad=0
+CHECK VERIFY-HITS OK - 14/14 padroes hits=1 + ASCII do driver OK
+CHECK AC05-CLI-SUMMARY OK - QA-0046-ac05-cli.log SUMMARY checks=5 fails=0
+CHECK AC05-CLI-SCENARIOS OK - os tres cenarios ao vivo: 500, tempo esgotado (28) e lentidao (>= 1200 ms)
+CHECK AC05-CLI-TOKENS OK - o --help declara 500/timeout/slow
+CHECK AC05-CLI-SH-SUMMARY OK - QA-0046-ac05-cli-sh.log SUMMARY checks=5 fails=0 (gÃªmeo bash)
+CHECK GATE-EXIT OK - 20261114-033801-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - Com falha 0 / Aprovado 554 / Total 554 (554 do DEV, sem teste novo da QA)
+CHECK GATE-AGE OK - 20261114-033801-test-gate.log criado depois do GREEN 20261114-032817-test-filter.log
+CHECK MUT-IDS OK - T1..T14 (14 ciclos) todos com linha PRE
+CHECK MUT-HEAD-MATCH OK - 14/14 PRE com hash = blob do commit 61c12ce (head-match=true)
+CHECK MUT-RED OK - T1..T14 todos vermelhos DENTRO do log (logExit: 1, falha >= 1)
+CHECK CATCH-T1 OK - RED-AC contem: Ac01_a_500_goes_back_to_pending_with_attempts_and_a_growing_backoff
+CHECK CATCH-T2 OK - RED-AC contem: Ac01_a_500_goes_back_to_pending_with_attempts_and_a_growing_backoff
+CHECK CATCH-T3 OK - RED-AC contem: Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert
+CHECK CATCH-T4 OK - RED-AC contem: Ac02_after_eight_attempts_the_delivery_hits_the_dlq_with_motive_and_alert
+CHECK CATCH-T5 OK - RED-AC contem: Ac02_a_permanent_404_dead_letters_the_delivery_on_the_first_attempt
+CHECK CATCH-T6 OK - RED-AC contem: Ac02_a_permanent_404_dead_letters_the_delivery_on_the_first_attempt
+CHECK CATCH-T7 OK - RED-AC contem: Ac03_an_open_circuit_pushes_a_new_delivery_straight_to_pending
+CHECK CATCH-T8 OK - RED-AC contem: Backoff_doubles_with_jitter_and_hits_the_six_hour_ceiling_exactly
+CHECK CATCH-T9 OK - RED-AC contem: Ac04_a_blocked_peer_receives_nothing
+CHECK CATCH-T10 OK - RED-AC contem: Ac04_the_per_pair_rate_limit_decides_who_leaves
+CHECK CATCH-T11 OK - RED-AC contem: Ac01_a_500_goes_back_to_pending_with_attempts_and_a_growing_backoff
+CHECK CATCH-T12 OK - RED-AC contem: Ac05_the_timeout_scenario_fails_the_send_and_keeps_the_row_scheduled
+CHECK CATCH-T13 OK - RED-AC contem: Ac05_the_slow_scenario_loses_to_the_send_budget
+CHECK CATCH-T14 OK - RED-AC contem: Ac06_every_send_carries_the_peer_domain_trace_attribute_without_pii
+CHECK MUT-EXPECT OK - 14/14 EXPECT-OK e nenhum EXPECT-MISS
+CHECK MUT-TOOLING OK - nenhum TOOLING-FAIL ou BUILD-FAIL (todo vermelho e falha de produto)
+CHECK MUT-RESTORE OK - RESTORE-OK = 14 (esperado >= 14: catorze ciclos can-fail)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 51/51 sobre as fontes restauradas (wrapper=0 logExit=0 aprovado=51 falha=0)
+CHECK MUT-SUMMARY OK - SUMMARY cycles=14 failed=0 residue-backend=0
+CHECK MUT-UNTRACKED OK - UNTRACKED backend=0 (a QA nao acrescentou arquivos em backend)
+CHECK RESIDUE OK - tokens mutantes em backend (.cs, fora de bin/obj) = 0
+CHECK TEMP-JUNK OK - arquivos qa0046-* no TEMP = 0
+CHECK GIT-BACKEND OK - git status backend = 0 entradas (esperado 0)
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 4/4 arquivos de produto mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = exatamente os 4 arquivos mutados/restaurados (S-23)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo mutante = 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum arquivo fora dos touches alterado
+CHECK SCOPE-BACKEND OK - git status backend = 0 entradas
+CHECK SCOPE-SUMMARY OK - scope SUMMARY fails=0
+CHECK SCOPE-SH OK - gÃªmeo bash do scope: fora-dos-touches=0, blob 4/4, residuo 0
+CHECK TEST-MOTOR OK - PeerDeliveryMotorTests: 11 [Fact] marcados // AC-01..// AC-06
+CHECK TEST-GRAIN OK - PeerGrainTests: 4 [Fact] (backoff/circuito/bloqueio/cota)
+CHECK SPEC-CONSTANTS OK - constantes do produto: N=8 e teto 6 h (data-model 3.4)
+CHECK SPEC-RATELIMIT OK - o par carrega RateLimitPerMinute (data-model 2.9)
+CHECK PEERCLIENT-SCENARIOS OK - PeerClient expoe 500/timeout/slow (enum + CLI)
+CHECK SDD-STATE OK - check: OK - log entries 14, evidence rows 10
+CHECK QA-DOC OK - QA-0046-peer-grain-fila-e-dlq.md com verdict PASSED
+CHECK QA-DOC-ACS OK - AC-01..AC-07 presentes na tabela do doc
+SUMMARY total=57 fails=0

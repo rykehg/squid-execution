@@ -1,0 +1,18 @@
+HEAD=61c12cecc1e6b14e370b6a861122595a2e021348
+branch=task/TASK-0046-peer-grain-fila-e-dlq
+commit-files=18 commit-fora-dos-touches=0
+git-status qa-artifacts=16 wip-odev=1 fora-dos-touches=0
+git-backend-entries=0
+residue=0
+blob backend/src/Squid.Grains/Peers/PeerGrain.cs match=TRUE
+blob backend/src/Squid.Service/PeerDeliveryPump.cs match=TRUE
+blob backend/src/Squid.Service/OutboundPipeline.cs match=TRUE
+blob backend/src/Squid.PeerClient/PeerScenarioServer.cs match=TRUE
+blob-identity=4 of 4
+MTIME backend/src/Squid.Grains/Peers/PeerGrain.cs
+MTIME backend/src/Squid.PeerClient/PeerScenarioServer.cs
+MTIME backend/src/Squid.Service/OutboundPipeline.cs
+MTIME backend/src/Squid.Service/PeerDeliveryPump.cs
+mtime-count=4 (esperado 4)
+fora-dos-touches=0
+SUMMARY commit-files=18 qa-artifacts=16 backend-entries=0 residue=0 blob=4/4 mtime=4 fails=0
