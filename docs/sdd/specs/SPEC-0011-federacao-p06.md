@@ -137,6 +137,14 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
   `private` → **nenhuma entrega**.
 - Destinatários: seguidores do autor + coleção `followers` do contêiner + menções; entrega em
   paralelo por par, **assíncrona** — nenhuma entrega bloqueia a resposta local (FR-036).
+  **Cláusula adjudicada pelo ODEV (2026-11-14 01:35:17, nível especificação, finding 1 da
+  QA-0045)**: a "coleção `followers` do contêiner" **não existe como relação própria no MVP**
+  (federação de contêineres é backlog, nota D4-e do contrato; `Group` publicado não tem
+  `followers`, `Follow` de contêiner vira `202` sem aplicar) e é **realizada** pelas membrias
+  `Membership.State = Active` **remotas** do contêiner — leitura do DEV, a única implementável
+  hoje, fixada pelo cenário `QaTask0045FanOutGapTests.cs`; a relação própria entra quando a
+  federação de contêineres existir. Risco: entregar `public` a membro ativo não vaza nada
+  restrito e nenhum destinatário existente fica de fora.
 - **Reavaliação no momento do envio** (R-05): antes de cada envio, resolve destinatário e recomputa
   a decisão com a política vigente; negada → `Cancelled` com motivo auditável, sem erro e sem
   retry. A fila guarda `(activityId, recipientActorUri, policyVersionAtEnqueue)`.
