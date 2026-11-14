@@ -74,6 +74,59 @@ public static class ProfileJsonLd
         return new ActorProfile(id[..cut], preferred, name, FromPem(pem), FromMultibase(multibase));
     }
 
+    /// <summary>The PEM without its armor, as the SPKI DER bytes the verifier imports.</summary>
+    public static byte[]? TryDecodePublicKeyPem(string? pem)
+    {
+        if (string.IsNullOrWhiteSpace(pem)) return null;
+        try
+        {
+            return Convert.FromBase64String(Compact(pem)
+                .Replace(RsaPemHeader, string.Empty, StringComparison.Ordinal)
+                .Replace(RsaPemFooter, string.Empty, StringComparison.Ordinal));
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>The raw 32 bytes behind a <c>publicKeyMultibase</c> (contract §1.1, R-02), or null when the
+    /// value is not a did:key ed25519 public key — the tolerant side of the round-trip
+    /// <see cref="Materialize"/> takes, for the inbox resolving a FOREIGN actor's published key.
+    /// </summary>
+    public static byte[]? TryDecodeEd25519Multibase(string? multibase)
+    {
+        if (multibase is not { Length: > 0 } || multibase[0] != 'z') return null;
+        try
+        {
+            var framed = Base58.Decode(multibase[1..]);
+            if (framed.Length != Ed25519Multicodec.Length + Ed25519KeySize
+                || framed[0] != Ed25519Multicodec[0]
+                || framed[1] != Ed25519Multicodec[1])
+            {
+                return null;
+            }
+
+            return framed[Ed25519Multicodec.Length..];
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>The PEM without its armor or whitespace — the base64 body of any public key document.</summary>
+    private static string Compact(string text)
+    {
+        var compact = new StringBuilder(text.Length);
+        foreach (var character in text)
+        {
+            if (!char.IsWhiteSpace(character)) compact.Append(character);
+        }
+
+        return compact.ToString();
+    }
+
     private static ProfileDocument ToDocument(ActorProfile profile)
     {
         var id = profile.Id;

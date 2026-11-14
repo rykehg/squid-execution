@@ -25,6 +25,7 @@ using Squid.Api.Recovery;
 using Squid.Api.Threads;
 using Squid.Domain;
 using Squid.Grains.Actors;
+using Squid.Grains.Inbox;
 using Squid.Persistence;
 using Squid.Protocols.ActivityPub;
 using Squid.ReadModels.Projections;
@@ -187,6 +188,21 @@ public static class SquidServiceHost
         // the delete grace read it instead of the wall, so no test ever sleeps 90 days.
         builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 
+        // Inbox pipeline (SPEC-0011 section E, TASK-0044): the §3 order and its application, over
+        // the window grain, the follow/like documents (no table, no migration — the actor-status
+        // pattern) and the two seams a test stands in for the network with: the remote actor
+        // resolver of step 7 and the guarded media download of GAP-44. Registered BEFORE the test
+        // seam below, so a configure callback can replace either one (last registration wins).
+        builder.Services.AddSingleton<IInboxWindowStore>(_ => new SqliteInboxWindowStore(storage));
+        builder.Services.AddTransient<InboxGrain>();
+        builder.Services.AddSingleton<IFollowStore>(_ => new SqliteFollowStore(storage));
+        builder.Services.AddSingleton<ILikeStore>(_ => new SqliteLikeStore(storage, connectionString));
+        builder.Services.AddSingleton<RemoteActivities>();
+        builder.Services.AddSingleton<IRemoteMediaClient, RemoteMediaClient>();
+        builder.Services.AddSingleton<IFederatedActorClient, HttpFederatedActorClient>();
+        builder.Services.AddSingleton<FederationRateLimiter>();
+        builder.Services.AddTransient<IInboxPipeline, InboxPipeline>();
+
         builder.UseOrleans(silo =>
         {
             silo.Services.AddGrainStorage(StorageProviderName, (_, _) => storage);
@@ -286,17 +302,16 @@ public static class SquidServiceHost
         // bytes come from Squid.Protocols through this one delegate — the edge never sees the
         // adapter (ADR-11), and every absolute URL derives from the request's own Host (B-09a).
         app.MapSquidDiscovery(ProfileJsonLd.Serialize);
-        // Federation surface (TASK-0043, SPEC-0011 section D): the collections of an actor, the
-        // object, the container with its outbox and members, nodeinfo and the two inboxes. The
-        // same seam pattern, now five delegates — the documents are Squid.Protocols' own and the
-        // inbox gate is the one composition can build, because it is the only piece that needs an
-        // adapter, a grain and an HttpContext at once.
+        // Federation surface (TASK-0043/0044, SPEC-0011 section D/E): the collections of an actor,
+        // the object, the container with its outbox and members, nodeinfo and the two inboxes. The
+        // same seam pattern for the documents — Squid.Protocols' own — while the inbox runs its
+        // own port (IInboxPipeline): declared on the edge, resolved here, implemented above, so
+        // this call site stays the only place that knows every layer at once.
         app.MapSquidFederation(new FederationSeams(
             ObjectJsonLd.Group,
             ObjectJsonLd.Note,
             CollectionJsonLd.Collection,
-            CollectionJsonLd.Page,
-            InboxSignatureGate.VerifyAsync));
+            CollectionJsonLd.Page));
 
         return app;
     }

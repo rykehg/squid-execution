@@ -89,10 +89,12 @@ public static class StreamEndpoints
     /// The delivery-time gate of AC-04 (FR-026): the event's container — resolved from the
     /// summary payload's canonical id — must be alive and pass
     /// <see cref="PostEndpoints.CanSeeAsync"/>, the rule the P-03 routes read with, in its read
-    /// half: current policy, current membership, <c>Banned</c> excluded. An event whose container
-    /// cannot be resolved is never delivered: what visibility cannot confirm, the stream does not
-    /// send. No trail row per frame — the trail records route decisions, not stream fan-out; the
-    /// policy itself is re-read here on every delivery.
+    /// half: current policy, current membership, <c>Banned</c> excluded. The gate reads CURRENT
+    /// state and never the row's frozen <c>visibilityAtPublish</c> — QA-0026's AC-04b locks that
+    /// a post which became visible while the subscriber was away IS delivered on replay. An event
+    /// whose container cannot be resolved is never delivered: what visibility cannot confirm, the
+    /// stream does not send. No trail row per frame — the trail records route decisions, not
+    /// stream fan-out; the policy itself is re-read here on every delivery.
     /// </summary>
     private static async Task<bool> DeliverableAsync(
         ActivityEvent activity, HttpContext context, IContainerStore store)
