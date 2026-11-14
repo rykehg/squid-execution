@@ -21,15 +21,39 @@ public static class FederationMetrics
     /// <summary>The counter of a send-time cancellation (TASK-0045, R-05/FR-038): policy said no at the instant of delivery.</summary>
     public const string DeliveryCancelledCounter = "federation.delivery_cancelled";
 
+    /// <summary>Delivery by state (SPEC-0011 observability): one row the peer accepted.</summary>
+    public const string DeliverySentCounter = "federation.delivery_sent";
+
+    /// <summary>Delivery by state: one row back to Pending with a backoff — the motor's retry (AC-01).</summary>
+    public const string DeliveryRetriedCounter = "federation.delivery_retried";
+
+    /// <summary>The DLQ with alert (data-model §2.9 invariant, AC-02): one row that reached Failed.</summary>
+    public const string DeliveryDlqCounter = "federation.delivery_dlq";
+
     private static readonly Meter Meter = new(MeterName);
 
     private static readonly Counter<long> Unknown = Meter.CreateCounter<long>(UnknownActivityCounter);
 
     private static readonly Counter<long> Cancelled = Meter.CreateCounter<long>(DeliveryCancelledCounter);
 
+    private static readonly Counter<long> Sent = Meter.CreateCounter<long>(DeliverySentCounter);
+
+    private static readonly Counter<long> Retried = Meter.CreateCounter<long>(DeliveryRetriedCounter);
+
+    private static readonly Counter<long> DeadLettered = Meter.CreateCounter<long>(DeliveryDlqCounter);
+
     /// <summary>One activity arrived that this instance acknowledges with a 202 and applies nothing.</summary>
     public static void UnknownActivity() => Unknown.Add(1);
 
     /// <summary>One queued delivery was cancelled by the re-evaluation of R-05 — never sent, never retried.</summary>
     public static void DeliveryCancelled() => Cancelled.Add(1);
+
+    /// <summary>One queued delivery was accepted by the peer (AC-01's success half).</summary>
+    public static void DeliverySent() => Sent.Add(1);
+
+    /// <summary>One queued delivery failed transitively and went back to Pending with a backoff.</summary>
+    public static void DeliveryRetried() => Retried.Add(1);
+
+    /// <summary>One queued delivery reached Failed: DLQ row written, motive kept, alert fired.</summary>
+    public static void DeliveryDlq() => DeadLettered.Add(1);
 }

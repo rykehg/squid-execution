@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -21,8 +22,10 @@ namespace Squid.Service;
 /// cancelar é barato, enviar com política velha não tem desfazer). Enqueue is a local write the
 /// publish route awaits before answering (AC-05), the network is never on the request path
 /// (FR-036), and every terminal outcome is a row with a reason — no exception reaches a caller
-/// (FR-040). The backoff, circuit breaker, DLQ and per-pair rate that DRAIN this queue belong to
-/// TASK-0046; here a delivery is enqueued, observed and, when asked, sent exactly once.
+/// (FR-040). The backoff, circuit breaker and per-pair rate that DRAIN this queue belong to
+/// TASK-0046 — a refusal the peer answered for good (4xx) is dead-lettered here with its alert,
+/// because retrying it could never succeed; here a delivery is enqueued, observed and, when
+/// asked, sent exactly once.
 /// </summary>
 internal sealed class OutboundPipeline : IOutboundPipeline
 {
@@ -199,6 +202,7 @@ internal sealed class OutboundPipeline : IOutboundPipeline
                 Reason = "invalid_recipient",
             };
             await _deliveries.SaveAsync(failed);
+            DeadLetter(failed, failed.Reason!, null);
             return new SendVerdict(failed.State, failed.Reason);
         }
 
@@ -208,17 +212,58 @@ internal sealed class OutboundPipeline : IOutboundPipeline
                 Encoding.UTF8.GetBytes(delivery.Payload), _time.GetUtcNow()),
             signer.Sign);
 
-        var accepted = await _sender.SendAsync(
-            inbox.ToString(), signed.Signature, signed.Digest, signed.Date,
-            delivery.Payload, cancellationToken);
+        // AC-06 (SC-015): every send leaves a span tagged peer.domain — the recipient's domain
+        // only, never the actor URI, so the trace can never carry a handle.
+        PeerSendAnswer answer;
+        using (var span = FederationTrace.Source.StartActivity("peer.send"))
+        {
+            span?.SetTag("peer.domain", inbox.IdnHost);
+            answer = _sender is IPeerStatusSender statusSender
+                ? await statusSender.SendWithStatusAsync(
+                    inbox.ToString(), signed.Signature, signed.Digest, signed.Date,
+                    delivery.Payload, cancellationToken)
+                : new PeerSendAnswer(
+                    await _sender.SendAsync(
+                        inbox.ToString(), signed.Signature, signed.Digest, signed.Date,
+                        delivery.Payload, cancellationToken),
+                    null);
+        }
 
-        // shortcut: sem backoff aqui de propósito — reagendamento, 4xx permanente e DLQ são o
-        // motor da TASK-0046; esta task apenas conta a tentativa e guarda o motivo.
-        var outcome = accepted
-            ? delivery with { State = PeerDeliveryState.Sent, Attempts = delivery.Attempts + 1, Reason = null }
-            : delivery with { Attempts = delivery.Attempts + 1, Reason = "send_failed" };
+        // shortcut: o reagendamento com backoff e o teto de tentativas NÃO ficam aqui — o motor
+        // da TASK-0046 (PeerDeliveryPump) lê send_failed e calcula o NextAttemptAt; esta camada
+        // apenas conta a tentativa e guarda o motivo.
+        if (answer.Accepted)
+        {
+            var sent = delivery with { State = PeerDeliveryState.Sent, Attempts = delivery.Attempts + 1, Reason = null };
+            await _deliveries.SaveAsync(sent);
+            return new SendVerdict(PeerDeliveryState.Sent, null);
+        }
+
+        var attempts = delivery.Attempts + 1;
+        if (answer.StatusCode is >= 400 and < 500 and not (408 or 429))
+        {
+            // AC-02: a 4xx the peer actually answered is permanent — never a blind retry with the
+            // same key (SPEC-0011 section C names the signature refusal), straight to the DLQ.
+            var reason = answer.StatusCode is 401 or 403 ? "signature_rejected" : "peer_rejected";
+            var failed = delivery with { State = PeerDeliveryState.Failed, Attempts = attempts, Reason = reason };
+            await _deliveries.SaveAsync(failed);
+            DeadLetter(failed, reason, inbox.IdnHost);
+            return new SendVerdict(failed.State, failed.Reason);
+        }
+
+        // A 5xx, a timeout or an unreachable peer stays Pending for the motor to reschedule.
+        var outcome = delivery with { Attempts = attempts, Reason = "send_failed" };
         await _deliveries.SaveAsync(outcome);
-        return new SendVerdict(outcome.State, outcome.Reason);
+        return new SendVerdict(PeerDeliveryState.Pending, outcome.Reason);
+    }
+
+    /// <summary>The DLQ alert of SPEC-0011's observability: the counter and the warning, fired the moment a row lands in Failed.</summary>
+    private void DeadLetter(PeerDelivery row, string reason, string? domain)
+    {
+        FederationMetrics.DeliveryDlq();
+        _log.LogWarning(
+            "peer delivery dead-lettered ({ActivityType} -> {PeerDomain}): {Reason}",
+            row.Activity, domain ?? "unknown", reason);
     }
 
     // ---- decision (R-05: recomputed with the policy in force NOW, never the one at enqueue) ----

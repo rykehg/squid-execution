@@ -65,6 +65,10 @@ public sealed class InboxHostFixture : IAsyncDisposable
             "--Storage:Path=" + StoragePath,
             "--Logging:LogLevel:Default=Warning",
             "--Federation:RateLimitPerMinute=" + rateLimit,
+            // TASK-0046: the delivery pump stays registered but idle here — these suites assert
+            // "enqueued ≠ sent" and read Pending rows, so their clock is their own hand, never a
+            // loop ticking in the background (the motor suite drives RunOnceAsync itself).
+            "--Federation:DeliveryPumpSeconds=0",
             "--Squid:RecoveryKey=" + Convert.ToBase64String(RuntimeKey.AsSpan()),
         ], builder =>
         {
