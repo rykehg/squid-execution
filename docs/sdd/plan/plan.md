@@ -51,7 +51,7 @@ engana teste e revisão humana.
 | P-03 | Contêineres sociais: grupo/comunidade com papéis, política versada e sucessão de propriedade | TASK-0017..TASK-0022 (SPEC-0008) — **6/6 DONE com QA PASSED** (QA-0016..QA-0021); gate da casa 244/244; detalhe em `plan/history/0004-plan.md` | **CLOSED** | 2026-11-09 04:55:35 |
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
 | P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — **8/8 DONE com QA PASSED na 1ª tentativa** (QA-0033..QA-0040); gate da casa 480/480; detalhe em `plan/history/0006-plan.md` | **CLOSED** | 2026-11-12 12:46:09 |
-| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | TASK-0041..TASK-0053 — **13 entregas** (0050 do parked SSRF da 0044, 0051 do gate GAP-50, 0052 do S-41, 0053 da D-01 da 0047); aberta 2026-11-13, **11/13 DONE** | **OPEN** | — |
+| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | TASK-0041..TASK-0053 — **13 entregas** (0050 do parked SSRF da 0044, 0051 do gate GAP-50, 0052 do S-41, 0053 da D-01 da 0047); aberta 2026-11-13, **12/13 DONE** | **OPEN** | — |
 | P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) | a cortar | NOT_STARTED | — |
 | P-08 | Front web SSR, preview social e compartilhamento externo | a cortar | NOT_STARTED | — |
 
@@ -178,8 +178,8 @@ reais exibem o post público e nenhuma entrega falha por assinatura. Spec:
 - phase: **P-06 (Federação) OPEN** (aberta 2026-11-13 13:47:25) — **13 entregas** cortadas de
   SPEC-0011 (`TASK-0041..TASK-0053`; 0050 nasceu 22:45:47 do parked SSRF da 0044, 0051 do gate
   humano GAP-50 em 2026-11-14 09:10:08, 0052 do defeito S-41 provado na 0051, 0053 da D-01 da
-  0047), **11/13 DONE** (0041..0047+0050..0053 com QA PASSED na 1ª tentativa; gates
-  484 → 597; a facet dos dois silos provou o §7 inteiro em 3 camadas de mutação), D-01 fechada por gate humano (21:23:34, só destino nomeado).
+  0047), **12/13 DONE** (0041..0048+0050..0053 com QA PASSED na 1ª tentativa; gates
+  484 → 597; o manual da TASK-0048 foi re-executado pela QA com 52 PASS), D-01 fechada por gate humano (21:23:34, só destino nomeado).
   **GAP-50 resolvido** (2026-11-14 09:10:08, opção 1 = duplo embrulho → TASK-0051 cortada). P-05 fechou em 2026-11-12 12:46:09 (8/8, gate 480/480, snapshot `0006-plan.md`); a
   partir do fecho de cada fase o **código é a fonte real** daquela fase (divergência =
   `[DIVERGENCIA]`, código vence); P-01 fecha no 0002, P-02 no 0003, P-03 no 0004, P-04 no
@@ -188,12 +188,13 @@ reais exibem o post público e nenhuma entrega falha por assinatura. Spec:
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **TASK-0048 em curso** (o manual pedido pelo humano: runbook
-  `docs/runbooks/federacao-interop.md` + runbooks P-06 executáveis + índice); depois **0049
-  (interop real, gate humano com pares Docker locais)** — a fase fecha na 0049. Nada de deploy
-  (nenhum push é meu de fazer — a CI só roda pós-push, gate humano; último run verde 98/98 de
-  07/11, anterior às P-04..P-06 — considere um push para revalidar a CI: gate local está em
-  597/597; suíte Linux em execução real via contêiner, 51 falhas todas de ambiente).
+- nextAction: **AGUARDA GATE HUMANO PARA A TASK-0049** (a última, 13/13): interop real com
+  Mastodon + Friendica em Docker local — o humano presente para subir os pares pelo runbook
+  `docs/runbooks/federacao-interop.md`, validar os logs do par e corrigir os 2 achados MINOR
+  (AC-05). Com QA PASSED na 0049 a P-06 fecha (consolidação + snapshot 0007 + authority CODE +
+  README/runbooks/ponteiros). Nada de deploy (nenhum push é meu de fazer — a CI só roda pós-push,
+  gate humano; último run verde 98/98 de 07/11 — considere um push para revalidar a CI: gate
+  local está em 597/597; suíte Linux em execução real via contêiner, falhas todas de ambiente).
 - **Git a partir da P-05 (gate PHASE 2026-11-11 20:42:28, modelo C)**: branch por task
   `task/TASK-NNNN-<slug>` desde `develop`; DEV commita ao fim da entrega, QA commita no PASSED,
   ODEV mergeia em `develop` no `DONE` e commita docs; push/force/`main`/apagar branch =

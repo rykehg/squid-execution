@@ -85,6 +85,7 @@ Do not carry a gap into development unless it has an assumption in force.
 | Gap | Blocking | Assumption in force |
 | --- | --- | --- |
 | GAP-47 | no | pares reais em Docker local na máquina do humano (decisão 6); execução conjunta = gate humano registrado no `humanGate` no dispatch; instância pública é fora desta task |
+| QA-0048-MINOR | no | os 2 achados MINOR da QA-0048 (`federacao-interop.md:289` Verificação 9 sem comando e com prova exigindo `?page=1`; `:231` `curl -w` sem `\n` cola códigos em execução automatizada) são corrigidos pela **AC-05** desta task — passos que a execução real provou; registrados aqui, sem backlog e sem rodada de correção (veredito PASSED, nenhum BLOCKER/MAJOR) |
 
 ## Doubts
 
