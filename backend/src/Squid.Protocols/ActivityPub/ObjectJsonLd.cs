@@ -28,7 +28,9 @@ public static class ObjectJsonLd
     /// The <c>Note</c> of <paramref name="post"/> as contract §2.1 spells it: the canonical id of
     /// the row, the author, the sanitized content as stored (already escaped — never escaped a
     /// second time here), <c>to</c>/<c>cc</c> reflecting the visibility rule of §4, and the three
-    /// <c>squid:</c> fields of AC-03 over <paramref name="container"/>'s own policy.
+    /// <c>squid:</c> fields of AC-03 over <paramref name="container"/>'s own policy. A post with
+    /// attachments adds the AS2 <c>attachment</c> of §7.1 (SPEC-0011 section F, TASK-0053); a post
+    /// without them serializes exactly the document it always did.
     /// </summary>
     public static string Note(PostObject post, Container container, string origin)
     {
@@ -48,7 +50,8 @@ public static class ObjectJsonLd
             Word(post.Kind),
             post.ContainerSlug,
             Policy(container.Policy),
-            post.ReplyToId));
+            post.ReplyToId,
+            Attachments(post, origin)));
     }
 
     /// <summary>
@@ -58,7 +61,9 @@ public static class ObjectJsonLd
     /// REMOTE side resolves the destination by D-01 (named destination only, SPEC-0011 section E —
     /// the GAP-48 amendment of AC-01). The inline object is the very Note the object route serves,
     /// same document, same <c>squid:slug</c>/<c>squid:policy</c> — one rendering of the row, never
-    /// two — plus the <c>inReplyTo</c> a reply federates with (contract §7.15).
+    /// two — plus the <c>inReplyTo</c> a reply federates with (contract §7.15). The inline Note
+    /// carries the <c>attachment</c> array too: the blob url a peer downloads is the contract's
+    /// anonymous <c>GET /media/{hash}</c>, never the session-gated row url (TASK-0053).
     /// </summary>
     public static string Create(
         string activityId, PostObject post, Container container, string origin,
@@ -86,7 +91,8 @@ public static class ObjectJsonLd
             Word(post.Kind),
             post.ContainerSlug,
             Policy(container.Policy),
-            post.ReplyToId);
+            post.ReplyToId,
+            Attachments(post, origin));
 
         return JsonSerializer.Serialize(new CreateDocument(
             ProfileJsonLd.ActivityStreamsContext,
@@ -150,6 +156,50 @@ public static class ObjectJsonLd
     private static object[] Context(string origin) =>
         [ProfileJsonLd.ActivityStreamsContext, new SquidNamespace($"{origin}/ns/squid#")];
 
+    /// <summary>
+    /// The <c>attachment</c> array of SPEC-0011 section F (contract §7.1, TASK-0053): a stored
+    /// blob publishes the CONTRACT route <c>GET /media/{hash}</c> — anonymous and
+    /// content-addressed, so the peer's download never meets the session gate of the row's own
+    /// <c>/api/media/{contentHash}</c> URL (that one is this instance's UI, GAP-25) — while an
+    /// external link keeps the url it already is. Each entry carries the media type, the alt and
+    /// the SHA-256 the tolerant reader of <see cref="ActivityJsonLd"/> decodes back, so the
+    /// outbound document and the inbound application are symmetric. Null for a post without
+    /// attachments: the member is ignored on the wire and that document stays byte-identical.
+    /// </summary>
+    private static AttachmentDocument[]? Attachments(PostObject post, string origin)
+    {
+        if (post.Attachments.Count == 0) return null;
+
+        var documents = new AttachmentDocument[post.Attachments.Count];
+        for (var index = 0; index < post.Attachments.Count; index++)
+        {
+            var attachment = post.Attachments[index];
+            var blob = !string.IsNullOrEmpty(attachment.ContentHash);
+            documents[index] = new AttachmentDocument(
+                As2Type(attachment.Kind),
+                attachment.MimeType,
+                blob ? $"{origin}/media/{attachment.ContentHash}" : attachment.Url,
+                string.IsNullOrEmpty(attachment.Alt) ? null : attachment.Alt,
+                blob ? attachment.ContentHash : null);
+        }
+
+        return documents;
+    }
+
+    /// <summary>
+    /// The AS2 word of a kind: <c>Video</c>/<c>Audio</c>/<c>Link</c> as they are, and <c>Image</c>
+    /// for every kind that decodes to pixels (<c>Image</c>/<c>Gif</c>/<c>Sticker</c> — data-model
+    /// §2.6) — the receiver learns the real subtype from <c>mediaType</c>, which is what the
+    /// inbound side derives its kind from.
+    /// </summary>
+    private static string As2Type(AttachmentKind kind) => kind switch
+    {
+        AttachmentKind.Video => "Video",
+        AttachmentKind.Audio => "Audio",
+        AttachmentKind.Link => "Link",
+        _ => "Image",
+    };
+
     /// <summary>The contract's lowercase word for an enum value: <c>Community</c> → <c>community</c>.
     /// Internal for the container collections of <see cref="CollectionJsonLd"/>, which publish the
     /// same words on the three <c>squid:</c> fields (AC-03).</summary>
@@ -184,7 +234,24 @@ internal sealed record NoteDocument(
     [property: JsonPropertyName("squid:slug")] string Slug,
     [property: JsonPropertyName("squid:policy")] PolicyDocument Policy,
     [property: JsonPropertyName("inReplyTo")]
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? InReplyTo = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? InReplyTo = null,
+    [property: JsonPropertyName("attachment")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] AttachmentDocument[]? Attachment = null);
+
+/// <summary>
+/// One AS2 attachment of the outbound <c>Note</c> (SPEC-0011 section F, contract §7.1, TASK-0053):
+/// <c>url</c> by hash on the anonymous blob route plus the media type, with the alt and the
+/// declared digest — the exact shape <see cref="ActivityJsonLd"/> tolerantly reads back on the
+/// way in.
+/// </summary>
+internal sealed record AttachmentDocument(
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("mediaType")] string MediaType,
+    [property: JsonPropertyName("url")] string Url,
+    [property: JsonPropertyName("name")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Name = null,
+    [property: JsonPropertyName("sha256")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Sha256 = null);
 
 /// <summary>
 /// The outbound <c>Create</c> of contract §2.1 (TASK-0045): the activity envelope around the Note
