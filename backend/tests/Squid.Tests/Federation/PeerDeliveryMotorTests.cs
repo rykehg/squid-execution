@@ -42,6 +42,9 @@ public sealed class MotorHost : IAsyncDisposable
                 "--Logging:LogLevel:Default=Warning",
                 // The budget the timeout scenario has to lose against (AC-05).
                 "--Federation:SendTimeoutMs=400",
+                // The scenario peer IS loopback: the exact allowlist of SPEC-0011 section C
+                // names it the way the two-silo harness and the runbook name their local pairs.
+                "--Federation:TrustedPeerHosts=127.0.0.1",
                 "--Squid:RecoveryKey=" + Convert.ToBase64String(RuntimeKey.AsSpan()),
             ],
             builder => builder.Services.AddSingleton<TimeProvider>(Clock));

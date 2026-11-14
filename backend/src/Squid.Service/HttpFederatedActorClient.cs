@@ -24,7 +24,8 @@ public interface IFederatedActorClient
 
 /// <summary>
 /// The production resolver: fetch the actor document inside the SSRF perimeter (scheme, then every
-/// resolved address, then every redirect hop — the unfurl rules, GAP-44's family), keep it for a
+/// resolved address, then every redirect hop — the unfurl rules, GAP-44's family), releasing a
+/// host named by <see cref="TrustedPeerHosts"/> first (SPEC-0011 section C, GAP-49), keep it for a
 /// short TTL so one delivery never fetches twice, and read the key the <c>keyId</c> names out of
 /// it — RSA as the PEM of contract §1.1 (SPKI DER, what the verifier imports), Ed25519 through the
 /// <c>squid:ed25519Key</c> multibase of R-02. Any refusal — unreachable, oversized, hostile, not
@@ -45,15 +46,18 @@ public sealed class HttpFederatedActorClient : IFederatedActorClient
     private readonly IUnfurlResolver _resolver;
     private readonly UnfurlOptions _options;
     private readonly TimeProvider _time;
+    private readonly TrustedPeerHosts _trusted;
 
-    /// <summary>Binds the resolver to the host's client, DNS seam, fetch budget and clock.</summary>
+    /// <summary>Binds the resolver to the host's client, DNS seam, fetch budget, clock and trusted peers.</summary>
     public HttpFederatedActorClient(
-        HttpClient http, IUnfurlResolver resolver, UnfurlOptions options, TimeProvider time)
+        HttpClient http, IUnfurlResolver resolver, UnfurlOptions options, TimeProvider time,
+        TrustedPeerHosts trusted)
     {
         _http = http ?? throw new ArgumentNullException(nameof(http));
         _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _time = time ?? throw new ArgumentNullException(nameof(time));
+        _trusted = trusted ?? throw new ArgumentNullException(nameof(trusted));
     }
 
     /// <inheritdoc />
@@ -203,6 +207,7 @@ public sealed class HttpFederatedActorClient : IFederatedActorClient
     {
         var host = url.DnsSafeHost;
         if (host.Length > 1 && host[0] == '[' && host[^1] == ']') host = host[1..^1];
+        if (_trusted.Contains(host)) return true; // SPEC-0011 §C: the exact allowlist releases the perimeter
         if (System.Net.IPAddress.TryParse(host, out var literal)) return !SsrfGuard.Blocked(literal);
 
         var addresses = await _resolver.ResolveAsync(host, cancellationToken);

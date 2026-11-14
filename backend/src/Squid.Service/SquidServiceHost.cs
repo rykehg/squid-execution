@@ -203,6 +203,10 @@ public static class SquidServiceHost
         builder.Services.AddSingleton<IFollowStore>(_ => new SqliteFollowStore(storage));
         builder.Services.AddSingleton<ILikeStore>(_ => new SqliteLikeStore(storage, connectionString));
         builder.Services.AddSingleton<RemoteActivities>();
+        // Trusted peers (SPEC-0011 section C, GAP-49): Federation:TrustedPeerHosts — exact,
+        // EMPTY by default — read once and consulted ONLY by the three federation clients below;
+        // the unfurl above never receives it, so the list cannot open that perimeter.
+        builder.Services.AddSingleton(_ => TrustedPeerHosts.From(configuration));
         builder.Services.AddSingleton<IRemoteMediaClient, RemoteMediaClient>();
         builder.Services.AddSingleton<IFederatedActorClient, HttpFederatedActorClient>();
         builder.Services.AddSingleton<FederationRateLimiter>();
