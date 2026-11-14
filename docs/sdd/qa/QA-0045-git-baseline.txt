@@ -1,0 +1,28 @@
+=== QA-0045 git baseline (pre-write) ===
+date-local: 2026-11-14 01:00:44
+HEAD: 3226429461b5790ece123cdae6c350b6bb2df3c3
+branch: task/TASK-0045-saida-fan-out-e-follow
+--- status (porcelain -uall) ---
+ M docs/sdd/tasks/TASK-0045-saida-fan-out-e-follow.md
+--- commit files (HEAD) ---
+commit 3226429461b5790ece123cdae6c350b6bb2df3c3 TASK-0045: saida - fan-out por visibilidade (public/unlisted/membersOnly/private) com destino nomeado audience + squid:slug, fila peer_delivery na migration 0008_federation, reavaliacao R-05 que cancela com motivo auditavel sem enviar, Delete propagado a quem recebeu o Create, rota POST /api/federation/follow e envio draft-cavage pelo seam IPeerSender
+
+backend/src/Squid.Api/Federation/FederationEndpoints.cs
+backend/src/Squid.Api/Federation/IOutboundPipeline.cs
+backend/src/Squid.Api/Federation/IPeerDeliveryStore.cs
+backend/src/Squid.Api/Federation/IPeerSender.cs
+backend/src/Squid.Api/Posts/PostEndpoints.cs
+backend/src/Squid.Persistence/schema/0008_federation.sql
+backend/src/Squid.Protocols/ActivityPub/ActivityJsonLd.cs
+backend/src/Squid.Protocols/ActivityPub/ObjectJsonLd.cs
+backend/src/Squid.Service/FederationMetrics.cs
+backend/src/Squid.Service/HttpPeerSender.cs
+backend/src/Squid.Service/OutboundPipeline.cs
+backend/src/Squid.Service/SqlitePeerDeliveryStore.cs
+backend/src/Squid.Service/SquidServiceHost.cs
+backend/tests/Squid.Tests/Federation/FederationMigrationTests.cs
+backend/tests/Squid.Tests/Federation/InboxHost.cs
+backend/tests/Squid.Tests/Federation/OutboundFanOutTests.cs
+--- wsl probes ---
+wsl command -v dotnet => [] exit=1
+wsl command -v git => [/usr/sbin/git] exit=0

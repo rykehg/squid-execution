@@ -1,0 +1,48 @@
+CHECK BASELINE-HEAD OK - baseline HEAD = 3226429
+CHECK BASELINE-BRANCH OK - branch task/TASK-0045-saida-fan-out-e-follow
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado na baseline (suite Linux = unverified)
+CHECK COMMIT-TOUCHES FAIL - 3226429: 16 arquivos, todos nos touches (produto + testes)
+CHECK BASELINE-FILTER OK - 20261114-010209-test-filter.log exit 0 / 35 de 35 (antes de qualquer escrita da QA)
+CHECK QA-TEST-FILTER OK - 20261114-010649-test-filter.log exit 0 / 36 de 36 (o teste novo da QA executado e verde)
+CHECK VERIFY-RUN OK - QA-0045-verify.log VERIFY total=10 bad=0
+CHECK VERIFY-HITS OK - 10/10 padroes hits=1 + ASCII do driver OK
+CHECK GATE-EXIT OK - 20261114-012335-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - Com falha 0 / Aprovado 539 / Total 539 (538 do DEV + 1 da QA)
+CHECK GATE-AGE OK - 20261114-012335-test-gate.log criado depois do GREEN 20261114-011620-test-filter.log
+CHECK MUT-IDS OK - T1..T10 (10 ciclos) todos com linha PRE
+CHECK MUT-HEAD-MATCH OK - 10/10 PRE com hash = blob do commit 3226429 (head-match=true)
+CHECK MUT-RED OK - T1..T10 todos vermelhos DENTRO do log (logExit: 1, falha >= 1)
+CHECK CATCH-T1 OK - RED-AC contem: Ac01_public_post_enqueues_one_delivery_per_remote_follower_and_names_the_destination
+CHECK CATCH-T2 OK - RED-AC contem: Ac01_public_post_also_enqueues_for_the_container_collection
+CHECK CATCH-T3 OK - RED-AC contem: Ac02_unlisted_delivers_only_to_followers
+CHECK CATCH-T4 OK - RED-AC contem: Ac02_members_only_delivers_only_to_active_members
+CHECK CATCH-T5 OK - RED-AC contem: Ac02_private_creates_no_delivery_at_all
+CHECK CATCH-T6 OK - RED-AC contem: Ac03_follow_route_enqueues_a_signed_follow_and_the_relation_settles_on_accept
+CHECK CATCH-T7 OK - RED-AC contem: Ac03_follow_route_enqueues_a_signed_follow_and_the_relation_settles_on_accept
+CHECK CATCH-T8 OK - RED-AC contem: Ac04_policy_change_before_send_cancels_with_a_reason_and_sends_nothing
+CHECK CATCH-T9 OK - RED-AC contem: Ac05_publish_returns_with_every_delivery_already_pending_and_the_wire_untouched
+CHECK CATCH-T10 OK - RED-AC contem: Ac06_removing_the_post_propagates_a_signed_delete_to_the_recipients_that_received_the_create
+CHECK MUT-EXPECT OK - 10/10 EXPECT-OK e nenhum EXPECT-MISS
+CHECK MUT-TOOLING OK - nenhum TOOLING-FAIL ou BUILD-FAIL (todo vermelho e falha de produto)
+CHECK MUT-RESTORE OK - RESTORE-OK = 10 (esperado >= 10: dez ciclos can-fail)
+CHECK MUT-RESTOREFAIL OK - nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 36/36 sobre as fontes restauradas (wrapper=0 logExit=0 aprovado=36 falha=0)
+CHECK MUT-SUMMARY OK - SUMMARY cycles=10 failed=0 residue-backend=0
+CHECK MUT-UNTRACKED OK - UNTRACKED backend=1 (so o teste novo da QA)
+CHECK RESIDUE OK - tokens mutantes em backend/src+tests (.cs, fora de bin/obj) = 0
+CHECK TEMP-BACKUPS OK - backups qa0045-* no TEMP = 0
+CHECK GIT-BACKEND OK - git status backend = 1 entradas (esperado 1: so ?? backend/tests/Squid.Tests/Federation/QaTask0045FanOutGapTests.cs)
+CHECK TEST-AC OK - OutboundFanOutTests: 8 [Fact] marcados // AC-01..// AC-06
+CHECK TEST-MIGRATION OK - FederationMigrationTests: 1 [Fact] da migration 0008
+CHECK TEST-QA OK - QaTask0045FanOutGapTests: 1 [Fact] marcado // AC-01 (colecao do container) - 1 fato
+CHECK WIRE-AUDIENCE OK - o Create de saida carrega audience (GAP-48 / D-01) no produto
+CHECK WIRE-R05 OK - a reavaliacao R-05 cancela com motivo e conta a metrica no produto
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 3/3 arquivos de produto mutados (git hash-object vs rev-parse)
+CHECK SCOPE-MTIME OK - mtime desde a baseline = os 3 arquivos mutados/restaurados + o teste novo da QA (4)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo mutante = 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum arquivo fora dos touches alterado
+CHECK SCOPE-GIT-SCOPE OK - git status backend = 1 entrada (so o teste novo da QA, dentro dos touches)
+CHECK SDD-STATE OK - check: OK - log entries 13, evidence rows 3
+CHECK QA-DOC OK - QA-0045-saida-fan-out-e-follow.md com verdict PASSED
+CHECK QA-DOC-ACS OK - AC-01..AC-07 presentes na tabela do doc
+SUMMARY total=47 fails=1
