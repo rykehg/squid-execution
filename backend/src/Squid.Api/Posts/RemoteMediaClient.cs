@@ -19,7 +19,9 @@ public interface IRemoteMediaClient
 /// GAP-44's download: the very fetch rules of <see cref="LinkUnfurler"/> — http(s) only, every
 /// redirect hop re-validated against <see cref="SsrfGuard"/> before it is asked, one
 /// <c>Unfurl:TimeoutMs</c> budget, a body cut at <c>Unfurl:MaxBytes</c> — answering the bytes or
-/// null, never an exception (FR-040: a federated payload may not take the process down).
+/// null, never an exception (FR-040: a federated payload may not take the process down). A hop
+/// whose host <see cref="TrustedPeerHosts"/> names is admitted before the perimeter (SPEC-0011
+/// section C, GAP-49) — the federation-only release the unfurl beside it never gets.
 /// shortcut: validation without pinning, the same known limit the unfurl carries — pin the
 /// connection to the validated address when GAP-26 grows a requirement for it.
 /// </summary>
@@ -31,13 +33,16 @@ public sealed class RemoteMediaClient : IRemoteMediaClient
     private readonly HttpClient _http;
     private readonly IUnfurlResolver _resolver;
     private readonly UnfurlOptions _options;
+    private readonly TrustedPeerHosts _trusted;
 
-    /// <summary>Binds the download to the host's client, resolver seam and fetch budget.</summary>
-    public RemoteMediaClient(HttpClient http, IUnfurlResolver resolver, UnfurlOptions options)
+    /// <summary>Binds the download to the host's client, resolver seam, fetch budget and the trusted peers.</summary>
+    public RemoteMediaClient(
+        HttpClient http, IUnfurlResolver resolver, UnfurlOptions options, TrustedPeerHosts trusted)
     {
         _http = http ?? throw new ArgumentNullException(nameof(http));
         _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _trusted = trusted ?? throw new ArgumentNullException(nameof(trusted));
     }
 
     /// <inheritdoc />
@@ -90,6 +95,7 @@ public sealed class RemoteMediaClient : IRemoteMediaClient
     {
         var host = url.DnsSafeHost;
         if (host.Length > 1 && host[0] == '[' && host[^1] == ']') host = host[1..^1];
+        if (_trusted.Contains(host)) return true; // SPEC-0011 §C: the exact allowlist releases the perimeter
         if (IPAddress.TryParse(host, out var literal)) return !SsrfGuard.Blocked(literal);
 
         var addresses = await _resolver.ResolveAsync(host, cancellationToken);

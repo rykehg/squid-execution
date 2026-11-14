@@ -580,7 +580,8 @@ public sealed class InboxReceiveTests : IClassFixture<InboxHostFixture>
     {
         var handler = new NeverCalledHandler();
         using var http = new HttpClient(handler);
-        var client = new RemoteMediaClient(http, new FakeUnfurlResolver(), new UnfurlOptions(500, 4096));
+        var client = new RemoteMediaClient(
+            http, new FakeUnfurlResolver(), new UnfurlOptions(500, 4096), TrustedPeerHosts.Empty);
 
         Assert.Null(await client.FetchAsync("http://127.0.0.1:9/a.png", CancellationToken.None));
         Assert.Null(await client.FetchAsync("http://192.168.1.1/a.png", CancellationToken.None));
