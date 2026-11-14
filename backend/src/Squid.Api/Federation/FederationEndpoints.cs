@@ -16,15 +16,16 @@ namespace Squid.Api.Federation;
 /// <summary>
 /// The ActivityPub surface of contract activitypub §1 (SPEC-0011 section D, TASK-0043): the three
 /// collections of an actor, the object, the container with its outbox and members, the nodeinfo
-/// document, and the two inboxes that are born refusing every message whose signature does not
-/// verify — <c>401</c> with the body never read and the state intact (AC-05); reading and applying
-/// the activities behind that gate is TASK-0044. Three rules walk every route, in this order:
-/// negotiate the <c>Accept</c> first (AC-06), then the 404 ladder of FR-018/SC-005 — byte-identical
-/// for absent and invisible, and every container decision recorded in the trail (FR-019) through
-/// <c>PostEndpoints.VisibleAsync</c>, the rule the P-03/P-04 routes already read — then the answer.
-/// The document bytes themselves come from Squid.Protocols through the seams the composition root
-/// hands in, exactly like the profile document of <c>MapSquidDiscovery</c> (ADR-11: JSON-LD stays
-/// in the adapter, this assembly references no protocol project).
+/// document, and the two inboxes — which, since TASK-0044, run the whole §3 order through
+/// <c>IInboxPipeline</c> and answer its verdicts here: this class keeps the status codes, the
+/// single refusal envelope and the media types, the pipeline keeps the verification and the
+/// application. Three rules walk every read route, in this order: negotiate the <c>Accept</c> first
+/// (AC-06), then the 404 ladder of FR-018/SC-005 — byte-identical for absent and invisible, and
+/// every container decision recorded in the trail (FR-019) through <c>PostEndpoints.VisibleAsync</c>,
+/// the rule the P-03/P-04 routes already read — then the answer. The document bytes themselves come
+/// from Squid.Protocols through the seams the composition root hands in, exactly like the profile
+/// document of <c>MapSquidDiscovery</c> (ADR-11: JSON-LD stays in the adapter, this assembly
+/// references no protocol project).
 /// </summary>
 public static class FederationEndpoints
 {
@@ -43,10 +44,14 @@ public static class FederationEndpoints
         app.MapGet("/users/{name}/outbox", OutboxAsync);
         app.MapGet("/users/{name}/followers", FollowersAsync);
         app.MapGet("/users/{name}/following", FollowingAsync);
-        // Both inboxes share one handler: the signature gate runs BEFORE the recipient is even
-        // looked at, so an unknown actor or container cannot be told apart from a signed one.
-        app.MapPost("/users/{name}/inbox", InboxAsync);
-        app.MapPost("/c/{slug}/inbox", InboxAsync);
+        // Both inboxes share one verdict mapper behind two routes: the target is what the ROUTE
+        // said, never what a query parameter could stand in for (SPEC-0011 section E). The
+        // signature gate runs BEFORE the recipient is even looked at, so an unknown actor or
+        // container cannot be told apart from a signed one.
+        app.MapPost("/users/{name}/inbox", (string name, HttpContext context, IInboxPipeline pipeline) =>
+            InboxAsync(context, pipeline, InboxTarget.ForActor(name)));
+        app.MapPost("/c/{slug}/inbox", (string slug, HttpContext context, IInboxPipeline pipeline) =>
+            InboxAsync(context, pipeline, InboxTarget.ForContainer(slug)));
         // The object id arrives as sent — the tail of /o/{id} or the whole canonical URI, plain or
         // percent-encoded — the same capture rule /api/posts/{*id} walks (contract §1).
         app.MapGet("/objects/{*id}", ObjectAsync);
@@ -79,37 +84,72 @@ public static class FederationEndpoints
         }
 
         /// <summary>
-        /// <c>GET /users/{name}/followers</c> (AC-02): the collection exists from this task on and
-        /// answers its shape — first/next over an empty page. The relation rows themselves are
-        /// written by the Follow pipeline of TASK-0044; nothing writes them here, so this page
-        /// stays empty until then rather than inventing a store the phase has not built.
+        /// <c>GET /users/{name}/followers</c> (AC-02): the actors whose Follow this instance
+        /// answered with an Accept — the rows TASK-0044 writes through <c>IFollowStore</c>, paged
+        /// by the same collection ladder as every other relation page.
         /// </summary>
-        Task<IResult> FollowersAsync(string name, HttpContext context, ActorGrain actors) =>
-            ActorRelationAsync(name, "followers", context, actors, seams);
-
-        /// <summary><c>GET /users/{name}/following</c> — same rule and same empty page as above (AC-02).</summary>
-        Task<IResult> FollowingAsync(string name, HttpContext context, ActorGrain actors) =>
-            ActorRelationAsync(name, "following", context, actors, seams);
-
-        // ---- inboxes (contract §3, AC-05) --------------------------------------------
+        Task<IResult> FollowersAsync(string name, HttpContext context, ActorGrain actors, IFollowStore follows) =>
+            ActorRelationAsync(name, "followers", context, actors, follows, seams);
 
         /// <summary>
-        /// The one handler behind both inbox URLs: contract §3 step 1 and nothing else. No
-        /// verifiable signature → <c>401</c> with a single refusal body for every cause (a caller
-        /// learns nothing from the difference between absent, malformed, unresolvable and invalid)
-        /// and with the payload never read; a signature that verifies against a key this instance
-        /// publishes → <c>202</c>, still applying nothing. Body size, nesting, rate limit, dedupe
-        /// and the activities themselves are the remaining steps of the same order, TASK-0044's.
+        /// <c>GET /users/{name}/following</c> — the remote actors this one follows once they
+        /// accepted; the pending ones never federate (AC-02, TASK-0044).
         /// </summary>
-        async Task<IResult> InboxAsync(HttpContext context, ActorGrain actors)
-        {
-            if (!await seams.VerifyInbox(context, actors))
-            {
-                return AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
-                    "signature_invalid", "assinatura ausente ou inválida.", withTraceId: false);
-            }
+        Task<IResult> FollowingAsync(string name, HttpContext context, ActorGrain actors, IFollowStore follows) =>
+            ActorRelationAsync(name, "following", context, actors, follows, seams);
 
-            return Results.Accepted();
+        // ---- inboxes (contract §3, SPEC-0011 section E) ------------------------------
+
+        /// <summary>
+        /// One inbox delivery, both routes: contract §3 runs inside <see cref="IInboxPipeline"/>
+        /// and this mapper is only its wire half (AC-03..AC-07). Every refusal carries the same
+        /// shape and no traceId — a caller learns nothing from the difference between the causes —
+        /// while the two distinct steps the contract spells out keep their own error word: the
+        /// Digest that does not confer, and the Date outside the ±5 min window. An
+        /// <see cref="InboxOutcome.Accepted"/> is always 202: applied, or deliberately left
+        /// unapplied with the state intact (unknown type, no destination, <c>private</c>) — and a
+        /// Follow answers with the Accept it owes in its body (AC-05).
+        /// </summary>
+        static async Task<IResult> InboxAsync(
+            HttpContext context, IInboxPipeline pipeline, InboxTarget target)
+        {
+            var verdict = await pipeline.ReceiveAsync(context, target, context.RequestAborted);
+            return verdict.Outcome switch
+            {
+                InboxOutcome.Accepted => verdict.ActivityJson is null
+                    ? Results.Accepted()
+                    : Results.Text(verdict.ActivityJson, ActivityJson,
+                        statusCode: StatusCodes.Status202Accepted),
+                InboxOutcome.PayloadTooLarge => AuthErrors.Write(context,
+                    StatusCodes.Status413PayloadTooLarge, "payload_too_large",
+                    "corpo acima de 1 MB: o corpo federado é recusado no passo 4 do contrato §3."),
+                InboxOutcome.PayloadTooDeep => AuthErrors.Write(context,
+                    StatusCodes.Status400BadRequest, "payload_too_deep",
+                    "aninhamento acima de 32 níveis: o corpo é recusado no passo 4 do contrato §3."),
+                InboxOutcome.InvalidActivity => AuthErrors.Write(context,
+                    StatusCodes.Status400BadRequest, "invalid_activity",
+                    "atividade malformada: id ou ator ausente."),
+                InboxOutcome.RateLimited => TooManyRequests(context, verdict.RetryAfterSeconds),
+                InboxOutcome.DigestMismatch => AuthErrors.Write(context,
+                    StatusCodes.Status401Unauthorized, "digest_invalid",
+                    "digest do corpo não confere.", withTraceId: false),
+                InboxOutcome.StaleDate => AuthErrors.Write(context,
+                    StatusCodes.Status401Unauthorized, "date_invalid",
+                    "data fora da janela de ±5 min.", withTraceId: false),
+                InboxOutcome.SenderUnresolvable => AuthErrors.Write(context,
+                    StatusCodes.Status401Unauthorized, "sender_unresolvable",
+                    "remetente não resolvível.", withTraceId: false),
+                _ => AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
+                    "signature_invalid", "assinatura ausente ou inválida.", withTraceId: false),
+            };
+        }
+
+        /// <summary>The 429 of §3 step 5: the envelope, plus the seconds the peer must wait.</summary>
+        static IResult TooManyRequests(HttpContext context, string? retryAfterSeconds)
+        {
+            context.Response.Headers.RetryAfter = retryAfterSeconds ?? "60";
+            return AuthErrors.Write(context, StatusCodes.Status429TooManyRequests,
+                "rate_limited", "limite de requisições por minuto excedido (contrato §3 passo 5).");
         }
 
         // ---- object and container (contract §1/§1.2) ---------------------------------
@@ -234,24 +274,28 @@ public static class FederationEndpoints
 
     /// <summary>
     /// The <c>followers</c> and <c>following</c> collections of an actor: the existence check and
-    /// the negotiation of every route above, over a collection that is empty by construction in
-    /// this task (the rows arrive with TASK-0044). <paramref name="items"/> is always empty today;
-    /// it stays here as the seam that task fills, so the shape cannot drift when it does.
+    /// the negotiation of every route above, over the relation rows <c>IFollowStore</c> holds
+    /// (TASK-0044) — each actor URI quoted once, here, so it embeds verbatim by the adapter, never
+    /// quoted a second time as a string inside the page.
     /// </summary>
     private static async Task<IResult> ActorRelationAsync(
-        string name, string relation, HttpContext context, ActorGrain actors, FederationSeams seams)
+        string name, string relation, HttpContext context, ActorGrain actors,
+        IFollowStore follows, FederationSeams seams)
     {
         var refused = Negotiate(context);
         if (refused is not null) return refused;
         if (await KnownAsync(name, actors) is null) return Results.NotFound();
 
-        // The items are raw JSON documents: an actor URI is quoted once, here, and embedded
-        // verbatim by the adapter — never quoted a second time as a string inside the page.
-        static Task<IReadOnlyList<string>> Empty() =>
-            Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
+        var edges = relation == "followers"
+            ? await follows.FollowersAsync(name)
+            : await follows.FollowingAsync(name);
+        IReadOnlyList<string> items = edges
+            .Select(edge => JsonSerializer.Serialize(edge.ActorUri))
+            .ToList();
 
         return await AnswerAsync<string>(
-            context, seams, null, $"{ActorId(context, name)}/{relation}", Empty, item => Task.FromResult(item));
+            context, seams, null, $"{ActorId(context, name)}/{relation}",
+            () => Task.FromResult(items), item => Task.FromResult(item));
     }
 
     /// <summary>

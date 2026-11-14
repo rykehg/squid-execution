@@ -1,0 +1,33 @@
+CHECK BASELINE-ADDR OK - baseline HEAD = 92db2c7
+CHECK BASELINE-BRANCH OK - branch task/TASK-0044-inbox-verificacao-e-aplicacao
+CHECK BASELINE-WSL OK - dotnet ausente no WSL registrado na baseline (suite Linux = unverified)
+CHECK COMMIT-TOUCHES OK - 92db2c7: 24 arquivos, todos nos touches
+CHECK BASELINE-FILTER OK - 20261113-225032-test-filter.log exit 0 / 24 de 24
+CHECK QA-TEST-FILTER OK - 20261113-225836-test-filter.log exit 0 / 26 de 26
+CHECK VERIFY-RUN OK - QA-0044-verify.log VERIFY total=20 bad=0
+CHECK VERIFY-HITS OK - 20/20 padroes hits=1 + ASCII do driver OK
+CHECK GATE-EXIT OK - 20261113-233508-test-gate.log header exit 0
+CHECK GATE-SUMMARY OK - Com falha 0 / Aprovado 529 / Total 529 (527 do DEV + 2 da QA)
+CHECK GATE-AGE OK - 20261113-233508-test-gate.log criado depois do GREEN 20261113-232748-test-filter.log
+CHECK MUT-PRE OK - 20/20 PRE com hash = blob do commit 92db2c7
+CHECK MUT-RED OK - 20/20 vermelhos DENTRO do log (logExit 1, falha >= 1); sem:
+CHECK MUT-CATCH OK - RED-AC contem o cenario proprio da AC em 20/20; sem:
+CHECK MUT-EXPECT OK - 20/20 EXPECT-OK e nenhum EXPECT-MISS
+CHECK MUT-TOOLING OK - nenhum TOOLING-FAIL ou BUILD-FAIL (todo vermelho e falha de produto)
+CHECK MUT-RESTORE OK - RESTORE-OK = 20 (esperado >= 20) e nenhum RESTORE-FAIL
+CHECK MUT-GREEN OK - GREEN 26/26 sobre as fontes restauradas
+CHECK MUT-SUMMARY OK - SUMMARY cycles=20 failed=0 residue-backend=0
+CHECK MUT-UNTRACKED OK - UNTRACKED backend=1 (so o teste novo da QA)
+CHECK RESIDUE OK - tokens mutantes em backend (.cs, fora de bin/obj) = 0
+CHECK GIT-BACKEND OK - git status backend = 1 entradas (esperado 1: so o teste novo da QA)
+CHECK TEST-AC OK - InboxReceiveTests: 14 [Fact] marcados // AC-01..// AC-07 + // D-01; faltando:
+CHECK TEST-AC04 OK - InboxRateLimitTests: 1 [Fact] marcado // AC-04
+CHECK TEST-QA OK - QaTask0044InboxGapTests: 2 [Fact] marcados // AC-03 e // AC-04
+CHECK SCOPE-BLOB OK - blob-identity work=HEAD em 7/7 arquivos de produto mutados
+CHECK SCOPE-MTIME OK - mtime desde a baseline = 7 mutados/restaurados + o teste novo da QA (8)
+CHECK SCOPE-RESIDUE OK - scope scan: residuo mutante = 0
+CHECK SCOPE-TOUCHES OK - scope scan: nenhum arquivo fora dos touches alterado
+CHECK SCOPE-GIT OK - git status backend = 1 entrada (so o teste novo da QA)
+CHECK QA-DOC OK - QA-0044-inbox-verificacao-e-aplicacao.md com verdict PASSED
+CHECK QA-DOC-ACS OK - AC-01..AC-08 presentes na tabela do doc; faltando:
+SUMMARY total=32 fails=0

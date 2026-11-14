@@ -1,0 +1,103 @@
+T1 PRE at=230035 ac=AC-01 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T1 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230109-test-filter.log
+T1 RED-AC Squid.Tests.Federation.InboxReceiveTests.A_remote_create_with_valid_headers_becomes_a_post_in_the_named_container
+T1 EXPECT-OK expect=A_remote_create_with_valid_headers_becomes_a_post_in_the_named_container
+T1 RESTORE-OK hash=PRE residue=0
+T2 PRE at=230109 ac=AC-02 hash=684ee617070ce23aa824cb074f205f86e9060819 head-match=true find-hits=1
+T2 RUN wrapper=0 logExit=0 aprovado=26 falha=0 total=0 log=20261113-230143-test-filter.log
+T2 RED-AC NONE
+T2 EXPECT-MISS expect=The_same_activity_id_delivered_twice_is_accepted_without_reprocessing logExit=0 falha=0 missed=The_same_activity_id_delivered_twice_is_accepted_without_reprocessing
+T2 RESTORE-OK hash=PRE residue=0
+T3 PRE at=230143 ac=AC-03 hash=cec239536717d750d69cee4a7bc9ce899ad02b70 head-match=true find-hits=1
+T3 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230218-test-filter.log
+T3 RED-AC Squid.Tests.Federation.InboxReceiveTests.The_contract_order_refuses_each_step_with_the_state_intact
+T3 EXPECT-OK expect=The_contract_order_refuses_each_step_with_the_state_intact
+T3 RESTORE-OK hash=PRE residue=0
+T4 PRE at=230219 ac=AC-03 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T4 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230255-test-filter.log
+T4 RED-AC Squid.Tests.Federation.InboxReceiveTests.The_contract_order_refuses_each_step_with_the_state_intact
+T4 EXPECT-OK expect=The_contract_order_refuses_each_step_with_the_state_intact
+T4 RESTORE-OK hash=PRE residue=0
+T5 PRE at=230255 ac=AC-03 hash=cec239536717d750d69cee4a7bc9ce899ad02b70 head-match=true find-hits=1
+T5 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230330-test-filter.log
+T5 RED-AC Squid.Tests.Federation.InboxReceiveTests.The_contract_order_refuses_each_step_with_the_state_intact
+T5 EXPECT-OK expect=The_contract_order_refuses_each_step_with_the_state_intact
+T5 RESTORE-OK hash=PRE residue=0
+T6 PRE at=230330 ac=AC-03 hash=cec239536717d750d69cee4a7bc9ce899ad02b70 head-match=true find-hits=1
+T6 RUN wrapper=1 logExit=1 aprovado=23 falha=3 total=0 log=20261113-230405-test-filter.log
+T6 RED-AC Squid.Tests.Federation.QaTask0044InboxGapTests.A_signature_made_with_a_foreign_key_is_refused_with_401; Squid.Tests.Federation.InboxReceiveTests.The_contract_order_refuses_each_step_with_the_state_intact; Squid.Tests.Federation.ActivityPubSurfaceTests.Both_inboxes_refuse_without_a_verifiable_signature_and_change_nothing
+T6 EXPECT-OK expect=The_contract_order_refuses_each_step_with_the_state_intact
+T6 RESTORE-OK hash=PRE residue=0
+T7 PRE at=230405 ac=AC-04 hash=6c689763d465fbb90bc1bc7cbe71a39d5d09dd76 head-match=true find-hits=1
+T7 RUN wrapper=1 logExit=1 aprovado=24 falha=2 total=0 log=20261113-230439-test-filter.log
+T7 RED-AC Squid.Tests.Federation.QaTask0044InboxGapTests.The_default_quota_is_sixty_per_domain_without_configuration; Squid.Tests.Federation.InboxRateLimitTests.Over_the_per_domain_quota_the_inbox_answers_429_with_retry_after
+T7 EXPECT-OK expect=Over_the_per_domain_quota_the_inbox_answers_429_with_retry_after
+T7 RESTORE-OK hash=PRE residue=0
+T8 PRE at=230439 ac=AC-04 hash=6c689763d465fbb90bc1bc7cbe71a39d5d09dd76 head-match=true find-hits=1
+T8 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230516-test-filter.log
+T8 RED-AC Squid.Tests.Federation.QaTask0044InboxGapTests.The_default_quota_is_sixty_per_domain_without_configuration
+T8 EXPECT-OK expect=The_default_quota_is_sixty_per_domain_without_configuration
+T8 RESTORE-OK hash=PRE residue=0
+T9 PRE at=230517 ac=AC-05 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T9 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230554-test-filter.log
+T9 RED-AC Squid.Tests.Federation.InboxReceiveTests.A_follow_creates_the_relation_answers_accept_and_undo_removes_it
+T9 EXPECT-OK expect=A_follow_creates_the_relation_answers_accept_and_undo_removes_it
+T9 RESTORE-OK hash=PRE residue=0
+T10 PRE at=230554 ac=AC-05 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T10 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230629-test-filter.log
+T10 RED-AC Squid.Tests.Federation.InboxReceiveTests.A_follow_creates_the_relation_answers_accept_and_undo_removes_it
+T10 EXPECT-OK expect=A_follow_creates_the_relation_answers_accept_and_undo_removes_it
+T10 RESTORE-OK hash=PRE residue=0
+T11 PRE at=230629 ac=AC-05 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T11 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230703-test-filter.log
+T11 RED-AC Squid.Tests.Federation.InboxReceiveTests.A_follow_creates_the_relation_answers_accept_and_undo_removes_it
+T11 EXPECT-OK expect=A_follow_creates_the_relation_answers_accept_and_undo_removes_it
+T11 RESTORE-OK hash=PRE residue=0
+T12 PRE at=230704 ac=AC-05 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T12 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230738-test-filter.log
+T12 RED-AC Squid.Tests.Federation.InboxReceiveTests.A_remote_delete_tombstones_the_post_and_it_leaves_the_feed
+T12 EXPECT-OK expect=A_remote_delete_tombstones_the_post_and_it_leaves_the_feed
+T12 RESTORE-OK hash=PRE residue=0
+T13 PRE at=230739 ac=AC-05 hash=fe22b3831862db28db501dade1076a7942c21537 head-match=true find-hits=1
+T13 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230808-test-filter.log
+T13 RED-AC Squid.Tests.Federation.InboxReceiveTests.The_same_actor_liking_twice_keeps_the_count_at_one
+T13 EXPECT-OK expect=The_same_actor_liking_twice_keeps_the_count_at_one
+T13 RESTORE-OK hash=PRE residue=0
+T14 PRE at=230808 ac=AC-05 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T14 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230844-test-filter.log
+T14 RED-AC Squid.Tests.Federation.InboxReceiveTests.A_flag_files_one_denunciation_and_a_repeat_files_no_second
+T14 EXPECT-OK expect=A_flag_files_one_denunciation_and_a_repeat_files_no_second
+T14 RESTORE-OK hash=PRE residue=0
+T15 PRE at=230844 ac=AC-06 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T15 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230919-test-filter.log
+T15 RED-AC Squid.Tests.Federation.InboxReceiveTests.A_members_only_create_applies_for_a_member_and_not_for_a_stranger
+T15 EXPECT-OK expect=A_members_only_create_applies_for_a_member_and_not_for_a_stranger
+T15 RESTORE-OK hash=PRE residue=0
+T16 PRE at=230919 ac=AC-06 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T16 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-230954-test-filter.log
+T16 RED-AC Squid.Tests.Federation.InboxReceiveTests.A_private_create_is_never_applied
+T16 EXPECT-OK expect=A_private_create_is_never_applied
+T16 RESTORE-OK hash=PRE residue=0
+T17 PRE at=230955 ac=AC-06 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T17 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-231030-test-filter.log
+T17 RED-AC Squid.Tests.Federation.InboxReceiveTests.An_unknown_type_is_accepted_and_counted_by_the_metric
+T17 EXPECT-OK expect=An_unknown_type_is_accepted_and_counted_by_the_metric
+T17 RESTORE-OK hash=PRE residue=0
+T18 PRE at=231030 ac=AC-07 hash=f64ea3e2f1eddfb50d45cbc49068960aece42387 head-match=true find-hits=1
+T18 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-231105-test-filter.log
+T18 RED-AC Squid.Tests.Federation.InboxReceiveTests.Remote_attachments_are_verified_by_sha256_and_a_failed_one_stays_absent
+T18 EXPECT-OK expect=Remote_attachments_are_verified_by_sha256_and_a_failed_one_stays_absent
+T18 RESTORE-OK hash=PRE residue=0
+T19 PRE at=231106 ac=AC-07 hash=dd25cb7d1cfc8d72139662303042af927b2806fa head-match=true find-hits=1
+T19 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-231141-test-filter.log
+T19 RED-AC Squid.Tests.Federation.InboxReceiveTests.The_production_media_client_never_touches_a_blocked_address
+T19 EXPECT-OK expect=The_production_media_client_never_touches_a_blocked_address
+T19 RESTORE-OK hash=PRE residue=0
+T20 PRE at=231141 ac=D-01 hash=8a53079354b4dd58a75494c5a2c26b34cc310976 head-match=true find-hits=1
+T20 RUN wrapper=1 logExit=1 aprovado=25 falha=1 total=0 log=20261113-231216-test-filter.log
+T20 RED-AC Squid.Tests.Federation.InboxReceiveTests.A_create_without_any_named_destination_is_accepted_without_applying
+T20 EXPECT-OK expect=A_create_without_any_named_destination_is_accepted_without_applying
+T20 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=26 falha=0 log=20261113-231250-test-filter.log
+UNTRACKED backend=1 (esperado 1: QaTask0044InboxGapTests.cs da QA, dentro dos touches)
+SUMMARY cycles=20 failed=1 residue-backend=0 temp-backups=0 elapsed-s=736
