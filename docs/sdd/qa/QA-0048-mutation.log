@@ -1,0 +1,14 @@
+=== mutacao ps1 (130 PASS / 4 FAIL esperado) ===
+FAIL | projeto dotnet existe: backend/src/Squid.Fantasma | sem diretorio backend/src/Squid.Fantasma
+FAIL | AC-01 runbook cita Squid.Service (silo A+B+dominio) | menos de 3 boot de silo
+FAIL | AC-03 peer-entrega-travada.md sem token PENDENTE | contem marcador PENDENTE (case-sensitivo)
+FAIL | AC-04 dlq status EXECUTAVEL + ponteiro P-06 (direto ou idem) |  PENDENTE-fase  |  — (idem) 
+qa-check-task-0048: 130 PASS / 4 FAIL
+EXIT=4
+=== mutacao sh (141 PASS / 4 FAIL esperado) ===
+FAIL | projeto dotnet existe: backend/src/Squid.Fantasma | sem diretorio backend/src/Squid.Fantasma
+FAIL | AC-01 runbook cita Squid.Service (silo A+B+dominio) | menos de 3
+FAIL | AC-03 peer-entrega-travada.md sem token PENDENTE (case-sensitivo) | contem marcador PENDENTE
+FAIL | AC-04 dlq status EXECUTAVEL + ponteiro P-06 (direto ou idem) | | [dlq-cheia.md](dlq-cheia.md) | fila de falhas de entrega cheia | PENDENTE-fase | — (idem) |
+qa-check-task-0048.sh: 141 PASS / 4 FAIL
+EXIT_SH=4

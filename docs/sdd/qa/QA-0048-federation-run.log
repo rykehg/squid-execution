@@ -1,0 +1,69 @@
+﻿qa-run-federation-task-0048 — 2026-11-14 18:05:34
+== 1. boot do silo A (runbook passo 2, verbatim) ==
+PASS | silo A health 200 (curl -fsS exit 0)
+PASS | comando do runbook curl -fsS /health silo A exit 0
+== 2. boot do silo B (runbook passo 2, verbatim) ==
+PASS | silo B health 200 (curl -fsS exit 0)
+PASS | log A: Now listening on: http://127.0.0.1:5601
+PASS | log A: sem aviso federation output disabled (chave valida)
+PASS | log A: sem Orleans ja em uso que derrube o silo
+== 3. Verificacao passos 2-6 (comandos verbatim do runbook) ==
+PASS | step2 executou
+PASS | step2: nodeinfo devolve software name squid
+PASS | step3: registro alice 201
+PASS | step3: registro bob 201
+PASS | step4: container A 201
+PASS | step4: container B 201
+PASS | step5: follow B->A 202
+PASS | step5: follow A->B 202
+PASS | step6: post A 201
+PASS | step6: post B 201
+== 4. isolamento A/B e colecoes de follow ==
+PASS | alice existe no silo A (200)
+PASS | alice NAO existe no silo B (404, bancos distintos)
+PASS | alice followers totalItems 1
+PASS | bob followers totalItems 1
+OBS | following A={"@context":"https://www.w3.org/ns/activitystreams","id":"http://127.0.0.1:5601/users/alice/following","type":"OrderedCollection","totalItems":0,"first":"http://127.0.0.1:5601/users/alice/following?pa | following B={"@context":"https://www.w3.org/ns/activitystreams","id":"http://127.0.0.1:5602/users/bob/following","type":"OrderedCollection","totalItems":0,"first":"http://127.0.0.1:5602/users/bob/following?page=1
+== 5. feeds sem o Worker (claim: items vazio) ==
+PASS | feeds A+B vazios sem Worker (claim do runbook)
+== 6. Workers de projecao (runbook passo 3, verbatim) ==
+PASS | worker A segue vivo apos 5s
+PASS | worker B segue vivo apos 5s
+PASS | feed A: proprio post + post da B
+PASS | feed B: proprio post + post da A
+== 7. leitura da fila e dos pares (Verificacao 8, verbatim) ==
+PASS | fila A: linhas Follow e Create em Sent
+PASS | pares B: peer Healthy
+== 8. peer-entrega-travada Diagnostico 2 e Verificacao 1 (verbatim) ==
+PASS | diagnostico 2: fila legivel (linha de entrega na saida)
+PASS | diagnostico 2: pares legiveis (linha de peer na saida)
+PASS | verificacao 1: contagem por estado mostra Sent
+== 9. PeerClient --help e cenario invalido ==
+PASS | PeerClient --help exit 0
+PASS | PeerClient --scenario=nope exit 1
+== 10. cenario 500 (peer-entrega-travada Diagnostico 3) ==
+PASS | PeerClient 500 imprime origem dinamica (log do runbook)
+PASS | follow para o par sintetico 500 responde 202 (enfileira)
+PASS | linha Pending com send_failed e next_attempt_at futuro
+PASS | peer do cenario 500: Down com failure_count 1 (mesma linha)
+== 11. cenario 401 (dlq-cheia Diagnostico 4) ==
+PASS | PeerClient 401 imprime origem dinamica
+PASS | follow para o par sintetico 401 responde 202
+PASS | 401 derruba a linha em Failed com signature_rejected na 1a tentativa
+PASS | log do silo A: peer delivery dead-lettered
+PASS | log do silo A: reason signature_rejected no aviso
+PASS | dlq diagnostico 1: contagem por motivo mostra signature_rejected
+PASS | dlq diagnostico 2: linhas com recipient_actor_id
+PASS | dlq verificacao 1: estados com Failed
+== 12. Verificacao 9: outbox do par + logs sem falha de assinatura ==
+PASS | outbox do contener B cita nota de origem do silo A (5601/o/)
+PASS | nenhum log com signature verification failed (contrato §7)
+== 13. modo dominio canonico Instance:Domain (5603) ==
+PASS | silo C (Instance:Domain) health 200
+PASS | registro domtest no silo C 201
+PASS | id publicado usa https://squid-a.test (CanonicalOrigin)
+PASS | webfinger subject acct:domtest@squid-a.test
+== limpeza: encerrando processos e apagando temporarios ==
+PASS | portas 5601-5603 liberadas apos limpeza
+PASS | sem residuo temporario da execucao
+qa-run-federation-task-0048: 0 FAIL
