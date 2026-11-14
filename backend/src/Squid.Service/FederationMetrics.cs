@@ -18,10 +18,18 @@ public static class FederationMetrics
     /// <summary>The counter AC-06 names.</summary>
     public const string UnknownActivityCounter = "federation.unknown_activity";
 
+    /// <summary>The counter of a send-time cancellation (TASK-0045, R-05/FR-038): policy said no at the instant of delivery.</summary>
+    public const string DeliveryCancelledCounter = "federation.delivery_cancelled";
+
     private static readonly Meter Meter = new(MeterName);
 
     private static readonly Counter<long> Unknown = Meter.CreateCounter<long>(UnknownActivityCounter);
 
+    private static readonly Counter<long> Cancelled = Meter.CreateCounter<long>(DeliveryCancelledCounter);
+
     /// <summary>One activity arrived that this instance acknowledges with a 202 and applies nothing.</summary>
     public static void UnknownActivity() => Unknown.Add(1);
+
+    /// <summary>One queued delivery was cancelled by the re-evaluation of R-05 — never sent, never retried.</summary>
+    public static void DeliveryCancelled() => Cancelled.Add(1);
 }

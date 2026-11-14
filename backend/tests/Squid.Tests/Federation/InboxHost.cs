@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Squid.Api.Crypto;
 using Squid.Api.Federation;
 using Squid.Api.Posts;
 using Squid.Protocols.ActivityPub;
@@ -39,6 +40,17 @@ public sealed class InboxHostFixture : IAsyncDisposable
     /// <summary>The fake that answers remote attachment bytes.</summary>
     public FakeMediaClient Media { get; } = new();
 
+    /// <summary>The fake that receives every signed outbound POST (TASK-0045) — no suite ever opens a socket.</summary>
+    public FakePeerSender Sender { get; } = new();
+
+    /// <summary>
+    /// The secret this host boots <c>Squid:RecoveryKey</c> with (SPEC-0011 section B): an actor
+    /// whose wrapped key was sealed with THIS key can activate its signer and go out signed.
+    /// HTTP registration mints a fresh per-actor RK the boot key cannot open, so a suite that
+    /// needs a signature builds its actor through <c>OutboundHarness.SignableAsync</c>.
+    /// </summary>
+    public RootKey RuntimeKey { get; } = RootKey.Create();
+
     /// <summary>Starts the host on <c>http://127.0.0.1:0</c> with the inbox fakes wired in.</summary>
     public InboxHostFixture()
         : this(10_000)
@@ -53,12 +65,14 @@ public sealed class InboxHostFixture : IAsyncDisposable
             "--Storage:Path=" + StoragePath,
             "--Logging:LogLevel:Default=Warning",
             "--Federation:RateLimitPerMinute=" + rateLimit,
+            "--Squid:RecoveryKey=" + Convert.ToBase64String(RuntimeKey.AsSpan()),
         ], builder =>
         {
             // The seam runs after every production registration — last one wins, so the real
             // pipeline resolves the fakes and nothing here can reach the network (AC-01, AC-07).
             builder.Services.AddSingleton<IFederatedActorClient>(Actors);
             builder.Services.AddSingleton<IRemoteMediaClient>(Media);
+            builder.Services.AddSingleton<IPeerSender>(Sender);
         });
         App.Urls.Add("http://127.0.0.1:0");
         App.StartAsync().GetAwaiter().GetResult();
@@ -138,6 +152,33 @@ public sealed class FakeMediaClient : IRemoteMediaClient
     {
         Requests.Enqueue(url);
         return Task.FromResult(_blobs.TryGetValue(url, out var bytes) ? bytes : null);
+    }
+}
+
+/// <summary>One signed outbound POST the pipeline handed to the wire — exactly what AC-03/AC-06 observe.</summary>
+public sealed record PeerSend(string Inbox, string Signature, string? Digest, string Date, string Body);
+
+/// <summary>
+/// The <c>IPeerSender</c> of the tests (TASK-0045): every delivery lands in
+/// <see cref="Calls"/> with the headers it was signed with, none ever reaches a socket, and
+/// <see cref="Accept"/> stands in for the peer's answer — a test that needs a refused send
+/// flips it to false instead of breaking anything real.
+/// </summary>
+public sealed class FakePeerSender : IPeerSender
+{
+    /// <summary>Every POST the outbound pipeline attempted, in order.</summary>
+    public ConcurrentQueue<PeerSend> Calls { get; } = new();
+
+    /// <summary>What the "peer" answers: true = 2xx, false = a failure the queue records and survives.</summary>
+    public bool Accept { get; set; } = true;
+
+    /// <inheritdoc />
+    public Task<bool> SendAsync(
+        string inboxUri, string signature, string? digest, string date, string body,
+        CancellationToken cancellationToken)
+    {
+        Calls.Enqueue(new PeerSend(inboxUri, signature, digest, date, body));
+        return Task.FromResult(Accept);
     }
 }
 

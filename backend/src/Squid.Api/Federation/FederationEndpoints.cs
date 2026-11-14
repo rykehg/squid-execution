@@ -44,6 +44,10 @@ public static class FederationEndpoints
         app.MapGet("/users/{name}/outbox", OutboxAsync);
         app.MapGet("/users/{name}/followers", FollowersAsync);
         app.MapGet("/users/{name}/following", FollowingAsync);
+        // The local follow of SPEC-0011 section F (GAP-41): session + CSRF ride the auth
+        // middleware this maps after — the route's own ladder is the 401 of no session, the 400
+        // of a target that is not a REMOTE actor, and 202 when the Follow is enqueued (AC-03).
+        app.MapPost("/api/federation/follow", FollowAsync);
         // Both inboxes share one verdict mapper behind two routes: the target is what the ROUTE
         // said, never what a query parameter could stand in for (SPEC-0011 section E). The
         // signature gate runs BEFORE the recipient is even looked at, so an unknown actor or
@@ -97,6 +101,47 @@ public static class FederationEndpoints
         /// </summary>
         Task<IResult> FollowingAsync(string name, HttpContext context, ActorGrain actors, IFollowStore follows) =>
             ActorRelationAsync(name, "following", context, actors, follows, seams);
+
+        // ---- local outbound route (SPEC-0011 section F, GAP-41) ---------------------------
+
+        /// <summary>
+        /// <c>POST /api/federation/follow</c> (AC-03): a signed <c>Follow</c> toward a REMOTE
+        /// actor enqueued for the peer and the outbound edge recorded pending — settled when the
+        /// peer answers Accept (the inbox pipeline of TASK-0044 already applies it). Session and
+        /// CSRF come from the middleware; the target must be an absolute http(s) URI on another
+        /// instance, because following ourselves would only ever enqueue a delivery to our own
+        /// inbox. No UI in this phase — P-08 consumes the route (GAP-41).
+        /// </summary>
+        async Task<IResult> FollowAsync(
+            FollowRequest? request, HttpContext context, IOutboundPipeline outbound)
+        {
+            var current = AuthSessions.Current(context);
+            if (current is null)
+            {
+                return AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
+                    "not_authenticated", "sessão inválida ou expirada.");
+            }
+
+            var origin = CanonicalOrigin.Of(context);
+            var target = request?.TargetActorUri?.Trim() ?? string.Empty;
+            if (!Uri.TryCreate(target, UriKind.Absolute, out var uri)
+                || uri.Scheme is not ("http" or "https"))
+            {
+                return AuthErrors.Write(context, StatusCodes.Status400BadRequest,
+                    "validation_failed",
+                    "targetActorUri inválido: informe a URI absoluta do ator remoto (http ou https).");
+            }
+
+            if (target.StartsWith(origin + "/", StringComparison.Ordinal))
+            {
+                return AuthErrors.Write(context, StatusCodes.Status400BadRequest,
+                    "validation_failed",
+                    "targetActorUri local: esta rota segue atores de outras instâncias.");
+            }
+
+            await outbound.EnqueueFollowAsync(origin, current.Handle, target);
+            return Results.Accepted(); // enfileirado; o envio é do motor, nunca da request (FR-036)
+        }
 
         // ---- inboxes (contract §3, SPEC-0011 section E) ------------------------------
 
@@ -427,3 +472,6 @@ public static class FederationEndpoints
     /// <summary>One outbox row: the publication and the container it lives in, resolved together.</summary>
     private sealed record OutboxItem(PostObject Post, Container Container);
 }
+
+/// <summary>The body of the local follow route — SPEC-0011 section F's input <c>{ targetActorUri }</c>.</summary>
+public sealed record FollowRequest(string? TargetActorUri);

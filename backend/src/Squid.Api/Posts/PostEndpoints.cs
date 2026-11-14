@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
 using Squid.Api.Discovery;
+using Squid.Api.Federation;
 using Squid.Api.Media;
 using Squid.Domain;
 using Squid.Domain.Containers;
@@ -87,7 +88,8 @@ public static class PostEndpoints
     private static async Task<IResult> TargetAsync(
         string target, HttpContext context, IContainerStore store, IPolicyAuditStore audit,
         IPolicyEvaluator evaluator, IObjectStore objects, IActivityStore activities,
-        IActorStatusStore statuses, IReportStore reports, StreamHub hub, TimeProvider time)
+        IActorStatusStore statuses, IReportStore reports, StreamHub hub, TimeProvider time,
+        IOutboundPipeline outbound)
     {
         var path = Uri.UnescapeDataString(target ?? string.Empty).Trim().TrimEnd('/');
         if (path.EndsWith(ReportSuffix, StringComparison.Ordinal))
@@ -102,7 +104,7 @@ public static class PostEndpoints
             var request = await ReadJsonAsync<CreateReplyRequest>(context);
             return await ReplyAsync(
                 path[..^RepliesSuffix.Length], request, context, store, audit, evaluator,
-                objects, activities, statuses, hub, time);
+                objects, activities, statuses, hub, time, outbound);
         }
 
         // The contract has no other POST under /api/posts — the route answers like nothing is there.
@@ -142,7 +144,7 @@ public static class PostEndpoints
         string slug, CreatePostRequest? request, HttpContext context, IContainerStore store,
         IPolicyAuditStore audit, IPolicyEvaluator evaluator, IObjectStore objects,
         IActivityStore activities, IActorStatusStore statuses, IMediaStore media,
-        StreamHub hub, TimeProvider time, LinkUnfurler unfurler)
+        StreamHub hub, TimeProvider time, LinkUnfurler unfurler, IOutboundPipeline outbound)
     {
         var current = AuthSessions.Current(context);
         if (current is null)
@@ -242,6 +244,12 @@ public static class PostEndpoints
         // stream only ever shows a seq a reconnecting read finds, and the wake itself never blocks.
         hub.Publish();
 
+        // Fan-out da saída (SPEC-0011 section F, TASK-0045): as entregas federadas ficam
+        // registradas como Pending ANTES desta resposta sair (AC-05) — escrita local rápida —
+        // e nenhum envio acontece aqui: a rede nunca bloqueia a publicação (FR-036) e o motor
+        // que drena a fila é da TASK-0046. private não cria fila nenhuma (AC-02, §7.3).
+        await outbound.EnqueueCreateAsync(Origin(context), post, container);
+
         // The grant is a decision too (FR-019): recorded before the answer leaves.
         await RecordAsync(audit, context, PostDecision, container.Id, PolicyAudit.Allow,
             decision.PolicyVersion, decision.Reason);
@@ -290,7 +298,8 @@ public static class PostEndpoints
     /// </summary>
     private static async Task<IResult> RemoveAsync(
         string id, HttpContext context, IContainerStore store, IPolicyAuditStore audit,
-        IPolicyEvaluator evaluator, IObjectStore objects, IActivityStore activities, TimeProvider time)
+        IPolicyEvaluator evaluator, IObjectStore objects, IActivityStore activities, TimeProvider time,
+        IOutboundPipeline outbound)
     {
         var current = AuthSessions.Current(context);
         if (current is null)
@@ -356,6 +365,10 @@ public static class PostEndpoints
             // so this answer is the same 404 an absent id gets.
             return await MissingAsync(context, audit, id);
         }
+
+        // R-08 / AC-06: a remoção propaga um Delete assinado a cada destinatário que recebeu (ou
+        // ia receber) o Create — fila local como a publicação; o envio segue fora da request.
+        await outbound.EnqueueDeleteAsync(Origin(context), post, container);
 
         return Results.Json(new { id = post.Id, deletedAt = now, takedownReason = reason });
     }
@@ -430,7 +443,8 @@ public static class PostEndpoints
     private static async Task<IResult> ReplyAsync(
         string parentId, CreateReplyRequest? request, HttpContext context, IContainerStore store,
         IPolicyAuditStore audit, IPolicyEvaluator evaluator, IObjectStore objects,
-        IActivityStore activities, IActorStatusStore statuses, StreamHub hub, TimeProvider time)
+        IActivityStore activities, IActorStatusStore statuses, StreamHub hub, TimeProvider time,
+        IOutboundPipeline outbound)
     {
         var current = AuthSessions.Current(context);
         if (current is null)
@@ -520,6 +534,10 @@ public static class PostEndpoints
         // A reply is a post and its event is durable here too, so the live channel wakes the same
         // way (SPEC-0009 section D): one hub, one `post` event name, no per-route emission.
         hub.Publish();
+
+        // Uma resposta É uma publicação: o mesmo fan-out da saída — o Create federado carrega o
+        // inReplyTo (contrato §7.15) — enfileirado antes da resposta, sem nenhum envio aqui.
+        await outbound.EnqueueCreateAsync(Origin(context), post, container);
 
         await RecordAsync(audit, context, CommentDecision, parent.Id, PolicyAudit.Allow,
             decision.PolicyVersion, decision.Reason);
