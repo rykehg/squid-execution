@@ -203,6 +203,15 @@ public static class SquidServiceHost
         builder.Services.AddSingleton<FederationRateLimiter>();
         builder.Services.AddTransient<IInboxPipeline, InboxPipeline>();
 
+        // Outbound federation (SPEC-0011 section F, TASK-0045): the queue over the migrated
+        // 0008 table, the wire seam a test replaces so no suite opens a socket, and the pipeline
+        // that fans a publication out by visibility and re-evaluates R-05 at send time.
+        // Registered BEFORE the test seam below, so a configure callback can replace the sender
+        // (last registration wins) — exactly like the two inbox clients above.
+        builder.Services.AddSingleton<IPeerDeliveryStore>(_ => new SqlitePeerDeliveryStore(connectionString));
+        builder.Services.AddSingleton<IPeerSender, HttpPeerSender>();
+        builder.Services.AddTransient<IOutboundPipeline, OutboundPipeline>();
+
         builder.UseOrleans(silo =>
         {
             silo.Services.AddGrainStorage(StorageProviderName, (_, _) => storage);

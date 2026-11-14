@@ -1,0 +1,21 @@
+baseline=2026-11-14 01:02:09 (20261114-010209-test-filter.log)
+blob work=96bb7aa02f5e87991fab4831806822e1d90eef7b head=96bb7aa02f5e87991fab4831806822e1d90eef7b match=True file=backend\src\Squid.Protocols\ActivityPub\ObjectJsonLd.cs
+blob work=60f420a419fcbb5ad8818dfb3425196bc93e97fd head=60f420a419fcbb5ad8818dfb3425196bc93e97fd match=True file=backend\src\Squid.Service\OutboundPipeline.cs
+blob work=748893244957a5dd28f91dad5b6cafb9d81c123f head=748893244957a5dd28f91dad5b6cafb9d81c123f match=True file=backend\src\Squid.Api\Federation\FederationEndpoints.cs
+mtime backend\src\Squid.Api\Federation\FederationEndpoints.cs = 01:13:39
+mtime backend\src\Squid.Protocols\ActivityPub\ObjectJsonLd.cs = 01:09:35
+mtime backend\src\Squid.Service\OutboundPipeline.cs = 01:15:41
+mtime backend\tests\Squid.Tests\Federation\QaTask0045FanOutGapTests.cs = 01:05:48
+mtime-count=4 (esperado 4: 3 mutados/restaurados + QaTask0045FanOutGapTests.cs)
+residue=0 (tokens=14, backend .cs fora de bin/obj)
+git-backend-entries=1
+git-backend ?? backend/tests/Squid.Tests/Federation/QaTask0045FanOutGapTests.cs
+git-all [baseline-odev-wip]  M docs/sdd/tasks/TASK-0045-saida-fan-out-e-follow.md
+git-all [touches] ?? backend/tests/Squid.Tests/Federation/QaTask0045FanOutGapTests.cs
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0045-git-baseline.txt
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0045-mutations.log
+git-all [qa-artifact] ?? docs/sdd/qa/QA-0045-verify.log
+git-all [qa-artifact] ?? docs/sdd/qa/qa-mutate-task-0045.ps1
+git-all [qa-artifact] ?? docs/sdd/qa/qa-scope-task-0045.ps1
+fora-dos-touches=0 (0 = so touches, wip do ODEV da baseline e artefatos desta QA)
+baseline-odev-wip-count=1 (esperado 1)

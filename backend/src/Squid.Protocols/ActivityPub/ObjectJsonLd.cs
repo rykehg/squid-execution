@@ -42,12 +42,62 @@ public static class ObjectJsonLd
             "Note",
             post.AuthorActorId,
             post.Content,
-            post.CreatedAt.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"),
+            Published(post),
             to,
             cc,
             Word(post.Kind),
             post.ContainerSlug,
-            Policy(container.Policy)));
+            Policy(container.Policy),
+            post.ReplyToId));
+    }
+
+    /// <summary>
+    /// The outbound <c>Create</c> of SPEC-0011 section F (contract §2.1, TASK-0045): the activity
+    /// envelope the fan-out sends per visibility — <paramref name="to"/>/<paramref name="cc"/> are
+    /// the addressing the queue decided (§4 table), and <c>audience</c> names the container so the
+    /// REMOTE side resolves the destination by D-01 (named destination only, SPEC-0011 section E —
+    /// the GAP-48 amendment of AC-01). The inline object is the very Note the object route serves,
+    /// same document, same <c>squid:slug</c>/<c>squid:policy</c> — one rendering of the row, never
+    /// two — plus the <c>inReplyTo</c> a reply federates with (contract §7.15).
+    /// </summary>
+    public static string Create(
+        string activityId, PostObject post, Container container, string origin,
+        IReadOnlyList<string> to, IReadOnlyList<string> cc)
+    {
+        ArgumentNullException.ThrowIfNull(post);
+        ArgumentNullException.ThrowIfNull(container);
+        ArgumentNullException.ThrowIfNull(to);
+        ArgumentNullException.ThrowIfNull(cc);
+
+        // One addressing, two spellings: the activity and its inline Note carry the SAME to/cc
+        // (the §2.1 example mirrors them), so a reader that looks at either sees the same rule.
+        var addressed = to.ToArray();
+        var carbonCopies = cc.ToArray();
+
+        var note = new NoteDocument(
+            Context(origin),
+            post.Id,
+            "Note",
+            post.AuthorActorId,
+            post.Content,
+            Published(post),
+            addressed,
+            carbonCopies,
+            Word(post.Kind),
+            post.ContainerSlug,
+            Policy(container.Policy),
+            post.ReplyToId);
+
+        return JsonSerializer.Serialize(new CreateDocument(
+            ProfileJsonLd.ActivityStreamsContext,
+            activityId,
+            "Create",
+            post.AuthorActorId,
+            Published(post),
+            addressed,
+            carbonCopies,
+            container.Id,
+            note));
     }
 
     /// <summary>
@@ -74,6 +124,10 @@ public static class ObjectJsonLd
             $"{id}/outbox",
             $"{id}/members"));
     }
+
+    /// <summary>The <c>published</c> instant of a row on the wire — UTC, second precision (§2.1).</summary>
+    private static string Published(PostObject post) =>
+        post.CreatedAt.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     /// <summary>
     /// The addressing of contract §4: <c>public</c> puts the Public collection in <c>to</c> and the
@@ -128,7 +182,25 @@ internal sealed record NoteDocument(
     [property: JsonPropertyName("cc")] string[] Cc,
     [property: JsonPropertyName("squid:kind")] string Kind,
     [property: JsonPropertyName("squid:slug")] string Slug,
-    [property: JsonPropertyName("squid:policy")] PolicyDocument Policy);
+    [property: JsonPropertyName("squid:policy")] PolicyDocument Policy,
+    [property: JsonPropertyName("inReplyTo")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? InReplyTo = null);
+
+/// <summary>
+/// The outbound <c>Create</c> of contract §2.1 (TASK-0045): the activity envelope around the Note
+/// above, with <c>audience</c> naming the container — the named destination D-01 resolves on the
+/// receiving side (GAP-48 amendment, AC-01).
+/// </summary>
+internal sealed record CreateDocument(
+    [property: JsonPropertyName("@context")] string Context,
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("actor")] string Actor,
+    [property: JsonPropertyName("published")] string Published,
+    [property: JsonPropertyName("to")] string[] To,
+    [property: JsonPropertyName("cc")] string[] Cc,
+    [property: JsonPropertyName("audience")] string Audience,
+    [property: JsonPropertyName("object")] NoteDocument Object);
 
 /// <summary>The Group of contract §1.2 — the container extended for the federated surface.</summary>
 internal sealed record GroupDocument(

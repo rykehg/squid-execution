@@ -1,0 +1,53 @@
+T1 PRE at=010856 ac=AC-01 hash=96bb7aa02f5e87991fab4831806822e1d90eef7b head-match=true find-hits=1
+T1 RUN wrapper=1 logExit=1 aprovado=34 falha=2 total=0 log=20261114-010935-test-filter.log
+T1 RED-AC Squid.Tests.Federation.QaTask0045FanOutGapTests.Ac01_public_post_also_enqueues_for_the_container_collection; Squid.Tests.Federation.OutboundFanOutTests.Ac01_public_post_enqueues_one_delivery_per_remote_follower_and_names_the_destination
+T1 EXPECT-OK expect=Ac01_public_post_enqueues_one_delivery_per_remote_follower_and_names_the_destination; Ac01_public_post_also_enqueues_for_the_container_collection
+T1 RESTORE-OK hash=PRE residue=0
+T2 PRE at=010935 ac=AC-01 hash=60f420a419fcbb5ad8818dfb3425196bc93e97fd head-match=true find-hits=1
+T2 RUN wrapper=1 logExit=1 aprovado=35 falha=1 total=0 log=20261114-011016-test-filter.log
+T2 RED-AC Squid.Tests.Federation.QaTask0045FanOutGapTests.Ac01_public_post_also_enqueues_for_the_container_collection
+T2 EXPECT-OK expect=Ac01_public_post_also_enqueues_for_the_container_collection
+T2 RESTORE-OK hash=PRE residue=0
+T3 PRE at=011016 ac=AC-02 hash=60f420a419fcbb5ad8818dfb3425196bc93e97fd head-match=true find-hits=1
+T3 RUN wrapper=1 logExit=1 aprovado=35 falha=1 total=0 log=20261114-011057-test-filter.log
+T3 RED-AC Squid.Tests.Federation.OutboundFanOutTests.Ac02_unlisted_delivers_only_to_followers
+T3 EXPECT-OK expect=Ac02_unlisted_delivers_only_to_followers
+T3 RESTORE-OK hash=PRE residue=0
+T4 PRE at=011058 ac=AC-02 hash=60f420a419fcbb5ad8818dfb3425196bc93e97fd head-match=true find-hits=1
+T4 RUN wrapper=1 logExit=1 aprovado=35 falha=1 total=0 log=20261114-011136-test-filter.log
+T4 RED-AC Squid.Tests.Federation.OutboundFanOutTests.Ac02_members_only_delivers_only_to_active_members
+T4 EXPECT-OK expect=Ac02_members_only_delivers_only_to_active_members
+T4 RESTORE-OK hash=PRE residue=0
+T5 PRE at=011136 ac=AC-02 hash=60f420a419fcbb5ad8818dfb3425196bc93e97fd head-match=true find-hits=1
+T5 RUN wrapper=1 logExit=1 aprovado=35 falha=1 total=0 log=20261114-011218-test-filter.log
+T5 RED-AC Squid.Tests.Federation.OutboundFanOutTests.Ac02_private_creates_no_delivery_at_all
+T5 EXPECT-OK expect=Ac02_private_creates_no_delivery_at_all
+T5 RESTORE-OK hash=PRE residue=0
+T6 PRE at=011218 ac=AC-03 hash=748893244957a5dd28f91dad5b6cafb9d81c123f head-match=true find-hits=1
+T6 RUN wrapper=1 logExit=1 aprovado=35 falha=1 total=0 log=20261114-011259-test-filter.log
+T6 RED-AC Squid.Tests.Federation.OutboundFanOutTests.Ac03_follow_route_enqueues_a_signed_follow_and_the_relation_settles_on_accept
+T6 EXPECT-OK expect=Ac03_follow_route_enqueues_a_signed_follow_and_the_relation_settles_on_accept
+T6 RESTORE-OK hash=PRE residue=0
+T7 PRE at=011300 ac=AC-03 hash=748893244957a5dd28f91dad5b6cafb9d81c123f head-match=true find-hits=1
+T7 RUN wrapper=1 logExit=1 aprovado=35 falha=1 total=0 log=20261114-011338-test-filter.log
+T7 RED-AC Squid.Tests.Federation.OutboundFanOutTests.Ac03_follow_route_enqueues_a_signed_follow_and_the_relation_settles_on_accept
+T7 EXPECT-OK expect=Ac03_follow_route_enqueues_a_signed_follow_and_the_relation_settles_on_accept
+T7 RESTORE-OK hash=PRE residue=0
+T8 PRE at=011339 ac=AC-04 hash=60f420a419fcbb5ad8818dfb3425196bc93e97fd head-match=true find-hits=1
+T8 RUN wrapper=1 logExit=1 aprovado=34 falha=2 total=0 log=20261114-011420-test-filter.log
+T8 RED-AC Squid.Tests.Federation.OutboundFanOutTests.Ac04_policy_change_before_send_cancels_with_a_reason_and_sends_nothing; Squid.Tests.Federation.OutboundFanOutTests.Ac06_removing_the_post_propagates_a_signed_delete_to_the_recipients_that_received_the_create
+T8 EXPECT-OK expect=Ac04_policy_change_before_send_cancels_with_a_reason_and_sends_nothing
+T8 RESTORE-OK hash=PRE residue=0
+T9 PRE at=011420 ac=AC-05 hash=60f420a419fcbb5ad8818dfb3425196bc93e97fd head-match=true find-hits=1
+T9 RUN wrapper=1 logExit=1 aprovado=31 falha=5 total=0 log=20261114-011501-test-filter.log
+T9 RED-AC Squid.Tests.Federation.QaTask0045FanOutGapTests.Ac01_public_post_also_enqueues_for_the_container_collection; Squid.Tests.Federation.OutboundFanOutTests.Ac04_policy_change_before_send_cancels_with_a_reason_and_sends_nothing; Squid.Tests.Federation.OutboundFanOutTests.Ac05_publish_returns_with_every_delivery_already_pending_and_the_wire_untouched; Squid.Tests.Federation.OutboundFanOutTests.Ac01_public_post_enqueues_one_delivery_per_remote_follower_and_names_the_destination; Squid.Tests.Federation.OutboundFanOutTests.Ac06_removing_the_post_propagates_a_signed_delete_to_the_recipients_that_received_the_create
+T9 EXPECT-OK expect=Ac05_publish_returns_with_every_delivery_already_pending_and_the_wire_untouched
+T9 RESTORE-OK hash=PRE residue=0
+T10 PRE at=011501 ac=AC-06 hash=60f420a419fcbb5ad8818dfb3425196bc93e97fd head-match=true find-hits=1
+T10 RUN wrapper=1 logExit=1 aprovado=35 falha=1 total=0 log=20261114-011541-test-filter.log
+T10 RED-AC Squid.Tests.Federation.OutboundFanOutTests.Ac06_removing_the_post_propagates_a_signed_delete_to_the_recipients_that_received_the_create
+T10 EXPECT-OK expect=Ac06_removing_the_post_propagates_a_signed_delete_to_the_recipients_that_received_the_create
+T10 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=36 falha=0 log=20261114-011620-test-filter.log
+UNTRACKED backend=1 (esperado 1: QaTask0045FanOutGapTests.cs da QA, dentro dos touches)
+SUMMARY cycles=10 failed=0 residue-backend=0 temp-backups=0 elapsed-s=445

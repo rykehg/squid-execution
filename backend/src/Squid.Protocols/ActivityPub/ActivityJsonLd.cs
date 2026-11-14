@@ -108,6 +108,36 @@ public static class ActivityJsonLd
             JsonSerializer.Deserialize<JsonElement>(followJson)));
     }
 
+    /// <summary>
+    /// The <c>Follow</c> the local route generates toward a remote actor (SPEC-0011 section F,
+    /// GAP-41, AC-03 of TASK-0045): the local actor asks for the target; the id is this instance's
+    /// canonical activity URL — minted by the caller, because the queue row keys on it.
+    /// </summary>
+    public static string Follow(string activityId, string actorUri, string targetActorUri)
+    {
+        ArgumentNullException.ThrowIfNull(activityId);
+        ArgumentNullException.ThrowIfNull(actorUri);
+        ArgumentNullException.ThrowIfNull(targetActorUri);
+
+        return JsonSerializer.Serialize(new SimpleActivityDocument(
+            ActivityStreamsContext, activityId, "Follow", actorUri, targetActorUri));
+    }
+
+    /// <summary>
+    /// The <c>Delete</c> a local removal propagates to every recipient of the <c>Create</c>
+    /// (R-08, AC-06 of TASK-0045): the author removes their own object; the id is minted by the
+    /// caller for the same reason as <see cref="Follow"/>.
+    /// </summary>
+    public static string Delete(string activityId, string actorUri, string objectUri)
+    {
+        ArgumentNullException.ThrowIfNull(activityId);
+        ArgumentNullException.ThrowIfNull(actorUri);
+        ArgumentNullException.ThrowIfNull(objectUri);
+
+        return JsonSerializer.Serialize(new SimpleActivityDocument(
+            ActivityStreamsContext, activityId, "Delete", actorUri, objectUri));
+    }
+
     private static async Task<JsonDocument> ParseAsync(byte[] body, int maxDepth, CancellationToken cancellationToken)
     {
         await using var stream = new MemoryStream(body, writable: false);
@@ -231,6 +261,14 @@ public static class ActivityJsonLd
         [property: JsonPropertyName("type")] string Type,
         [property: JsonPropertyName("actor")] string Actor,
         [property: JsonPropertyName("object")] JsonElement? Object);
+
+    /// <summary>One reference-style outbound activity (Follow, Delete): a URI in <c>object</c>, nothing nested.</summary>
+    private sealed record SimpleActivityDocument(
+        [property: JsonPropertyName("@context")] string Context,
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("type")] string Type,
+        [property: JsonPropertyName("actor")] string Actor,
+        [property: JsonPropertyName("object")] string Object);
 }
 
 /// <summary>The inbox activity under application — only the members the pipeline acts on (contract §2, §3).</summary>
