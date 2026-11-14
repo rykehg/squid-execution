@@ -117,6 +117,13 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 - Negação por Accept: `application/activity+json` e
   `application/ld+json; profile="https://www.w3.org/ns/activitystreams"`; `webfinger` ganha `self`
   apontando ao ator canônico. `rel=profile` **não** entra aqui (P-08, S-26).
+- **Mídia** (cláusula adjudicada pelo ODEV 2026-11-14 12:47:22, D-01 da TASK-0047): a rota
+  publicada no contrato §1 **`GET /media/{hash}`** passa a existir — blob **anônimo**
+  content-addressed (SHA-256 confere, `Cache-Control` longo + ETag), **sem metadados**;
+  `GET /api/media/{contentHash}` **não muda** (GAP-25 intacto para a UI local); o
+  `RemoteMediaClient` passa a buscar a rota do contrato. Consequência registrada: o blob vira
+  *capability por hash* (o contrato já publicava cache longo) — risco membersOnly-por-hash amarrado
+  ao **S-40** (backlog). Entrega: **TASK-0053**.
 
 ### E. Inbox: verificação, dedupe e aplicação (FR-035/040, InboxGrain, contrato §2/§3)
 
@@ -146,6 +153,11 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
   (contrato §2.1): `public` → `Public` em `to` + `followers` em `cc`; `unlisted` → `followers` em
   `to`; `membersOnly` → cada ator membro ativo em `to`, `squid:policy` no payload, nada em `cc`;
   `private` → **nenhuma entrega**.
+- **Anexos na saída** (D-01 da TASK-0047, adjudicada 2026-11-14 12:47:22): o `Create`/`Note` de um
+  post **com anexos** serializa o campo **`attachment`** (array AS2 com url por hash + tipo de
+  mídia) — simétrico ao inbound (a TASK-0044 já aplica `attachment`) e exigido pelo contrato §7.1
+  ("com autor, mídia e data corretos", SC-007). Sem anexos o documento é o de hoje, byte-idêntico.
+  Entrega: **TASK-0053**.
 - Destinatários: seguidores do autor + coleção `followers` do contêiner + menções; entrega em
   paralelo por par, **assíncrona** — nenhuma entrega bloqueia a resposta local (FR-036).
   **Cláusula adjudicada pelo ODEV (2026-11-14 01:35:17, nível especificação, finding 1 da
@@ -265,6 +277,7 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 | GAP-47 | ASSUMED | runbook de interop e validação com pares reais em Docker local na máquina do humano; instância pública real é seção opcional do runbook e gate humano à parte |
 | GAP-49 | ASSUMED | `Federation:TrustedPeerHosts` (allowlist exata, vazia por padrão) libera loopback/rede privada **só** nos clientes de federação; unfurl continua bloqueado; harness/runbook nomeiam os pares locais, produção = gate humano — TASK-0050 (decisão do ODEV 2026-11-13, resposta ao parked do DEV da TASK-0044) |
 | GAP-50 | RESOLVED (HUMAN) | duplo embrulho no registro (decisão 2026-11-14 09:10:08, opção 1): RSA do ator embrulhada também com a `Squid:RecoveryKey` de instância, cópia em tabela própria `0009_*`, runtime desembrulha com o segredo de boot, kit/GAP-01 intactos; atores antigos à config não federam (aceito) — TASK-0051; a alternativa (embrulhar a RK do ator) foi rejeitada por privilégio mínimo |
+| GAP-51 | RESOLVED (SPEC) | D-01 da TASK-0047 adjudicada pelo ODEV 2026-11-14 12:47:22: blob anônimo `GET /media/{hash}` *capability por hash* (contrato §1 já publicava cache longo; consequência membersOnly amarrada ao S-40) + `attachment` no `Note` de saída; `/api/media/{contentHash}` intacto — TASK-0053 |
 
 ## Tasks
 
@@ -279,6 +292,7 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 | TASK-0050 | Pares confiáveis: `Federation:TrustedPeerHosts` nas guardas dos clientes de federação (GAP-49) | no — serial, blockedBy 0044+0046, blocks 0047 | TASK_READY |
 | TASK-0051 | Assinatura de ator registrado: duplo embrulho com `Squid:RecoveryKey` (GAP-50) | no — serial, blockedBy 0050, blocks 0047 | TASK_READY |
 | TASK-0052 | PEM blindado: chave de ator remoto resolve (S-41, defeito provado na 0051) | no — serial, blockedBy 0051, blocks 0047 | TASK_READY |
-| TASK-0047 | Facet de dois silos (A→B, contrato §7 itens 1–9/14/15) | no — serial | TASK_READY |
+| TASK-0053 | Mídia federada: `attachment` na saída + `GET /media/{hash}` (GAP-51, D-01 da 0047) | no — serial, blocks 0047 | TASK_READY |
+| TASK-0047 | Facet de dois silos (A→B, contrato §7 itens 1–9/14/15) | no — serial | IN_DEVELOPMENT (parada, aguarda 0053) |
 | TASK-0048 | Runbook de federação (manual + runbooks P-06 executáveis) | no — serial, blockedBy 0047 | TASK_READY |
 | TASK-0049 | Interop real Mastodon/Friendica + facet de fecho do DoD | no — última, gate humano | TASK_READY |
