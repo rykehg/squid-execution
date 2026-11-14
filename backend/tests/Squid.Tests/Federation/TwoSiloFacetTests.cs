@@ -6,6 +6,7 @@ using Squid.Api.Federation;
 using Squid.Service;
 using Squid.Tests.Auth;
 using Squid.Tests.Feed;
+using Squid.Tests.Media;
 using Squid.Tests.Posts;
 
 namespace Squid.Tests.Federation;
@@ -42,11 +43,18 @@ public sealed class TwoSiloFacetTests : IClassFixture<TwoSilosFixture>
         Assert.Equal(HttpStatusCode.NotFound, (await Pair.A.Http.GetAsync($"{Pair.A.Origin}/users/{handle}")).StatusCode);
     }
 
-    [Fact] // AC-01 (§7.1/SC-007)
-    public async Task Ac01_public_post_of_a_lands_on_b_with_the_author_and_the_date_of_a()
+    [Fact] // AC-01 (§7.1/SC-007) — autor, data, conteúdo E mídia
+    public async Task Ac01_public_post_of_a_lands_on_b_with_the_author_date_content_and_media()
     {
         var (owner, alice, _, _, slug) = await ChainAsync("f01");
-        var postId = await TwoSiloHarness.PublishAsync(owner, slug, "publicado da A para a B");
+
+        // A mídia nasce na A: um upload real cujo contentHash é o que o post vai anexar.
+        var upload = await MediaHarness.UploadAsync(owner, MediaHarness.JpegWithExif(), "foto da A para a B");
+        Assert.Equal(HttpStatusCode.OK, upload.StatusCode);
+        using var uploaded = JsonDocument.Parse(await upload.Content.ReadAsStringAsync());
+        var hash = uploaded.RootElement.GetProperty("contentHash").GetString()!;
+
+        var postId = await TwoSiloHarness.PublishAsync(owner, slug, "publicado da A para a B", hash);
 
         // Enqueued to B's follower, then the production sender really POSTs it (FR-036 + §5).
         var row = Assert.Single(await Pair.A.Deliveries.ForObjectAsync(postId, PeerActivity.Create));
@@ -69,6 +77,28 @@ public sealed class TwoSiloFacetTests : IClassFixture<TwoSilosFixture>
         Assert.Equal(docA.GetProperty("published").GetString(), docB.GetProperty("published").GetString());
         Assert.Matches(@"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$", docB.GetProperty("published").GetString());
         Assert.Equal("publicado da A para a B", docB.GetProperty("content").GetString());
+
+        // §7.1 mídia: as duas renderizações trazem o attachment, cada uma com a rota de contrato
+        // da própria origem — nunca a /api/media de sessão, que responderia 401 ao par.
+        var blobA = Assert.Single(docA.GetProperty("attachment").EnumerateArray());
+        var blobB = Assert.Single(docB.GetProperty("attachment").EnumerateArray());
+        Assert.Equal(hash, blobA.GetProperty("sha256").GetString());
+        Assert.Equal($"{Pair.A.Origin}/media/{hash}", blobA.GetProperty("url").GetString());
+        Assert.Equal(hash, blobB.GetProperty("sha256").GetString());
+        Assert.Equal($"{Pair.B.Origin}/media/{hash}", blobB.GetProperty("url").GetString());
+        Assert.Equal("image/jpeg", blobB.GetProperty("mediaType").GetString());
+
+        // O blob baixado da A pela própria url que o documento declara, sem sessão nenhuma
+        // (Pair.A.Http não carrega jar de cookies): os bytes conferem com o hash do anexo.
+        using var fromA = await Pair.A.Http.GetAsync(blobA.GetProperty("url").GetString()!);
+        Assert.Equal(HttpStatusCode.OK, fromA.StatusCode);
+        Assert.Equal(hash, Convert.ToHexStringLower(SHA256.HashData(await fromA.Content.ReadAsByteArrayAsync())));
+
+        // …e a B serve a cópia que o inbound baixou e verificou pelo SHA-256 antes de gravar
+        // (GAP-44) — volume próprio do silo, nunca um redirecionamento para a A.
+        using var fromB = await Pair.B.Http.GetAsync(blobB.GetProperty("url").GetString()!);
+        Assert.Equal(HttpStatusCode.OK, fromB.StatusCode);
+        Assert.Equal(hash, Convert.ToHexStringLower(SHA256.HashData(await fromB.Content.ReadAsByteArrayAsync())));
     }
 
     [Fact] // AC-02 (§7.2/SC-005)
