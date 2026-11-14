@@ -171,10 +171,11 @@ internal sealed class OutboundPipeline : IOutboundPipeline
         // Sign AT SEND: the draft-cavage signature covers host and Date, which only exist now
         // (contract §5) — a queue row freezes the body, never the signature.
         var actorUri = PayloadActor(delivery.Payload);
+        var handle = HandleOf(actorUri);
         ActorSigner? signer;
         try
         {
-            signer = await _actors.ActivateSigningKeyAsync(HandleOf(actorUri));
+            signer = await _actors.ActivateSigningKeyAsync(handle);
         }
         catch (Exception failure) when (failure is SigningKeyActivationException or ActorNotFoundException)
         {
@@ -186,7 +187,13 @@ internal sealed class OutboundPipeline : IOutboundPipeline
 
         if (signer is null)
         {
-            // No Squid:RecoveryKey at boot: output disabled, the queue keeps registering (§G).
+            // SPEC-0011 section B + TASK-0051: no boot secret, or this actor has NO instance copy
+            // (registered before the configuration) — the output stays disabled, and this warning
+            // is the audit of which actor never leaves, while the queue keeps registering (§G).
+            _log.LogWarning(
+                "outbound delivery held: signing key unavailable for {Handle} — Squid:RecoveryKey "
+                + "absent at boot, or no instance signing copy for this actor",
+                handle);
             return new SendVerdict(PeerDeliveryState.Pending, "federation_output_disabled");
         }
 

@@ -62,9 +62,7 @@ public sealed class FederationRuntimeKeyTests
     public async Task Ac02_with_a_valid_recovery_key_the_grain_activates_the_key_in_memory_only()
     {
         var rootKey = RootKey.Create();
-        var keys = KeyState.Create(rootKey, PostRoutes.Password);
-        var material = Material(keys);
-        var secrets = Secrets(rootKey, keys);
+        string[] secrets;
 
         var output = new CapturedOutput();
         var console = Console.Out;
@@ -74,10 +72,21 @@ public sealed class FederationRuntimeKeyTests
             await using var host = await StartAsync(
                 "--Squid:RecoveryKey=" + Convert.ToBase64String(rootKey.AsSpan()));
 
-            // The actor as registration would write it, wrapped by the very key configured at boot.
+            // The actor exactly as TASK-0051 registration writes it: material sealed by the
+            // actor's own RK plus the instance copy (duplo embrulho) sealed by the very key
+            // configured at boot — the copy is what activation opens.
             var handle = PostRoutes.Handle("fed");
+            var keys = KeyState.Create(
+                rootKey, PostRoutes.Password,
+                host.App.Services.GetRequiredService<RuntimeSigningKeyRing>());
+            var material = Material(keys);
+            secrets = Secrets(rootKey, keys);
+
             var store = new ActorStore($"Data Source={host.StoragePath};Pooling=False");
             await new ActorGrain(store).CreateAsync(handle, "Federação", material);
+            Assert.NotNull(keys.InstanceWrappedRsaPrivateKey);
+            await host.App.Services.GetRequiredService<IInstanceSigningKeyStore>().SaveAsync(
+                handle, Convert.ToBase64String(keys.InstanceWrappedRsaPrivateKey!));
 
             // Activation opens the wrapped key and keeps it behind a signer: the signature it
             // produces only verifies against the public key the profile publishes, so the unwrap
@@ -118,11 +127,9 @@ public sealed class FederationRuntimeKeyTests
     [Fact] // AC-03
     public async Task Ac03_with_a_wrong_recovery_key_activation_refuses_without_leaking_anything()
     {
-        var realKey = RootKey.Create();               // the key the actor was actually wrapped with
+        var realKey = RootKey.Create();               // the secret the copy was wrapped with
         var configured = RootKey.Create();            // the well-formed secret that is simply wrong
-        var keys = KeyState.Create(realKey, PostRoutes.Password);
-        var material = Material(keys);
-        string[] secrets = [.. Secrets(realKey, keys), Convert.ToBase64String(configured.AsSpan())];
+        string[] secrets;
 
         var output = new CapturedOutput();
         var console = Console.Out;
@@ -135,7 +142,20 @@ public sealed class FederationRuntimeKeyTests
 
             var handle = PostRoutes.Handle("bad");
             var store = new ActorStore($"Data Source={host.StoragePath};Pooling=False");
+            // The actor as a registration that ran under the PREVIOUS secret wrote it (TASK-0051):
+            // material sealed by its own RK, instance copy sealed by realKey — the boot secret is
+            // now `configured`, so opening that copy is what must refuse, typed, with nothing out.
+            var copies = host.App.Services.GetRequiredService<IInstanceSigningKeyStore>();
+            var keys = KeyState.Create(
+                realKey, PostRoutes.Password,
+                RuntimeSigningKeyRing.FromConfiguration(
+                    Convert.ToBase64String(realKey.AsSpan()), copies));
+            var material = Material(keys);
+            secrets = [.. Secrets(realKey, keys), Convert.ToBase64String(configured.AsSpan())];
+
             await new ActorGrain(store).CreateAsync(handle, "Chave errada", material);
+            Assert.NotNull(keys.InstanceWrappedRsaPrivateKey);
+            await copies.SaveAsync(handle, Convert.ToBase64String(keys.InstanceWrappedRsaPrivateKey!));
             var before = await store.ReadPersistedJsonAsync(handle);
 
             var grain = host.App.Services.GetRequiredService<ActorGrain>();

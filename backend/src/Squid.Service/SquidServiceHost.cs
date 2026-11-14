@@ -263,7 +263,14 @@ public static class SquidServiceHost
         // the port the actor aggregate opens its wrapped signing key through. Absent or malformed
         // disables the federated OUTPUT only — warned about after the app is built, never a boot
         // failure (AC-01); a present secret is first exercised at grain activation (AC-03).
-        var federationKeys = RuntimeSigningKeyRing.FromConfiguration(configuration["Squid:RecoveryKey"]);
+        // TASK-0051 (duplo embrulho): the ring also owns the instance-copy rows of 0009 — it wraps
+        // them at registration (through this same instance, resolved by the auth route) and opens
+        // them at activation; the concrete type is registered for that route's own parameter.
+        var instanceCopies = new SqliteInstanceSigningKeyStore(connectionString);
+        builder.Services.AddSingleton<IInstanceSigningKeyStore>(instanceCopies);
+        var federationKeys = RuntimeSigningKeyRing.FromConfiguration(
+            configuration["Squid:RecoveryKey"], instanceCopies);
+        builder.Services.AddSingleton(federationKeys);
         builder.Services.AddSingleton<IActorSigningKeyRing>(federationKeys);
 
         // SPEC-0011 section A (I-11, GAP-45): X-Forwarded-Proto/Host is honoured ONLY when the

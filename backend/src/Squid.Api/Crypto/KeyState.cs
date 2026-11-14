@@ -26,14 +26,29 @@ public sealed record KeyState
     /// <summary>`RC` (B-02): fresh CSPRNG bytes, independent of the `RK`.</summary>
     public required byte[] RecoveryCode { get; init; }
 
-    /// <summary>Generates the whole key set of a registration from one `RK` and the actor password.</summary>
-    public static KeyState Create(RootKey rootKey, string password)
+    /// <summary>
+    /// The SAME RSA private key wrapped a second time with the instance `Squid:RecoveryKey`
+    /// (SPEC-0011 section B, duplo embrulho — TASK-0051): what registration persists in its own
+    /// table (<c>0009_*</c>) for the runtime to open. Null when no usable secret was configured —
+    /// no copy is born and registration behaves exactly as before (AC-01). Wrapped bytes only;
+    /// serializing this record still cannot leak a private key (AC-04).
+    /// </summary>
+    public byte[]? InstanceWrappedRsaPrivateKey { get; init; }
+
+    /// <summary>
+    /// Generates the whole key set of a registration from one `RK` and the actor password.
+    /// <paramref name="instanceKeys"/> is the double wrap of TASK-0051: when the boot secret is
+    /// configured, the very RSA generated here is also sealed with it — the clear key never
+    /// leaves this method.
+    /// </summary>
+    public static KeyState Create(RootKey rootKey, string password, RuntimeSigningKeyRing? instanceKeys = null)
     {
         using var rsa = RSA.Create(2048);
         return new KeyState
         {
             EncryptedRootKey = RootKeyCipher.Encrypt(rootKey, password),
             WrappedRsaPrivateKey = KeyDerivation.WrapRsaPrivateKey(rootKey, rsa),
+            InstanceWrappedRsaPrivateKey = instanceKeys?.WrapInstanceCopy(rsa),
             RsaPublicKey = rsa.ExportSubjectPublicKeyInfo(),
             Ed25519PublicKey = KeyDerivation.DeriveEd25519PublicKey(rootKey),
             RecoveryCode = RandomNumberGenerator.GetBytes(RecoveryCodeSizeInBytes),

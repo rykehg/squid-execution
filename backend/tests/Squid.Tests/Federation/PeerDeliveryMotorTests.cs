@@ -51,7 +51,12 @@ public sealed class MotorHost : IAsyncDisposable
         App.Urls.Add("http://127.0.0.1:0");
 
         Handle = PostRoutes.Handle("motor");
-        var keys = KeyState.Create(RuntimeKey, PostRoutes.Password);
+        // This suite never starts its routes by default, so its actor is written directly — and it
+        // is born EXACTLY as registration writes one (TASK-0051 duplo embrulho): material sealed by
+        // the actor's own RK plus the instance copy the boot key opens, the copy activation needs.
+        var keys = KeyState.Create(
+            RuntimeKey, PostRoutes.Password,
+            App.Services.GetRequiredService<RuntimeSigningKeyRing>());
         var material = new ActorKeyMaterial(
             [
                 new ActorPublicKey("RSA-2048", "#main-key", Convert.ToBase64String(keys.RsaPublicKey)),
@@ -60,6 +65,9 @@ public sealed class MotorHost : IAsyncDisposable
             Convert.ToBase64String(keys.WrappedRsaPrivateKey));
         App.Services.GetRequiredService<ActorGrain>()
             .CreateAsync(Handle, "Motor de entrega", material).GetAwaiter().GetResult();
+        App.Services.GetRequiredService<IInstanceSigningKeyStore>()
+            .SaveAsync(Handle, Convert.ToBase64String(keys.InstanceWrappedRsaPrivateKey!))
+            .GetAwaiter().GetResult();
 
         if (hostedLoop)
         {

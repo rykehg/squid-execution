@@ -44,10 +44,9 @@ public sealed class InboxHostFixture : IAsyncDisposable
     public FakePeerSender Sender { get; } = new();
 
     /// <summary>
-    /// The secret this host boots <c>Squid:RecoveryKey</c> with (SPEC-0011 section B): an actor
-    /// whose wrapped key was sealed with THIS key can activate its signer and go out signed.
-    /// HTTP registration mints a fresh per-actor RK the boot key cannot open, so a suite that
-    /// needs a signature builds its actor through <c>OutboundHarness.SignableAsync</c>.
+    /// The secret this host boots <c>Squid:RecoveryKey</c> with (SPEC-0011 section B): registration
+    /// wraps every actor's key a SECOND time with THIS key (TASK-0051 duplo embrulho), so an actor
+    /// born over HTTP activates its signer and goes out signed — no suite builds one by hand.
     /// </summary>
     public RootKey RuntimeKey { get; } = RootKey.Create();
 
