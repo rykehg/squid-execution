@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Net.Http.Headers;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
 using Squid.Api.Posts;
@@ -27,12 +28,15 @@ namespace Squid.Api.Media;
 /// </summary>
 public static class MediaEndpoints
 {
-    /// <summary>Maps the three media routes; runs after <c>MapSquidAuth</c>, on the session pipeline.</summary>
+    /// <summary>Maps the four media routes — the three session-gated <c>/api/media</c> ones and the anonymous contract blob — runs after <c>MapSquidAuth</c>, on the session pipeline.</summary>
     public static WebApplication MapSquidMedia(this WebApplication app)
     {
         app.MapPost("/api/media", UploadAsync);
         app.MapGet("/api/media/{contentHash}", GetAsync);
         app.MapGet("/api/media/{contentHash}/thumb", GetThumbnailAsync);
+        // Contract §1 (SPEC-0011 section D, GAP-51, TASK-0053): the published blob route is the
+        // ONE media GET with no session behind it — a peer fetches an attachment by hash here.
+        app.MapGet("/media/{hash}", GetBlobAsync);
         return app;
     }
 
@@ -224,6 +228,36 @@ public static class MediaEndpoints
         var thumbnail = await store.ReadThumbnailAsync(record.ContentHash);
         return Results.File(
             thumbnail ?? MediaPlaceholders.Bytes, IMediaStore.ThumbnailMimeType);
+    }
+
+    /// <summary>The long cache a content-addressed blob earns (contract §1): the bytes behind the url never change.</summary>
+    private const string BlobCacheControl = "public, max-age=31536000, immutable";
+
+    /// <summary>
+    /// <c>GET /media/{hash}</c> (contract §1, SPEC-0011 section D, GAP-51, TASK-0053): the
+    /// anonymous blob route an outbound <c>attachment</c> url points at — no session and no
+    /// visibility ladder, because the hash IS the capability the contract publishes (the
+    /// membersOnly-por-hash consequence stays with S-40). The SHA-256 of the bytes must answer
+    /// the route's own key: a volume that does not is absent, never served. What leaves is only
+    /// the blob, the media type the bytes themselves sniff as, the long <c>Cache-Control</c> and
+    /// the hash as <c>ETag</c> — no alt, no uploader, no record (não expõe metadados); an absent
+    /// hash and a mismatched blob share the media 404 body. The session-gated
+    /// <c>GET /api/media/{contentHash}</c> keeps GAP-25 exactly as it was.
+    /// </summary>
+    private static async Task<IResult> GetBlobAsync(string hash, HttpContext context, IMediaStore store)
+    {
+        var bytes = await store.ReadAsync(hash);
+        if (bytes is null) return HiddenMedia(context);
+
+        // Content-addressed: the key of the route IS the digest of what would be served, so a
+        // blob whose bytes drifted (or a key that never was a hash of them) answers the same 404.
+        var digest = Convert.ToHexStringLower(SHA256.HashData(bytes));
+        if (!digest.Equals(hash.Trim(), StringComparison.OrdinalIgnoreCase)) return HiddenMedia(context);
+
+        context.Response.Headers.CacheControl = BlobCacheControl;
+        return Results.File(
+            bytes, MediaSignature.Sniff(bytes) ?? "application/octet-stream",
+            entityTag: new EntityTagHeaderValue($"\"{digest}\""));
     }
 
     /// <summary>
