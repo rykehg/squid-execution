@@ -1,0 +1,20 @@
+HEAD=9758f8c553520b982549b8deb293ffd2a298d58b
+branch=task/TASK-0050-pares-confiaveis-ssrf
+commit-files=8 commit-fora-dos-touches=0
+git-status qa-artifacts=10 wip-odev=1 fora-dos-touches=0
+git-backend-entries=0
+residue=0
+blob backend/src/Squid.Api/Posts/TrustedPeerHosts.cs match=TRUE
+blob backend/src/Squid.Api/Posts/RemoteMediaClient.cs match=TRUE
+blob backend/src/Squid.Api/Posts/LinkUnfurler.cs match=TRUE
+blob backend/src/Squid.Service/HttpFederatedActorClient.cs match=TRUE
+blob backend/src/Squid.Service/HttpPeerSender.cs match=TRUE
+blob-identity=5 of 5
+mtime-count=5 (esperado 5)
+MTIME backend\src\Squid.Api\Posts\LinkUnfurler.cs
+MTIME backend\src\Squid.Api\Posts\RemoteMediaClient.cs
+MTIME backend\src\Squid.Api\Posts\TrustedPeerHosts.cs
+MTIME backend\src\Squid.Service\HttpFederatedActorClient.cs
+MTIME backend\src\Squid.Service\HttpPeerSender.cs
+fora-dos-touches=0
+SUMMARY commit-files=8 qa-artifacts=10 backend-entries=0 residue=0 blob=5/5 mtime=5 fails=0

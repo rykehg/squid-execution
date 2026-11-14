@@ -1,0 +1,28 @@
+T1 PRE at=042915 ac=AC-01 hash=a3849b0282a391722536c9c85220c279fd91e856 head-match=true find-hits=1
+T1 RUN wrapper=1 logExit=1 aprovado=1 falha=4 total=5 log=20261114-042928-test-filter.log
+T1 RED-AC Squid.Tests.Federation.TrustedPeerHostsTests.The_delivery_client_sends_to_a_named_peer_and_refuses_one_outside_the_list; Squid.Tests.Federation.TrustedPeerHostsTests.A_named_peer_is_accepted_on_loopback_and_an_unlisted_host_on_the_same_port_is_not; Squid.Tests.Federation.TrustedPeerHostsTests.The_default_allowlist_keeps_every_federation_client_refusing_private_targets; Squid.Tests.Federation.TrustedPeerHostsTests.The_allowlist_is_empty_by_default_and_matches_hosts_exactly
+T1 EXPECT-OK expect=The_default_allowlist_keeps_every_federation_client_refusing_private_targets; A_named_peer_is_accepted_on_loopback_and_an_unlisted_host_on_the_same_port_is_not; The_delivery_client_sends_to_a_named_peer_and_refuses_one_outside_the_list; The_allowlist_is_empty_by_default_and_matches_hosts_exactly
+T1 RESTORE-OK hash=PRE residue=0
+T2 PRE at=042929 ac=AC-02 hash=17f089c3f8daf7a853ba32391c52395f8ffa7866 head-match=true find-hits=1
+T2 RUN wrapper=1 logExit=1 aprovado=3 falha=2 total=5 log=20261114-042943-test-filter.log
+T2 RED-AC Squid.Tests.Federation.TrustedPeerHostsTests.The_unfurl_keeps_blocking_private_even_with_the_allowlist_named; Squid.Tests.Federation.TrustedPeerHostsTests.A_named_peer_is_accepted_on_loopback_and_an_unlisted_host_on_the_same_port_is_not
+T2 EXPECT-OK expect=A_named_peer_is_accepted_on_loopback_and_an_unlisted_host_on_the_same_port_is_not; The_unfurl_keeps_blocking_private_even_with_the_allowlist_named
+T2 RESTORE-OK hash=PRE residue=0
+T3 PRE at=042943 ac=AC-02 hash=a7fb6de9c52e6c2ef0be6f033013bc93dea5e4c6 head-match=true find-hits=1
+T3 RUN wrapper=1 logExit=1 aprovado=4 falha=1 total=5 log=20261114-042958-test-filter.log
+T3 RED-AC Squid.Tests.Federation.TrustedPeerHostsTests.A_named_peer_is_accepted_on_loopback_and_an_unlisted_host_on_the_same_port_is_not
+T3 EXPECT-OK expect=A_named_peer_is_accepted_on_loopback_and_an_unlisted_host_on_the_same_port_is_not
+T3 RESTORE-OK hash=PRE residue=0
+T4 PRE at=042958 ac=AC-01 hash=add8876b1ec36eb241de5bc7f881abdf2db6b67d head-match=true find-hits=1
+T4 RUN wrapper=1 logExit=1 aprovado=3 falha=2 total=5 log=20261114-043011-test-filter.log
+T4 RED-AC Squid.Tests.Federation.TrustedPeerHostsTests.The_delivery_client_sends_to_a_named_peer_and_refuses_one_outside_the_list; Squid.Tests.Federation.TrustedPeerHostsTests.The_default_allowlist_keeps_every_federation_client_refusing_private_targets
+T4 EXPECT-OK expect=The_default_allowlist_keeps_every_federation_client_refusing_private_targets; The_delivery_client_sends_to_a_named_peer_and_refuses_one_outside_the_list
+T4 RESTORE-OK hash=PRE residue=0
+T5 PRE at=043011 ac=AC-03 hash=23414b4248948a25344072fb7021f41381ba6dc4 head-match=true find-hits=1
+T5 RUN wrapper=1 logExit=1 aprovado=4 falha=1 total=5 log=20261114-043024-test-filter.log
+T5 RED-AC Squid.Tests.Federation.TrustedPeerHostsTests.The_unfurl_keeps_blocking_private_even_with_the_allowlist_named
+T5 EXPECT-OK expect=The_unfurl_keeps_blocking_private_even_with_the_allowlist_named
+T5 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=5 falha=0 log=20261114-043036-test-filter.log
+UNTRACKED backend=0 (esperado 0: a QA nao acrescentou arquivos em backend)
+SUMMARY cycles=5 failed=0 residue-backend=0 temp-backups=0 elapsed-s=81

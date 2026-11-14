@@ -1,0 +1,30 @@
+when=2026-11-14 04:28:04
+HEAD=9758f8c553520b982549b8deb293ffd2a298d58b
+branch=task/TASK-0050-pares-confiaveis-ssrf
+parent=b48bf17197da59bf644188d0c649d468e621075d
+status:
+   M docs/sdd/tasks/TASK-0050-pares-confiaveis-ssrf.md
+  ?? docs/sdd/qa/QA-0050-git-baseline.txt
+  ?? docs/sdd/qa/qa-baseline-task-0050.ps1
+  ?? docs/sdd/qa/qa-mutate-task-0050.ps1
+  ?? docs/sdd/qa/qa-scope-task-0050.ps1
+  ?? docs/sdd/qa/qa-scope-task-0050.sh
+commit-files:
+  backend/src/Squid.Api/Posts/RemoteMediaClient.cs
+  backend/src/Squid.Api/Posts/TrustedPeerHosts.cs
+  backend/src/Squid.Service/HttpFederatedActorClient.cs
+  backend/src/Squid.Service/HttpPeerSender.cs
+  backend/src/Squid.Service/SquidServiceHost.cs
+  backend/tests/Squid.Tests/Federation/InboxReceiveTests.cs
+  backend/tests/Squid.Tests/Federation/PeerDeliveryMotorTests.cs
+  backend/tests/Squid.Tests/Federation/TrustedPeerHostsTests.cs
+commit-files-count=8
+branch-r-contains=EMPTY (nothing pushed)
+develop-tip=b48bf17
+main-tip=b9fd628
+head-parent-short=b48bf17
+wsl-dotnet=ABSENT (suite cannot run in WSL; installing needs a human gate)
+wsl-git=/usr/sbin/git
+gitbash-probe=/c/Program Files/dotnet/dotnet ; /ucrt64/bin/git
+windows-dotnet=10.0.403
+fails=0
