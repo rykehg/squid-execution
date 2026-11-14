@@ -39,7 +39,8 @@ public static class AuthEndpoints
     }
 
     private static async Task<IResult> RegisterAsync(
-        RegisterRequest request, ActorGrain actors, IAuthStore store, HttpContext context)
+        RegisterRequest request, ActorGrain actors, IAuthStore store, HttpContext context,
+        RuntimeSigningKeyRing instanceKeys, IInstanceSigningKeyStore instanceCopies)
     {
         var handle = request.Handle ?? string.Empty;
         if (!ActorHandle.IsValid(handle))
@@ -66,7 +67,10 @@ public static class AuthEndpoints
         // so a refusal at this point or at the grain leaves the instance untouched (AC-02).
         var passwordHash = PasswordHasher.Hash(password);
         var rootKey = RootKey.Create();
-        var keys = KeyState.Create(rootKey, password);
+        // Double wrap (SPEC-0011 section B, TASK-0051): with Squid:RecoveryKey configured the SAME
+        // RSA is born also wrapped by the instance secret; without the configuration no copy exists
+        // and this registration is the one of before, byte for byte.
+        var keys = KeyState.Create(rootKey, password, instanceKeys);
 
         var material = new ActorKeyMaterial(
             [
@@ -103,6 +107,14 @@ public static class AuthEndpoints
         // handle that is taken with no credential row — upgrade to a compensating delete when
         // IActorEventStore grows one, and nothing shorter of a real transaction will do.
         await store.CreateAsync(handle, account);
+
+        // The instance copy rides the same non-transactional shortcut: a failure here leaves a
+        // registered account WITHOUT a copy, which is exactly the disabled-output state the spec
+        // accepts for actors that predate the configuration — never a copy in clear, never half.
+        if (keys.InstanceWrappedRsaPrivateKey is { } instanceCopy)
+        {
+            await instanceCopies.SaveAsync(handle, Convert.ToBase64String(instanceCopy));
+        }
 
         AuthSessions.WriteCookies(context, handle, session);
 

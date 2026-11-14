@@ -2,16 +2,12 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Orleans.Runtime;
-using Squid.Api.Auth;
 using Squid.Api.Containers;
-using Squid.Api.Crypto;
 using Squid.Api.Federation;
 using Squid.Domain.Containers;
-using Squid.Grains.Actors;
 using Squid.Service;
 using Squid.Tests.Auth;
 using Squid.Tests.Posts;
-using ActorStore = Squid.Tests.Actors.SqliteActorEventStore;
 
 namespace Squid.Tests.Federation;
 
@@ -392,31 +388,17 @@ public sealed class OutboundFanOutTests : IClassFixture<InboxHostFixture>
     }
 
     /// <summary>
-    /// An account that can SIGN: HTTP registration mints a fresh per-actor RK the boot
-    /// <c>Squid:RecoveryKey</c> cannot open, so the actor is written exactly as
-    /// <c>FederationRuntimeKeyTests</c> writes it — material sealed with the runtime key — and the
-    /// credential row is created straight, which is all a login needs.
+    /// An account that can SIGN: HTTP registration born under this host's boot
+    /// <c>Squid:RecoveryKey</c> carries the instance copy of TASK-0051's double wrap, so the
+    /// actor comes out of the real registration path — no suite writes an actor directly to get
+    /// a signature anymore (the workaround this task deleted).
     /// </summary>
     private async Task<(AuthClient Client, string Handle)> SignableAsync(string prefix)
     {
         var handle = PostRoutes.Handle(prefix);
-        var keys = KeyState.Create(_host.RuntimeKey, PostRoutes.Password);
-        var material = new ActorKeyMaterial(
-            [
-                new ActorPublicKey("RSA-2048", "#main-key", Convert.ToBase64String(keys.RsaPublicKey)),
-                new ActorPublicKey("Ed25519", "#ed25519", Convert.ToBase64String(keys.Ed25519PublicKey)),
-            ],
-            Convert.ToBase64String(keys.WrappedRsaPrivateKey));
-        await new ActorGrain(
-            new ActorStore($"Data Source={_host.StoragePath};Pooling=False"))
-            .CreateAsync(handle, "Saída federada", material);
-
-        await _host.App.Services.GetRequiredService<IAuthStore>().CreateAsync(
-            handle, new AuthAccount { PasswordHash = PasswordHasher.Hash(PostRoutes.Password) });
-
         var client = _host.NewClient();
-        var login = await client.LoginAsync(handle, PostRoutes.Password);
-        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        var registered = await client.RegisterAsync(handle, PostRoutes.Password);
+        Assert.Equal(HttpStatusCode.Created, registered.StatusCode);
         return (client, handle);
     }
 

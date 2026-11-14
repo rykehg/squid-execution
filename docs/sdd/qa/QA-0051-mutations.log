@@ -1,0 +1,38 @@
+T1 PRE at=104304 ac=AC-01 hash=99827b03f6ca37dbe30609234e044a7751b0668b head-match=true find-hits=1
+T1 RUN wrapper=1 logExit=1 aprovado=3 falha=4 total=7 log=20261114-104403-test-filter.log
+T1 RED-AC Squid.Tests.ServiceHost.DoubleWrapTests.Ac02_a_registered_actor_federates_signed_and_an_independent_verifier_accepts; Squid.Tests.ServiceHost.DoubleWrapTests.Ac01_with_a_secret_the_registration_persists_only_the_wrapped_instance_copy; Squid.Tests.ServiceHost.DoubleWrapTests.Ac05_without_a_copy_the_output_stays_disabled_while_a_later_actor_federates; Squid.Tests.ServiceHost.DoubleWrapTests.Ac04_the_copy_never_leaves_the_table_and_no_route_or_log_carries_it
+T1 EXPECT-OK expect=Ac01_with_a_secret_the_registration_persists_only_the_wrapped_instance_copy; Ac02_a_registered_actor_federates_signed_and_an_independent_verifier_accepts; Ac04_the_copy_never_leaves_the_table_and_no_route_or_log_carries_it; Ac05_without_a_copy_the_output_stays_disabled_while_a_later_actor_federates
+T1 RESTORE-OK hash=PRE residue=0
+T2 PRE at=104404 ac=AC-02 hash=c6cb1219086af4dd5aee5e801c05a87717170714 head-match=true find-hits=1
+T2 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 log=20261114-104502-test-filter.log
+T2 RED-AC Squid.Tests.ServiceHost.DoubleWrapTests.Ac02_a_registered_actor_federates_signed_and_an_independent_verifier_accepts
+T2 EXPECT-OK expect=Ac02_a_registered_actor_federates_signed_and_an_independent_verifier_accepts
+T2 RESTORE-OK hash=PRE residue=0
+T3 PRE at=104503 ac=AC-03 hash=ba61a48468946cceb1d7a6b1972a28956dd053b2 head-match=true find-hits=1
+T3 RUN wrapper=3 logExit=1 aprovado=6 falha=1 total=7 log=20261114-104556-test-filter.log
+T3 RED-AC Squid.Tests.ServiceHost.DoubleWrapTests.Ac03_the_kit_path_is_untouched_and_a_restore_devolves_the_same_identity
+T3 EXPECT-OK expect=Ac03_the_kit_path_is_untouched_and_a_restore_devolves_the_same_identity
+T3 RESTORE-OK hash=PRE residue=0
+T4 PRE at=104557 ac=AC-04 hash=ba61a48468946cceb1d7a6b1972a28956dd053b2 head-match=true find-hits=1
+T4 RUN wrapper=3 logExit=1 aprovado=2 falha=5 total=7 log=20261114-104651-test-filter.log
+T4 RED-AC Squid.Tests.ServiceHost.DoubleWrapTests.Ac01_without_the_secret_registration_births_no_copy_and_answers_as_before; Squid.Tests.ServiceHost.DoubleWrapTests.Ac02_a_registered_actor_federates_signed_and_an_independent_verifier_accepts; Squid.Tests.ServiceHost.DoubleWrapTests.Ac01_with_a_secret_the_registration_persists_only_the_wrapped_instance_copy; Squid.Tests.ServiceHost.DoubleWrapTests.Ac05_without_a_copy_the_output_stays_disabled_while_a_later_actor_federates; Squid.Tests.ServiceHost.DoubleWrapTests.Ac04_the_copy_never_leaves_the_table_and_no_route_or_log_carries_it
+T4 EXPECT-OK expect=Ac01_with_a_secret_the_registration_persists_only_the_wrapped_instance_copy; Ac02_a_registered_actor_federates_signed_and_an_independent_verifier_accepts; Ac04_the_copy_never_leaves_the_table_and_no_route_or_log_carries_it; Ac05_without_a_copy_the_output_stays_disabled_while_a_later_actor_federates
+T4 RESTORE-OK hash=PRE residue=0
+T5 PRE at=104651 ac=AC-04 hash=99827b03f6ca37dbe30609234e044a7751b0668b head-match=true find-hits=1
+T5 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 log=20261114-104750-test-filter.log
+T5 RED-AC Squid.Tests.ServiceHost.DoubleWrapTests.Ac04_the_copy_never_leaves_the_table_and_no_route_or_log_carries_it
+T5 EXPECT-OK expect=Ac04_the_copy_never_leaves_the_table_and_no_route_or_log_carries_it
+T5 RESTORE-OK hash=PRE residue=0
+T6 PRE at=104750 ac=AC-04 hash=c6cb1219086af4dd5aee5e801c05a87717170714 head-match=true find-hits=1
+T6 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 log=20261114-104848-test-filter.log
+T6 RED-AC Squid.Tests.ServiceHost.DoubleWrapTests.Ac04_without_the_secret_activation_stays_auditably_disabled
+T6 EXPECT-OK expect=Ac04_without_the_secret_activation_stays_auditably_disabled
+T6 RESTORE-OK hash=PRE residue=0
+T7 PRE at=104848 ac=AC-05 hash=3f536685051294d4786c838c66358a3738ddd14b head-match=true find-hits=1
+T7 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 log=20261114-104943-test-filter.log
+T7 RED-AC Squid.Tests.ServiceHost.DoubleWrapTests.Ac05_without_a_copy_the_output_stays_disabled_while_a_later_actor_federates
+T7 EXPECT-OK expect=Ac05_without_a_copy_the_output_stays_disabled_while_a_later_actor_federates
+T7 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=7 falha=0 log=20261114-105041-test-filter.log
+UNTRACKED backend=0 (esperado 0: a QA nao acrescentou arquivos em backend)
+SUMMARY cycles=7 failed=0 residue-backend=0 temp-backups=0 elapsed-s=457

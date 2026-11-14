@@ -1,0 +1,44 @@
+when=2026-11-14 10:27:12
+HEAD=0a7cdf9ab132cdc135af34210235a3f9c7fcf5f2
+branch=task/TASK-0051-duplo-embulho-de-ator
+parent=2c66912017b012a044a69bfc6cd660c44f28c06b
+status:
+   M docs/sdd/ideas/BACKLOG.md
+   M docs/sdd/plan/plan.md
+   M docs/sdd/specs/SPEC-0011-federacao-p06.md
+  ?? docs/sdd/qa/QA-0051-git-baseline.txt
+  ?? docs/sdd/qa/qa-baseline-task-0051.ps1
+  ?? docs/sdd/qa/qa-mutate-task-0051.ps1
+  ?? docs/sdd/qa/qa-scope-task-0051.ps1
+  ?? docs/sdd/qa/qa-scope-task-0051.sh
+  ?? docs/sdd/tasks/TASK-0051-duplo-embulho-de-ator.md
+  ?? docs/sdd/tasks/TASK-0052-pem-blindado-chave-remota.md
+commit-files:
+  backend/src/Squid.Api/Auth/AuthEndpoints.cs
+  backend/src/Squid.Api/Crypto/IInstanceSigningKeyStore.cs
+  backend/src/Squid.Api/Crypto/KeyState.cs
+  backend/src/Squid.Api/Crypto/RuntimeSigningKeyRing.cs
+  backend/src/Squid.Grains/Actors/ActorGrain.cs
+  backend/src/Squid.Grains/Actors/IActorSigningKeyRing.cs
+  backend/src/Squid.Persistence/schema/0009_instance_signing_keys.sql
+  backend/src/Squid.Service/OutboundPipeline.cs
+  backend/src/Squid.Service/SqliteInstanceSigningKeyStore.cs
+  backend/src/Squid.Service/SquidServiceHost.cs
+  backend/tests/Squid.Tests/Actors/ActorSigningKeyActivationTests.cs
+  backend/tests/Squid.Tests/Crypto/RuntimeSigningKeyRingTests.cs
+  backend/tests/Squid.Tests/Federation/InboxHost.cs
+  backend/tests/Squid.Tests/Federation/InstanceSigningKeyMigrationTests.cs
+  backend/tests/Squid.Tests/Federation/OutboundFanOutTests.cs
+  backend/tests/Squid.Tests/Federation/PeerDeliveryMotorTests.cs
+  backend/tests/Squid.Tests/ServiceHost/DoubleWrapTests.cs
+  backend/tests/Squid.Tests/ServiceHost/FederationRuntimeKeyTests.cs
+commit-files-count=18
+branch-r-contains=EMPTY (nothing pushed)
+develop-tip=2c66912
+main-tip=b9fd628
+head-parent-short=2c66912
+wsl-dotnet=ABSENT (suite cannot run in WSL; installing needs a human gate)
+wsl-git=/usr/sbin/git
+gitbash-probe=/c/Program Files/dotnet/dotnet ; /ucrt64/bin/git
+windows-dotnet=10.0.403
+fails=0

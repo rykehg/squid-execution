@@ -1,0 +1,23 @@
+HEAD=0a7cdf9ab132cdc135af34210235a3f9c7fcf5f2
+branch=task/TASK-0051-duplo-embulho-de-ator
+commit-files=18 commit-fora-dos-touches=0
+WIP-ODEV docs/sdd/ideas/BACKLOG.md
+WIP-ODEV docs/sdd/plan/plan.md
+WIP-ODEV docs/sdd/specs/SPEC-0011-federacao-p06.md
+WIP-ODEV docs/sdd/tasks/TASK-0051-duplo-embulho-de-ator.md
+WIP-ODEV docs/sdd/tasks/TASK-0052-pem-blindado-chave-remota.md
+git-status qa-artifacts=9 wip-odev=5 fora-dos-touches=0
+git-backend-entries=0
+residue=0
+blob backend/src/Squid.Api/Auth/AuthEndpoints.cs match=TRUE
+blob backend/src/Squid.Api/Crypto/RuntimeSigningKeyRing.cs match=TRUE
+blob backend/src/Squid.Api/Crypto/KeyState.cs match=TRUE
+blob backend/src/Squid.Service/OutboundPipeline.cs match=TRUE
+blob-identity=4 of 4
+MTIME backend/src/Squid.Api/Auth/AuthEndpoints.cs
+MTIME backend/src/Squid.Api/Crypto/KeyState.cs
+MTIME backend/src/Squid.Api/Crypto/RuntimeSigningKeyRing.cs
+MTIME backend/src/Squid.Service/OutboundPipeline.cs
+mtime-count=4 (esperado 4)
+fora-dos-touches=0
+SUMMARY commit-files=18 qa-artifacts=9 wip-odev=5 backend-entries=0 residue=0 blob=4/4 mtime=4 fails=0

@@ -11,7 +11,8 @@ namespace Squid.Grains.Actors;
 /// gain one inside this task's scope, so the composition root registers it (or wraps it in a
 /// grain) without this module knowing anything about a silo.
 /// SPEC-0011 section B (GAP-09) adds one duty: activating the runtime signing key of an actor —
-/// unwrapped with the configured <c>Squid:RecoveryKey</c> and kept only in this instance.
+/// the instance copy of TASK-0051's double wrap, unwrapped with the configured
+/// <c>Squid:RecoveryKey</c> and kept only in this instance.
 /// </summary>
 public sealed class ActorGrain
 {
@@ -24,8 +25,13 @@ public sealed class ActorGrain
     /// <summary>Runtime key ring of the composition root; null when the test built the grain without one.</summary>
     private readonly IActorSigningKeyRing? _signingKeys;
 
-    /// <summary>The activated private key itself — memory only, never a field of any state or record.</summary>
-    private RSA? _signingKey;
+    /// <summary>
+    /// The activated private keys, ONE PER HANDLE — memory only, never a field of any state or
+    /// record. Keyed by handle because one long-lived instance serves more than one actor: a
+    /// single cached key would sign the second handle with the first one's key (latch parked by
+    /// TASK-0046, fixed here while SPEC-0011 section B made every activation handle-scoped).
+    /// </summary>
+    private readonly Dictionary<string, RSA> _activated = new(StringComparer.Ordinal);
 
     /// <summary>Builds the aggregate with no runtime key: federated output disabled (SPEC-0011 section B).</summary>
     public ActorGrain(IActorEventStore store)
@@ -100,13 +106,16 @@ public sealed class ActorGrain
     }
 
     /// <summary>
-    /// Activation of the runtime signing key (SPEC-0011 section B, GAP-09, AC-02/AC-03): opens the
-    /// wrapped RSA private key of <paramref name="handle"/> with the configured
-    /// <c>Squid:RecoveryKey</c> and keeps it only in this instance's memory — the returned signer
-    /// signs, it never hands the key back. Returns null when no secret is configured: the federated
-    /// output is disabled while local reads and writes keep working (AC-01). A secret that does not
-    /// open the key fails here as <see cref="SigningKeyActivationException"/> with no key material in
-    /// the message (AC-03); an unknown handle stays <see cref="ActorNotFoundException"/>.
+    /// Activation of the runtime signing key (SPEC-0011 section B, GAP-09/TASK-0051, AC-02/AC-03):
+    /// opens the INSTANCE copy of <paramref name="handle"/> — the double wrap registration wrote —
+    /// with the configured <c>Squid:RecoveryKey</c>, and keeps it only in this instance's memory:
+    /// the returned signer signs, it never hands the key back, and it is always THIS actor's own
+    /// key (contract §5, <c>keyId</c> <c>#main-key</c>). Returns null when no secret is configured
+    /// (federated output disabled while local reads and writes keep working) or when the actor has
+    /// no copy — registered before the configuration, AC-05's accepted limit, which the send turns
+    /// into an auditable warning. A secret that does not open the copy fails here as
+    /// <see cref="SigningKeyActivationException"/> with no key material in the message; an unknown
+    /// handle stays <see cref="ActorNotFoundException"/>.
     /// </summary>
     public async Task<ActorSigner?> ActivateSigningKeyAsync(string handle)
     {
@@ -115,22 +124,33 @@ public sealed class ActorGrain
             return null; // no runtime secret: only the federated output stays disabled
         }
 
-        var state = await GetStateAsync(handle) ?? throw new ActorNotFoundException(handle);
-        if (_signingKey is null)
+        // The state read keeps the contract's 404 for an actor that does not exist — activation
+        // never invents a signer for a handle this aggregate does not know.
+        _ = await GetStateAsync(handle) ?? throw new ActorNotFoundException(handle);
+        if (_activated.TryGetValue(handle, out var activated))
         {
-            try
-            {
-                _signingKey = _signingKeys.OpenSigningKey(state.Keys.WrappedSigningKey);
-            }
-            catch (Exception failure) when (failure is CryptographicException or FormatException or ArgumentException)
-            {
-                // Auditability without leakage: the typed failure names the actor and the cause,
-                // and neither the wrapped bytes nor the configured secret travel with it.
-                throw new SigningKeyActivationException(handle, failure);
-            }
+            return new ActorSigner(activated); // same handle, same key; another handle never reuses it
         }
 
-        return _signingKey is null ? null : new ActorSigner(_signingKey);
+        RSA? key;
+        try
+        {
+            key = await _signingKeys.OpenInstanceCopyAsync(handle);
+        }
+        catch (Exception failure) when (failure is CryptographicException or FormatException or ArgumentException)
+        {
+            // Auditability without leakage: the typed failure names the actor and the cause,
+            // and neither the wrapped bytes nor the configured secret travel with it.
+            throw new SigningKeyActivationException(handle, failure);
+        }
+
+        if (key is null)
+        {
+            return null; // no secret, or no instance copy for this actor: its output stays disabled
+        }
+
+        _activated[handle] = key;
+        return new ActorSigner(key);
     }
 
     /// <summary>Folds the open log over the snapshot (or over nothing, while no snapshot exists).</summary>
