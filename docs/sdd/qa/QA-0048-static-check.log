@@ -1,0 +1,135 @@
+﻿PASS | AC-01 federacao-interop.md existe
+PASS | AC-03 peer-entrega-travada.md existe
+PASS | AC-03 dlq-cheia.md existe
+PASS | AC-04 README.md (indice) existe
+PASS | projeto dotnet existe: backend/src/Squid.PeerClient
+PASS | projeto dotnet existe: backend/src/Squid.Service
+PASS | projeto dotnet existe: backend/src/Squid.Worker
+PASS | AC-01 runbook cita Squid.Service (silo A+B+dominio)
+PASS | AC-01 runbook cita Squid.Worker (worker de projecao)
+PASS | AC-01 runbook cita Squid.PeerClient (reproducir falha)
+PASS | ferramenta citada existe: docs/sdd/_tools/sdd-test.ps1
+PASS | chave de config no codigo: Federation:DeliveryPumpSeconds
+PASS | chave de config no codigo: Federation:TrustedPeerHosts
+PASS | chave de config no codigo: Instance:Domain
+PASS | chave de config no codigo: Instance:ForwardedHeaders
+PASS | chave de config no codigo: Media:BlobRoot
+PASS | chave de config no codigo: Squid:RecoveryKey
+PASS | chave de config no codigo: Storage:Path
+PASS | citacao dentro do arquivo: CanonicalOrigin.cs:28 (CanonicalOrigin.cs tem 32 linhas)
+PASS | citacao confere com o claim: CanonicalOrigin.cs:28 ~ 'static string Of'
+PASS | citacao dentro do arquivo: HttpPeerSender.cs:87 (HttpPeerSender.cs tem 112 linhas)
+PASS | citacao confere com o claim: HttpPeerSender.cs:87 ~ 'SendAsync'
+PASS | citacao dentro do arquivo: MediaOptions.cs:34 (MediaOptions.cs tem 63 linhas)
+PASS | citacao confere com o claim: MediaOptions.cs:34 ~ 'Media:BlobRoot'
+PASS | citacao dentro do arquivo: RuntimeSigningKeyRing.cs:44 (RuntimeSigningKeyRing.cs tem 101 linhas)
+PASS | citacao confere com o claim: RuntimeSigningKeyRing.cs:44 ~ 'FromConfiguration'
+PASS | citacao dentro do arquivo: SquidServiceHost.cs:227 (SquidServiceHost.cs tem 371 linhas)
+PASS | citacao confere com o claim: SquidServiceHost.cs:227 ~ 'DeliveryPumpSeconds'
+PASS | citacao dentro do arquivo: SquidServiceHost.cs:256 (SquidServiceHost.cs tem 371 linhas)
+PASS | citacao confere com o claim: SquidServiceHost.cs:256 ~ 'UseLocalhostClustering'
+PASS | citacao dentro do arquivo: SquidServiceHost.cs:282 (SquidServiceHost.cs tem 371 linhas)
+PASS | citacao confere com o claim: SquidServiceHost.cs:282 ~ 'Instance:ForwardedHeaders'
+PASS | citacao dentro do arquivo: SquidServiceHost.cs:77 (SquidServiceHost.cs tem 371 linhas)
+PASS | citacao confere com o claim: SquidServiceHost.cs:77 ~ 'WithTracing'
+PASS | citacao dentro do arquivo: SquidServiceHost.cs:93 (SquidServiceHost.cs tem 371 linhas)
+PASS | citacao confere com o claim: SquidServiceHost.cs:93 ~ 'Storage:Path'
+PASS | citacao dentro do arquivo: TrustedPeerHosts.cs:25 (TrustedPeerHosts.cs tem 69 linhas)
+PASS | citacao confere com o claim: TrustedPeerHosts.cs:25 ~ 'From(IConfiguration'
+PASS | citacao dentro do arquivo: TwoSiloHarness.cs:128 (TwoSiloHarness.cs tem 357 linhas)
+PASS | citacao confere com o claim: TwoSiloHarness.cs:128 ~ 'Configure<EndpointOptions>'
+PASS | claim do runbook presente no texto: CanonicalOrigin.cs:28
+PASS | claim do runbook presente no texto: HttpPeerSender.cs:87
+PASS | claim do runbook presente no texto: MediaOptions.cs:34
+PASS | claim do runbook presente no texto: RuntimeSigningKeyRing.cs:44
+PASS | claim do runbook presente no texto: SquidServiceHost.cs:227
+PASS | claim do runbook presente no texto: SquidServiceHost.cs:256
+PASS | claim do runbook presente no texto: SquidServiceHost.cs:282
+PASS | claim do runbook presente no texto: SquidServiceHost.cs:77
+PASS | claim do runbook presente no texto: SquidServiceHost.cs:93
+PASS | claim do runbook presente no texto: TrustedPeerHosts.cs:25
+PASS | claim do runbook presente no texto: TwoSiloHarness.cs:128
+PASS | rota mapeada: /
+PASS | rota mapeada: /.well-known/nodeinfo
+PASS | rota mapeada: /.well-known/webfinger
+PASS | rota mapeada: /api/auth/register
+PASS | rota mapeada: /api/containers
+PASS | rota mapeada: /api/containers/interop-demo/feed
+PASS | rota mapeada: /api/containers/interop-demo/posts
+PASS | rota mapeada: /api/federation/follow
+PASS | rota mapeada: /health
+PASS | rota mapeada: /o/…
+PASS | rota mapeada: /users/alice
+PASS | rota mapeada: /users/bob
+PASS | rota mapeada: /users/domtest
+PASS | rota mapeada: /users/peer-test
+PASS | tabela no schema: peer_delivery
+PASS | coluna peer_delivery.activity_type no schema
+PASS | tabela no schema: peer
+PASS | coluna peer.domain no schema
+PASS | tabela no schema: peer_delivery
+PASS | coluna peer_delivery.activity_type no schema
+PASS | tabela no schema: peer
+PASS | coluna peer.domain no schema
+PASS | tabela no schema: peer_delivery
+PASS | coluna peer_delivery.state no schema
+PASS | tabela no schema: peer_delivery
+PASS | coluna peer_delivery.reason no schema
+PASS | coluna peer_delivery.state no schema
+PASS | tabela no schema: peer_delivery
+PASS | coluna peer_delivery.activity_type no schema
+PASS | coluna peer_delivery.state no schema
+PASS | tabela no schema: peer_delivery
+PASS | coluna peer_delivery.state no schema
+PASS | AC-01 consulta de pares cobre colunas peer
+PASS | AC-01 gera RecoveryKey base64 de 32 bytes
+PASS | AC-01 silo A porta 5601
+PASS | AC-01 silo B porta 5602 (distinta)
+PASS | AC-01 caminhos de banco/midia distintos A vs B
+PASS | AC-01 Instance:Domain no boot do modo dominio
+PASS | AC-01 TrustedPeerHosts nomeia o par local
+PASS | AC-01 Worker com o mesmo Storage:Path do silo
+PASS | AC-01 launchSettings.json (59311/59312) existe
+PASS | AC-01 ports Orleans de dev citados 59311/59312
+PASS | AC-01 secao Mastodon/Friendica marcada GATE-HUMANO
+PASS | AC-01 compose dos pares marcado EXTERNO + GATE-HUMANO
+PASS | AC-01 fonte oficial Mastodon nomeada
+PASS | AC-01 fonte oficial Friendica nomeada
+PASS | AC-01 repo nao traz compose dos pares (declarado)
+PASS | AC-01 quickstart.md (fonte citada) existe
+PASS | quickstart cita mastodon-main 5.0.0-alpha.1
+PASS | quickstart cita friendica-2026.08-rc
+PASS | quickstart fixa que Mastodon nao federa por localhost
+PASS | AC-01 hosts file apontando os dominios do par
+PASS | AC-02 secao opcional instancia publica real
+PASS | AC-02 secao 7 marcada GATE HUMANO
+PASS | AC-02 secao 7 declarada gate humano no blockquote
+PASS | AC-02 secao 7 cobre dominio+TLS+tunel
+PASS | AC-02 fora de escopo do MVP citado na secao
+PASS | AC-03 peer-entrega-travada.md sem token PENDENTE
+PASS | AC-03 peer-entrega-travada.md status EXECUTAVEL
+PASS | AC-03 peer-entrega-travada.md tem Sintoma/Diagnostico/Procedimento/Verificacao
+PASS | AC-03 peer-entrega-travada.md tem passo a passo comandos reais (>=3 tipos)
+PASS | AC-03 dlq-cheia.md sem token PENDENTE
+PASS | AC-03 dlq-cheia.md status EXECUTAVEL
+PASS | AC-03 dlq-cheia.md tem Sintoma/Diagnostico/Procedimento/Verificacao
+PASS | AC-03 dlq-cheia.md tem passo a passo comandos reais (>=3 tipos)
+PASS | AC-03 peer cita PeerClient cenarios provados
+PASS | AC-03 dlq cita PeerClient cenario 401
+PASS | AC-03 dlq sem rota de requeue declarada
+PASS | AC-04 peer-entrega-travada na tabela
+PASS | AC-04 dlq-cheia na tabela
+PASS | AC-04 federacao-interop na tabela
+PASS | AC-04 peer status EXECUTAVEL + P-06
+PASS | AC-04 dlq status EXECUTAVEL + ponteiro P-06 (direto ou idem)
+PASS | AC-04 federacao EXECUTAVEL local + gate humano + TASK-0049/P-06
+PASS | AC-04 rotacionar-chave continua PENDENTE-fase (P-07)
+PASS | indice linka disco-cheio.md que existe
+PASS | indice linka restaurar-backup.md que existe
+PASS | indice linka rotacionar-chave.md que existe
+PASS | indice linka peer-entrega-travada.md que existe
+PASS | indice linka dlq-cheia.md que existe
+PASS | indice linka federacao-interop.md que existe
+PASS | AC-04 README aponta Evidence da TASK-0048
+PASS | AC-04 gate count citado 597/597
+qa-check-task-0048: 134 PASS / 0 FAIL
