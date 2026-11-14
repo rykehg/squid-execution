@@ -74,15 +74,15 @@ public static class ProfileJsonLd
         return new ActorProfile(id[..cut], preferred, name, FromPem(pem), FromMultibase(multibase));
     }
 
-    /// <summary>The PEM without its armor, as the SPKI DER bytes the verifier imports.</summary>
+    /// <summary>The PEM without its armor, as the SPKI DER bytes the verifier imports — armor first
+    /// (S-41: compacting before the Replace swallowed the armor's spaces, the base64 never
+    /// validated, and every ARMORED remote key answered null).</summary>
     public static byte[]? TryDecodePublicKeyPem(string? pem)
     {
         if (string.IsNullOrWhiteSpace(pem)) return null;
         try
         {
-            return Convert.FromBase64String(Compact(pem)
-                .Replace(RsaPemHeader, string.Empty, StringComparison.Ordinal)
-                .Replace(RsaPemFooter, string.Empty, StringComparison.Ordinal));
+            return Convert.FromBase64String(PemBody(pem));
         }
         catch (FormatException)
         {
@@ -115,7 +115,15 @@ public static class ProfileJsonLd
         }
     }
 
-    /// <summary>The PEM without its armor or whitespace — the base64 body of any public key document.</summary>
+    /// <summary>The PEM without its armor or whitespace — the base64 body of any public key document.
+    /// The armor comes off FIRST: it carries the spaces that <see cref="Compact"/> would swallow
+    /// before a Replace could ever match it (S-41).</summary>
+    private static string PemBody(string pem) =>
+        Compact(pem
+            .Replace(RsaPemHeader, string.Empty, StringComparison.Ordinal)
+            .Replace(RsaPemFooter, string.Empty, StringComparison.Ordinal));
+
+    /// <summary>Every whitespace character gone — the line breaks of an armored body included.</summary>
     private static string Compact(string text)
     {
         var compact = new StringBuilder(text.Length);
@@ -160,21 +168,10 @@ public static class ProfileJsonLd
 
     private static string FromPem(string pem)
     {
-        var body = pem
-            .Replace(RsaPemHeader, string.Empty, StringComparison.Ordinal)
-            .Replace(RsaPemFooter, string.Empty, StringComparison.Ordinal);
-        var compact = new StringBuilder(body.Length);
-        foreach (var character in body)
-        {
-            if (!char.IsWhiteSpace(character))
-            {
-                compact.Append(character);
-            }
-        }
-
         // Validate here so a malformed PEM fails at the boundary, not three layers deeper.
-        Convert.FromBase64String(compact.ToString());
-        return compact.ToString();
+        var body = PemBody(pem);
+        Convert.FromBase64String(body);
+        return body;
     }
 
     private static string ToMultibase(string rawKeyBase64)
