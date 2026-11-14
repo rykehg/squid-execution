@@ -54,7 +54,9 @@ Each AC is one observable behaviour. QA tests against this list; anything not li
 
 - AC-01: publicar post `public` cria `PeerDelivery` para cada seguidor remoto do autor (e para a
   coleção `followers` do contêiner) com `to`/`cc` do contrato §2.1 (`Public` em `to`, `followers`
-  em `cc`) — teste.
+  em `cc`), e o payload **nomeia o destino** do lado de fora: `audience` com a URI do contêiner e
+  `squid:slug` no objeto — é o que a entrada remota resolve pela D-01 (SPEC-0011 §E, decisão
+  humana 2026-11-13) — teste.
 - AC-02: `unlisted` entrega **só** a seguidores; `membersOnly` entrega **só** a atores com
   `Membership.State = Active` com `squid:policy` no payload e nada em `cc`; `private` não cria
   **nenhuma** `PeerDelivery` — teste (§7.2, §7.3).
@@ -93,6 +95,7 @@ Do not carry a gap into development unless it has an assumption in force.
 | Gap | Blocking | Assumption in force |
 | --- | --- | --- |
 | GAP-41 | no | rota local `POST /api/federation/follow` sem UI (P-08 consume) — sem ela o DoD dos dois silos não tem por onde nascer a relação |
+| GAP-48 | no | D-01 respondida pelo humano (2026-11-13 21:23:34): entrada só aplica `Create` com destino nomeado — por isso esta task **nomeia o destino na saída** (`audience` + `squid:slug`, SPEC-0011 §E); contrato não muda (campos extras preservados pela leitura tolerante §6) |
 | GAP-43 | no | saída limitada a `Create`, `Follow`, `Accept`, `Undo(Follow)`, `Delete`; `Like`/`Announce`/`Flag` de saída fora |
 | — | no | motor de entrega (backoff, circuito, DLQ, rate por par) é da TASK-0046; aqui a entrega nasce `Pending` e é observável — cada entrega é funcional por si |
 

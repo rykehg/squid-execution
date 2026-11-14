@@ -87,6 +87,13 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 - Falha 1–4 → `401`/`400` sem processar; falha 5 → `429` + `Retry-After`; em nenhum caso o
   processo cai (FR-040). Assinatura rejeitada pelo par na **saída** → entrega `Failed` com motivo
   `signature_rejected` e alerta, nunca retry cego com a mesma chave.
+- **Pares confiáveis** (decisão do ODEV 2026-11-13 22:41:54, nível especificação — resposta ao
+  risco levantado pela TASK-0044 antes do fecho): `Federation:TrustedPeerHosts` é uma allowlist
+  **exata** de hostnames/IPs, **vazia por padrão**; só ela libera loopback/rede privada nos
+  **clientes de federação** (resolução de ator, download de mídia, entrega ao par). O unfurl de
+  link continua bloqueando rede privada com a mesma lista vazia ou nomeada; a guarda padrão não
+  muda. Harness da TASK-0047, runbook (0048) e interop (0049) nomeiam os pares locais; em
+  produção o valor é gate humano. Entrega como task própria: **TASK-0050**.
 
 ### D. Superfície exposta (contrato §1, fecha S-26)
 
@@ -108,6 +115,15 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
   SHA-256 conferido), `Follow` (relação seguidor + `Accept` de volta), `Undo` (`Follow`),
   `Delete` (tombstone propaga), `Like` (idempotente por ator+objeto), `Flag` (entra na fila de
   moderação existente, `IReportStore`).
+- **Destino do `Create` remoto** (D-01, decisão humana 2026-11-13 21:23:34 — **só destino
+  nomeado**, fallback de membria rejeitado): (a) inbox de contêiner `POST /c/{slug}/inbox` →
+  aquele contêiner; (b) referência nomeada no payload — `squid:slug`, ou caminho `/c/{slug}` em
+  `audience`, `to`, `cc` ou `inReplyTo` (URI remota casa pelo slug, URI local casa exata) →
+  contêiner local correspondente; **sem destino → `202` sem aplicar**, com estado intacto. Para a
+  saída nomear o destino, o `Create` federado da TASK-0045 inclui `audience` com a URI do
+  contêiner e `squid:slug` no objeto (campos extras são preservados pela leitura tolerante do
+  contrato §6; `membersOnly` já carrega `squid:policy`) — emenda registrada aqui, contrato não
+  muda.
 - `membersOnly` só é aplicado se o destinatário local é membro ativo do contêiner; `private` não
   gera entrega nem é aceito em claro (R-11).
 - Atividade desconhecida **não** é erro: `202` + métrica `federation.unknown_activity`.
@@ -228,6 +244,7 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 | GAP-45 | ASSUMED | `Instance:Domain` é opt-in; sem config, origem canônica continua scheme+Host byte-idêntica ao atual; `X-Forwarded-*` só com proxy de confiança configurado |
 | GAP-46 | ASSUMED | `Accept` de `Follow` é automático quando a política do ator/contêiner permite seguir; sem UI de aprovação nesta fase |
 | GAP-47 | ASSUMED | runbook de interop e validação com pares reais em Docker local na máquina do humano; instância pública real é seção opcional do runbook e gate humano à parte |
+| GAP-49 | ASSUMED | `Federation:TrustedPeerHosts` (allowlist exata, vazia por padrão) libera loopback/rede privada **só** nos clientes de federação; unfurl continua bloqueado; harness/runbook nomeiam os pares locais, produção = gate humano — TASK-0050 (decisão do ODEV 2026-11-13, resposta ao parked do DEV da TASK-0044) |
 
 ## Tasks
 
@@ -239,6 +256,7 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 | TASK-0044 | Inbox: pipeline de verificação, dedupe e aplicação de atividades | no — serial | TASK_READY |
 | TASK-0045 | Saída: fan-out por visibilidade, reavaliação R-05 e rota de follow | no — serial | TASK_READY |
 | TASK-0046 | PeerGrain: fila, backoff, circuit breaker, DLQ + `PeerClient` com falha | no — serial | TASK_READY |
+| TASK-0050 | Pares confiáveis: `Federation:TrustedPeerHosts` nas guardas dos clientes de federação (GAP-49) | no — serial, blockedBy 0044+0046, blocks 0047 | TASK_READY |
 | TASK-0047 | Facet de dois silos (A→B, contrato §7 itens 1–9/14/15) | no — serial | TASK_READY |
 | TASK-0048 | Runbook de federação (manual + runbooks P-06 executáveis) | no — serial, blockedBy 0047 | TASK_READY |
 | TASK-0049 | Interop real Mastodon/Friendica + facet de fecho do DoD | no — última, gate humano | TASK_READY |
