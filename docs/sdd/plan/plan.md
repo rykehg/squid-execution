@@ -6,8 +6,8 @@ Write responsibility: ODEV. Every other role reads it and never edits it.
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-13 13:56:33
-- snapshot: plan/history/0006-plan.md (fecho da P-05; 0005 é a P-04, 0004 é a P-03, 0003 é a P-02, 0002 é a P-01, 0001 é o bootstrap)
+- lastVerified: 2026-11-20 12:29:58
+- snapshot: plan/history/0007-plan.md (fecho da P-06; 0006 é a P-05, 0005 é a P-04, 0004 é a P-03, 0003 é a P-02, 0002 é a P-01, 0001 é o bootstrap)
 
 # Plan — Squid
 
@@ -51,7 +51,7 @@ engana teste e revisão humana.
 | P-03 | Contêineres sociais: grupo/comunidade com papéis, política versada e sucessão de propriedade | TASK-0017..TASK-0022 (SPEC-0008) — **6/6 DONE com QA PASSED** (QA-0016..QA-0021); gate da casa 244/244; detalhe em `plan/history/0004-plan.md` | **CLOSED** | 2026-11-09 04:55:35 |
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
 | P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — **8/8 DONE com QA PASSED na 1ª tentativa** (QA-0033..QA-0040); gate da casa 480/480; detalhe em `plan/history/0006-plan.md` | **CLOSED** | 2026-11-12 12:46:09 |
-| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica (**interop real movida para o fim da P-07 — decisão humana 2026-11-19 23:01:34**) | TASK-0041..TASK-0053 — **13 entregas, 12/13 DONE** (0050 do parked SSRF da 0044, 0051 do gate GAP-50, 0052 do S-41, 0053 da D-01 da 0047; a ex-TASK-0049 saiu da fase) | **OPEN** (12/13 — fecho aguardando confirmação do humano) | — |
+| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica (**interop real movida para o fim da P-07 — decisão humana 2026-11-19 23:01:34**) | TASK-0041..TASK-0053 — **13 entregas, 12/13 DONE com QA PASSED na 1ª tentativa** (QA-0041..QA-0048, QA-0050..QA-0053; 0050 do parked SSRF da 0044, 0051 do gate GAP-50, 0052 do S-41, 0053 da D-01 da 0047; a ex-0049 saiu da fase); gate da casa 480 → **597/597** | **CLOSED** | 2026-11-20 12:29:58 |
 | P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) **+ entrega final: interop real Mastodon/Friendica (ex-TASK-0049, re-paiada da P-06 por decisão humana 2026-11-19)** | a cortar (+ TASK-0049 já cortada, re-paiada) | NOT_STARTED | — |
 | P-08 | Front web SSR, preview social e compartilhamento externo | a cortar | NOT_STARTED | — |
 
@@ -175,43 +175,45 @@ reais exibem o post público e nenhuma entrega falha por assinatura. Spec:
 
 ## Current state
 
-- phase: **P-06 (Federação) OPEN — 12/13** (aberta 2026-11-13 13:47:25) — **13 entregas**
-  cortadas de SPEC-0011 (`TASK-0041..TASK-0053`; 0050 do parked SSRF da 0044, 0051 do gate
-  humano GAP-50 em 2026-11-14 09:10:08, 0052 do defeito S-41, 0053 da D-01 da 0047), **12/13
-  DONE** (0041..0048+0050..0053 com QA PASSED na 1ª tentativa; gates 484 → 597; o manual da
-  TASK-0048 foi re-executado pela QA com 52 PASS). **TASK-0049 (interop real, gate humano)
-  RE-PAIADA para o fim da P-07 por decisão humana 2026-11-19 23:01:34** — fica em aberto;
-  o fecho da P-06 (consolidação + snapshot 0007 + authority CODE) **aguarda confirmação do
-  humano**. P-05 fechou em 2026-11-12 12:46:09 (8/8, gate 480/480, snapshot `0006-plan.md`); a
-  partir do fecho de cada fase o **código é a fonte real** daquela fase (divergência =
-  `[DIVERGENCIA]`, código vence); P-01 fecha no 0002, P-02 no 0003, P-03 no 0004, P-04 no
-  0005, P-05 no 0006.
-- authority: **SPEC** para P-06 (nasce SPEC, vira CODE no fecho); **CODE** para P-01..P-05.
+- phase: **P-06 (Federação) CLOSED** (2026-11-20 12:29:58) — **12/13 entregas DONE com QA
+  PASSED na 1ª tentativa** (TASK-0041..TASK-0048 + TASK-0050..TASK-0053; QA-0041..QA-0048,
+  QA-0050..QA-0053; gates 484 → **597/597**; 4 entregas nasceram do fluxo: 0050 parked SSRF,
+  0051 gate humano GAP-50, 0052 defeito S-41, 0053 D-01 da 0047). A **TASK-0049 (interop real,
+  gate humano) re-paiada para o fim da P-07** por decisão humana 2026-11-19 23:01:34 — `SC-016`
+  fica aberto até lá. Consolidação do memory bank feita (`FEATURE_CONCLUIDA` em
+  `progress/0001.md`); snapshot congelado em `plan/history/0007-plan.md`; README (§Estado atual)
+  e ponteiros de runbook atualizados. A partir do fecho de cada fase o **código é a fonte real**
+  daquela fase (divergência = `[DIVERGENCIA]`, código vence); P-01 fecha no 0002, P-02 no 0003,
+  P-03 no 0004, P-04 no 0005, P-05 no 0006, P-06 no 0007.
+- authority: **CODE** para P-01..P-06 (fechadas); a P-07, quando aberta, nasce com authority
+  SPEC até o próprio fecho.
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **PERGUNTA PENDENTE AO HUMANO (decisão 2026-11-19 23:01:34 registrada, fecho
-  não iniciado):** (1) fechar a P-06 **agora** com 12/13 — lacuna `SC-016`/DoD-interop registrada
-  como movida à P-07, consolidação + snapshot `0007` + authority CODE + README/runbooks — ou
-  (2) mantê-la **OPEN sem consolidação** (precedente P-04 de 2026-11-10) até a TASK-0049 fechar
-  no fim da P-07; (3) se posso já iniciar a **entrevista/planejamento da P-07** (backup + rotação
-  + entrega final 0049). Nada de deploy (nenhum push é meu de fazer — a CI só roda pós-push,
-  gate humano; último run verde 98/98 de 07/11 — gate local em 597/597; suíte Linux em execução
-  real via contêiner, falhas todas de ambiente).
+- nextAction: **PARADO no fecho da P-06** — não inicio a P-07 por conta própria. Próximo passo
+  humano: nova sessão com `/odev` para abrir a **P-07 (Backup cifrado + rotação de chave +
+  entrega final TASK-0049/interop real)** com entrevista/corte de spec (insumos: doc 05 §Sprint 6,
+  FR-042..FR-046, data-model §2.10 BackupEnvelope/KeyEpoch, contrato backup-recovery.md,
+  runbooks `restaurar-backup`/`rotacionar-chave` em PENDENTE-fase, S-39/S-42, e a TASK-0049 já
+  cortada como entrega final). Nada de deploy (nenhum push é meu de fazer — a CI só roda pós-push,
+  gate humano; **push humano ~2026-11-19/20 levou a P-06 a `origin/develop` (até `41c419d`;
+  o re-paiamento da 0049 ficou 1 commit atrás) — run do CI pós-push não verificado daqui**;
+  gate local em 597/597; suíte Linux executada em contêiner na P-06 com falhas todas de ambiente).
 - **Git a partir da P-05 (gate PHASE 2026-11-11 20:42:28, modelo C)**: branch por task
   `task/TASK-NNNN-<slug>` desde `develop`; DEV commita ao fim da entrega, QA commita no PASSED,
   ODEV mergeia em `develop` no `DONE` e commita docs; push/force/`main`/apagar branch =
   proibido a agentes, merge+tag de fecho em `main` = humano. Os dispatchs DEV/QA devem incluir
   a linha de autorização de commit deste gate. Commits da P-01..P-04 não mudam.
-- blocking gaps: NENHUM — **GAP-09 fechado por decisão humana** na abertura da P-06 (SPEC-0011
-  decisão 2: `Squid:RecoveryKey` em segredo de ambiente, desembrulho só em memória); novos
-  GAP-41..GAP-47 assumidos na SPEC-0011; `S-26` fecha na TASK-0043 (inbox/outbox/followers/
-  following) e `I-11` na TASK-0041 — checagem do backlog pedida ao cortar a fase; abertos e
-  carregados: GAP-02, GAP-04/05/06, GAP-13..GAP-18 (SPEC-0008),
-  GAP-21..GAP-28 (SPEC-0009), GAP-29..GAP-40 (SPEC-0010 — 29..35 resolvidos por humano,
-  36..40 assumidos; 36 = ao vivo não decidido, 37 = UI do aviso é P-08),
-  S-11/S-12/S-19/S-22..S-38 (backlog), suite Linux nativa unverified (CI é o executor,
-  WSL sem dotnet sondado a vivo em toda QA da P-05).
+- blocking gaps: NENHUM — **P-06 fechada com todos os gates respondidos**: GAP-09 (chave em
+  runtime) e GAP-50 (duplo embrulho) fechados por decisão humana; GAP-41..GAP-47 e GAP-49..GAP-51
+  assumidos na SPEC-0011; `S-26` fechou na TASK-0043 (inbox/outbox/followers/following — `rel=profile`
+  continua P-08) e `I-11` na TASK-0041; abertos e carregados: GAP-02 (fonte NuGet),
+  GAP-04/05/06 (não revisitadas), GAP-13..GAP-18 (SPEC-0008), GAP-21..GAP-28 (SPEC-0009),
+  GAP-29..GAP-40 (SPEC-0010 — 36 ao vivo não decidido, 37 UI do aviso é P-08),
+  S-11/S-12/S-19/S-22..S-45 (backlog — S-40..S-45 novos na P-06), **SC-016/interop real aberto
+  até o fim da P-07 (ex-TASK-0049)**, suite Linux com falhas de ambiente (I-10/S-44),
+  CI pós-push não verificado (último run verde 98/98 de 07/11; push humano de ~19/11 sem leitura
+  do resultado daqui).
 
 ## Adopted legacy documentation
 

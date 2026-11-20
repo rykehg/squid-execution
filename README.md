@@ -11,8 +11,10 @@ versionada, identidade recuperável e federação por ActivityPub.
 
 ## Estado atual
 
-Fases **P-01..P-05 fechadas** (fundação, identidade, contêineres sociais, publicação/feed e
-mensageria) — gate local de testes em **480/480**; a próxima é **P-06 (Federação)**. O estado
+Fases **P-01..P-06 fechadas** (fundação, identidade, contêineres sociais, publicação/feed,
+mensageria e **federação**) — gate local de testes em **597/597**; a próxima é **P-07 (Backup
+cifrado + rotação de chave `RK`/`RC`)**, com a **interop real Mastodon/Friendica (TASK-0049,
+gate humano) como entrega final** (movida da P-06 por decisão humana 2026-11-19). O estado
 canônico de execução — fases, tarefas, QA e evidências — vive em [`docs/sdd/`](docs/sdd/README.md);
 o plano corrente é [`docs/sdd/plan/plan.md`](docs/sdd/plan/plan.md). Este bloco e os ponteiros de
 fase de [`docs/runbooks/`](docs/runbooks/README.md) são atualizados a cada fecho de fase

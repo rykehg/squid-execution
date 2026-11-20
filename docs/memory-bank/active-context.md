@@ -6,7 +6,7 @@ Write responsibility: only the consolidator registered in the general `index.md`
 
 - status: ATIVO
 - owner: odev
-- lastVerified: 2026-11-12 12:27:17
+- lastVerified: 2026-11-20 12:29:58
 
 # Active context (snapshot)
 
@@ -15,22 +15,23 @@ Snapshot of the last consolidation, overwritten at each consolidation; the live 
 Never record here: phase, status, counters, gates, handoffs in progress, work item content, secrets, personal data.
 
 ## Last consolidation
-- Event: FEATURE_CONCLUIDA (PHASE_CLOSED) — P-05 Sprint 4 (Mensageria) fechada
-- Reference: TASK-0033..TASK-0040 (run R-20261111-01), todas DONE com QA PASSED na 1ª tentativa (QA-0033..QA-0040); snapshot em docs/sdd/plan/history/0006-plan.md
-- When: 2026-11-12 12:27:17
+- Event: FEATURE_CONCLUIDA (PHASE_CLOSED) — P-06 Sprint 5 (Federação) fechada
+- Reference: TASK-0041..TASK-0048 + TASK-0050..TASK-0053 (run R-20261113-01), 12/13 DONE com QA PASSED na 1ª tentativa (QA-0041..QA-0048, QA-0050..QA-0053); snapshot em docs/sdd/plan/history/0007-plan.md
+- When: 2026-11-20 12:29:58
+- Scope note: a interop real (ex-TASK-0049, gate humano) saiu da fase por decisão humana 2026-11-19 23:01:34 e é a entrega final da P-07 — SC-016/DoD-interop fica aberto até lá
 
 ## Live state
 - liveStateSource: docs/sdd/tasks/
 
 ## Focus at consolidation time
-- P-05 entregou: thread com ordem total (CAS na coluna `version`, migrations 0002..0007), envio/leitura com delta exato e 404 byte-idêntico, participantes com admin eleito e sucessão do criador, aviso não-E2EE com gate 428 dentro da transação, marcador `lastReadSeq` monotônico, resposta `replyToId` com 422, reação idempotente com whitelist por requisição, anexo reusando `/api/media` (cota não duplicada) e facet de fecho do DoD — gate da casa 432 → **480/480**
-- Gate da fase: DoD do Sprint 4 provado em fluxo HTTP (dois conversam, terceiro 404 idêntico, 6 envios concorrentes com seqs únicas, resposta/reação idempotentes, facet ponta a ponta com anexo)
-- Incidentes: NENHUM (0 correções, 0 bloqueios, 0 D-01 abertos; 3 erros do ODEV corrigidos no fluxo — touches `schema/**` em 0034/0036 e typo de data em 0040)
+- P-06 entregou: superfície ActivityPub completa (S-26 fechado), inbox na ordem do contrato §3 com dedupe por `activity.id` e aplicação de 7 tipos de atividade, saída com fan-out por visibilidade + reavaliação R-05 (`Cancelled` auditável), `PeerGrain`+pump+DLQ (migrations 0008/0009), assinatura draft-cavage/RFC 9421, duplo embrulho de chave (GAP-50), pares confiáveis (GAP-49), mídia `attachment`+`GET /media/{hash}` (GAP-51), PEM blindado corrigido (S-41), domínio canônico (I-11), facet de dois silos em HTTP real (12 testes, §7 completo) e o manual executado 2× — gate da casa 480 → **597/597**
+- Gate da fase: DoD do Sprint 5 em cadeia com pares Squid; interop real com Mastodon/Friendica = pendência humana movida à P-07
+- Incidentes: 1 D-01 de produto (destino do Create — gate humano) + 2 adjudicações de especificação (mídia/attachment, webfinger), 4 entregas extra nascidas do fluxo (0050 parked SSRF, 0051 gate GAP-50, 0052 defeito S-41, 0053 D-01), 0 correções de QA (todas PASSED na 1ª)
 
 ## Open risks and gaps
-- Linux: suíte do produto continua `unverified` na máquina (WSL sem dotnet, sondado a vivo em cada QA; CI ubuntu é o executor); `sdd-test.sh` continua quebrado (`*.slnx` — S-11/S-12)
-- GAP-36 (ao vivo de mensagens não decidido — custo SSE/webhook/push respondido, polling cobre o DoD); GAP-37 (UI do aviso é P-08); carregados: GAP-02, GAP-04/05/06, GAP-09 (P-06), GAP-13..18, GAP-21..28, GAP-29..40 (29..35 resolvidos por humano, 36..40 assumidos), S-11/S-12/S-19/S-22..S-38 — pointer: docs/sdd/ideas/BACKLOG.md
-- `contracts.md`: backup/restore/peers ainda sem handler (P-07 dona); emendas vivas: data-model §2.7 (admin de thread) e contrato §6 (rotas novas) — originais intactos
+- Linux: suite executada em contêiner (P-06) com falhas 100% ambiente (`libfontconfig.so.1` — I-10/gate humano; `BuildProof` Windows-only S-44); AC-01 da facet = unverified no Linux; `sdd-test.sh` segue quebrado (S-11/S-12)
+- S-43 (Accept do follow no corpo do 202 não consumido — CONFIRMADO, risco p/ interop), S-40 (visibilidade em `/api/media`), S-45 (métricas sem exportador), S-42 (kit import sem cópia) — pointer: docs/sdd/ideas/BACKLOG.md
+- `contracts.md`: backup/restore/peers de admin ainda sem handler (P-07 dona); `rel=profile` continua P-08; emendas vivas: data-model §2.7 (P-05) e §5 quota (P-04) — originais intactos
 
 ## Next planned step (snapshot)
-- Aguarda decisão humana para abrir a P-06 (Federação) — mirror of: docs/sdd/plan/plan.md — snapshot, not an instruction
+- Humano abrirá a P-07 (backup cifrado + rotação RK/RC + entrega final TASK-0049) em nova sessão — mirror of: docs/sdd/plan/plan.md — snapshot, not an instruction

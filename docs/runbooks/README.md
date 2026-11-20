@@ -21,7 +21,7 @@ EXECUTÁVEL e a interop com pares reais + a instância pública são **gate huma
 | [rotacionar-chave.md](rotacionar-chave.md) | rotacionar `RK`/`RC` | PENDENTE-fase | dono: **P-07** (decidido 2026-11-12, fecha S-39) — chaves existem desde a P-02, mecanismo nasce na P-07 |
 | [peer-entrega-travada.md](peer-entrega-travada.md) | entrega federada travada num par | EXECUTÁVEL | — (motor de entrega da P-06: TASK-0046; comandos provados na TASK-0048) |
 | [dlq-cheia.md](dlq-cheia.md) | fila de falhas de entrega cheia | EXECUTÁVEL | — (idem) |
-| [federacao-interop.md](federacao-interop.md) | manual: dois silos locais, Mastodon/Friendica em Docker e validação da comunicação | EXECUTÁVEL (caminho local) · **gate humano** (pares de referência e instância pública) | execução conjunta com o humano — **P-06/TASK-0049** |
+| [federacao-interop.md](federacao-interop.md) | manual: dois silos locais, Mastodon/Friendica em Docker e validação da comunicação | EXECUTÁVEL (caminho local) · **gate humano** (pares de referência e instância pública) | execução conjunta com o humano — **P-07/TASK-0049** (re-paiada da P-06 em 2026-11-19) |
 
 Status, na prática: **EXECUTÁVEL** roda hoje com o stack entregue (e foi executado com exit 0 na
 prova da task que atualizou o runbook: podman + compose dev, endpoints `/health` e `/ready`, e
