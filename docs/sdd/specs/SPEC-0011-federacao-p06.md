@@ -293,6 +293,6 @@ Decisões humanas desta abertura (entrevista 2026-11-13, 2 rodadas / 6 questões
 | TASK-0051 | Assinatura de ator registrado: duplo embrulho com `Squid:RecoveryKey` (GAP-50) | no — serial, blockedBy 0050, blocks 0047 | TASK_READY |
 | TASK-0052 | PEM blindado: chave de ator remoto resolve (S-41, defeito provado na 0051) | no — serial, blockedBy 0051, blocks 0047 | TASK_READY |
 | TASK-0053 | Mídia federada: `attachment` na saída + `GET /media/{hash}` (GAP-51, D-01 da 0047) | no — serial, blocks 0047 | TASK_READY |
-| TASK-0047 | Facet de dois silos (A→B, contrato §7 itens 1–9/14/15) | no — serial | IN_DEVELOPMENT (parada, aguarda 0053) |
-| TASK-0048 | Runbook de federação (manual + runbooks P-06 executáveis) | no — serial, blockedBy 0047 | TASK_READY |
-| TASK-0049 | Interop real Mastodon/Friendica + facet de fecho do DoD | no — última, gate humano | TASK_READY |
+| TASK-0047 | Facet de dois silos (A→B, contrato §7 itens 1–9/14/15) | no — serial | DONE (QA-0047 PASSED 8/8) |
+| TASK-0048 | Runbook de federação (manual + runbooks P-06 executáveis) | no — serial, blockedBy 0047 | DONE (QA-0048 PASSED 5/5, manual re-executado 52/0) |
+| TASK-0049 | Interop real Mastodon/Friendica + facet de fecho do DoD | no — última, gate humano | TASK_READY (**re-paiada para a P-07 como entrega final — decisão humana 2026-11-19 23:01:34**) |

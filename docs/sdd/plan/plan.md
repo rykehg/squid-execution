@@ -51,8 +51,8 @@ engana teste e revisão humana.
 | P-03 | Contêineres sociais: grupo/comunidade com papéis, política versada e sucessão de propriedade | TASK-0017..TASK-0022 (SPEC-0008) — **6/6 DONE com QA PASSED** (QA-0016..QA-0021); gate da casa 244/244; detalhe em `plan/history/0004-plan.md` | **CLOSED** | 2026-11-09 04:55:35 |
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
 | P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — **8/8 DONE com QA PASSED na 1ª tentativa** (QA-0033..QA-0040); gate da casa 480/480; detalhe em `plan/history/0006-plan.md` | **CLOSED** | 2026-11-12 12:46:09 |
-| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica | TASK-0041..TASK-0053 — **13 entregas** (0050 do parked SSRF da 0044, 0051 do gate GAP-50, 0052 do S-41, 0053 da D-01 da 0047); aberta 2026-11-13, **12/13 DONE** | **OPEN** | — |
-| P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) | a cortar | NOT_STARTED | — |
+| P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica (**interop real movida para o fim da P-07 — decisão humana 2026-11-19 23:01:34**) | TASK-0041..TASK-0053 — **13 entregas, 12/13 DONE** (0050 do parked SSRF da 0044, 0051 do gate GAP-50, 0052 do S-41, 0053 da D-01 da 0047; a ex-TASK-0049 saiu da fase) | **OPEN** (12/13 — fecho aguardando confirmação do humano) | — |
+| P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) **+ entrega final: interop real Mastodon/Friendica (ex-TASK-0049, re-paiada da P-06 por decisão humana 2026-11-19)** | a cortar (+ TASK-0049 já cortada, re-paiada) | NOT_STARTED | — |
 | P-08 | Front web SSR, preview social e compartilhamento externo | a cortar | NOT_STARTED | — |
 
 ### P-01 — entregas
@@ -175,12 +175,14 @@ reais exibem o post público e nenhuma entrega falha por assinatura. Spec:
 
 ## Current state
 
-- phase: **P-06 (Federação) OPEN** (aberta 2026-11-13 13:47:25) — **13 entregas** cortadas de
-  SPEC-0011 (`TASK-0041..TASK-0053`; 0050 nasceu 22:45:47 do parked SSRF da 0044, 0051 do gate
-  humano GAP-50 em 2026-11-14 09:10:08, 0052 do defeito S-41 provado na 0051, 0053 da D-01 da
-  0047), **12/13 DONE** (0041..0048+0050..0053 com QA PASSED na 1ª tentativa; gates
-  484 → 597; o manual da TASK-0048 foi re-executado pela QA com 52 PASS), D-01 fechada por gate humano (21:23:34, só destino nomeado).
-  **GAP-50 resolvido** (2026-11-14 09:10:08, opção 1 = duplo embrulho → TASK-0051 cortada). P-05 fechou em 2026-11-12 12:46:09 (8/8, gate 480/480, snapshot `0006-plan.md`); a
+- phase: **P-06 (Federação) OPEN — 12/13** (aberta 2026-11-13 13:47:25) — **13 entregas**
+  cortadas de SPEC-0011 (`TASK-0041..TASK-0053`; 0050 do parked SSRF da 0044, 0051 do gate
+  humano GAP-50 em 2026-11-14 09:10:08, 0052 do defeito S-41, 0053 da D-01 da 0047), **12/13
+  DONE** (0041..0048+0050..0053 com QA PASSED na 1ª tentativa; gates 484 → 597; o manual da
+  TASK-0048 foi re-executado pela QA com 52 PASS). **TASK-0049 (interop real, gate humano)
+  RE-PAIADA para o fim da P-07 por decisão humana 2026-11-19 23:01:34** — fica em aberto;
+  o fecho da P-06 (consolidação + snapshot 0007 + authority CODE) **aguarda confirmação do
+  humano**. P-05 fechou em 2026-11-12 12:46:09 (8/8, gate 480/480, snapshot `0006-plan.md`); a
   partir do fecho de cada fase o **código é a fonte real** daquela fase (divergência =
   `[DIVERGENCIA]`, código vence); P-01 fecha no 0002, P-02 no 0003, P-03 no 0004, P-04 no
   0005, P-05 no 0006.
@@ -188,13 +190,14 @@ reais exibem o post público e nenhuma entrega falha por assinatura. Spec:
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **AGUARDA GATE HUMANO PARA A TASK-0049** (a última, 13/13): interop real com
-  Mastodon + Friendica em Docker local — o humano presente para subir os pares pelo runbook
-  `docs/runbooks/federacao-interop.md`, validar os logs do par e corrigir os 2 achados MINOR
-  (AC-05). Com QA PASSED na 0049 a P-06 fecha (consolidação + snapshot 0007 + authority CODE +
-  README/runbooks/ponteiros). Nada de deploy (nenhum push é meu de fazer — a CI só roda pós-push,
-  gate humano; último run verde 98/98 de 07/11 — considere um push para revalidar a CI: gate
-  local está em 597/597; suíte Linux em execução real via contêiner, falhas todas de ambiente).
+- nextAction: **PERGUNTA PENDENTE AO HUMANO (decisão 2026-11-19 23:01:34 registrada, fecho
+  não iniciado):** (1) fechar a P-06 **agora** com 12/13 — lacuna `SC-016`/DoD-interop registrada
+  como movida à P-07, consolidação + snapshot `0007` + authority CODE + README/runbooks — ou
+  (2) mantê-la **OPEN sem consolidação** (precedente P-04 de 2026-11-10) até a TASK-0049 fechar
+  no fim da P-07; (3) se posso já iniciar a **entrevista/planejamento da P-07** (backup + rotação
+  + entrega final 0049). Nada de deploy (nenhum push é meu de fazer — a CI só roda pós-push,
+  gate humano; último run verde 98/98 de 07/11 — gate local em 597/597; suíte Linux em execução
+  real via contêiner, falhas todas de ambiente).
 - **Git a partir da P-05 (gate PHASE 2026-11-11 20:42:28, modelo C)**: branch por task
   `task/TASK-NNNN-<slug>` desde `develop`; DEV commita ao fim da entrega, QA commita no PASSED,
   ODEV mergeia em `develop` no `DONE` e commita docs; push/force/`main`/apagar branch =
@@ -285,3 +288,4 @@ nomes** — nenhum arquivo deles é copiado, nem como trecho.
 | 2026-11-13 13:31:11 | Abertura da P-06 (entrevista rodada 2, "concordo com as sugestões dadas"): **`I-11` entra** na fase como entrega cedo (`Instance:Domain` + `ForwardedHeaders`); **manual = runbook próprio** `docs/runbooks/federacao-interop.md` + índice, escrito **antes** da validação de interop; **pares reais em Docker local** (Mastodon + Friendica na máquina do humano, sem exposição à internet) com seção opcional "instância pública real" no runbook | PHASE | Henrique |
 | 2026-11-13 21:23:34 | **D-01 da TASK-0044 (gate humano)**: destino de um `Create` remoto = **só destino nomeado** — inbox `/c/{slug}`, ou `squid:slug`/caminho `/c/{slug}` em `audience`/`to`/`cc`/`inReplyTo`; sem destino → `202` sem aplicar; fallback de membria (menor slug) **rejeitado**; a saída da TASK-0045 nomeia o destino (`audience` + `squid:slug`) — SPEC-0011 §E e AC-01/GAP-48 da TASK-0045 emendados, contrato não muda | TASK | Henrique |
 | 2026-11-14 09:10:08 | **GAP-50 da P-06 (gate humano, opção 1 — "seguir com 1")**: **duplo embrulho** — o registro embrulha a mesma RSA do ator também com a `Squid:RecoveryKey` de instância e guarda a cópia em tabela própria `0009_*`; runtime desembrulha com o segredo de boot e assina **sempre com a chave do ator** (contrato §5); kit/GAP-01 intactos; **atores registrados antes da config não federam** (limite aceito); alternativa 2 (embrulhar a RK do ator) rejeitada por privilégio mínimo — SPEC-0011 §B emendada, TASK-0051 cortada e colocada antes da 0047 | TASK | Henrique |
+| 2026-11-19 23:01:34 | **TASK-0049 (interop real, gate humano) sai da P-06 e vira a entrega FINAL da P-07**: fica `TASK_READY` **em aberto por agora** (nenhum dispatch sem ordem nova) — bloco de controle re-paiado (`phase: P-07`), Intent anotado, ACs/touches inalterados; linha da P-06 no plano marcada 12/13 com fecho aguardando confirmação, linha da P-07 ganha a entrega final; decisão de **escopo de fase** (a P-06 perde o cláusula de interop do DoD — SC-016 passa a ser coberto no fim da P-07) | PHASE | Henrique |

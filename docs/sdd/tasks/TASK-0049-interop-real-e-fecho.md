@@ -11,7 +11,7 @@ runId: R-20261113-01
 taskId: TASK-0049
 status: TASK_READY
 agent: odev
-phase: P-06
+phase: P-07
 sequence: 1
 createdAt: 2026-11-13 13:47:25
 updatedAt: 2026-11-13 13:47:25
@@ -35,14 +35,18 @@ humanGate:
   scope: NENHUM
   expiresAt: NENHUM
 blocker: NENHUM
-nextAction: TASK_READY - aguardando dispatch DEV (execucao com pares reais = gate humano: humano presente validando logs do par)
+nextAction: TASK_READY - re-paiada para a P-07 por decisao humana (2026-11-19 23:01:34): entrega FINAL da P-07; dispatch so no fim da fase, com o humano presente (gate: pares Docker locais validando logs)
 evidence: []
 memoryBankFlags: []
 ```
 
 ## Intent
 
-Entrega 9 de 9 e **última** da P-06: interop real Mastodon e Friendica em Docker local, seguindo
+> **Re-paiada 2026-11-19 23:01:34 (decisão humana):** sai da P-06 e vira a **entrega final da
+> P-07** — o gate humano (presença do humano para subir Mastodon/Friendica e validar os logs)
+> fica **em aberto por agora**. ACs, touches e o restante do bloco não mudam.
+
+Entrega 9 de 9 e **última** da P-06 *(histórico — ver re-paiamento acima)*: interop real Mastodon e Friendica em Docker local, seguindo
 o manual da TASK-0048 com o humano junto (decisões 3 e 6 da SPEC-0011 — gate humano: o humano
 fornece/valida os pares e os logs do par), mais a facet de fecho do DoD do Sprint 5 em cadeia.
 Com QA PASSED a fase fecha (consolidação + snapshot + authority CODE). Correção de produto só
@@ -101,6 +105,7 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 
 `- YYYY-MM-DD HH:MM:SS | ROLE | what was done or decided`
 - 2026-11-13 13:47:25 | odev | task created from SPEC-0011 (entrega 9 de 9 e ULTIMA da P-06, interop real + facet de fecho; blockedBy TASK-0048; execucao com pares reais = gate humano)
+- 2026-11-19 23:06:10 | odev | DECISAO HUMANA (2026-11-19 23:01:34): deixar esta task de gate humano em aberto por agora e leva-la como PARTE FINAL da proxima fase (P-07) - re-paiada phase P-06 -> P-07 no bloco de controle, Intent anotado, ACs/touches inalterados; blockedBy TASK-0048 segue resolvido; a P-06 nao fecha sozinha com 12/13 sem a confirmacao do humano (pergunta feita no turno)
 
 ## Evidence
 
