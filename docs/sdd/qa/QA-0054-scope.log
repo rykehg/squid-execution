@@ -1,0 +1,31 @@
+HEAD=28dcab9aee197bd1a76a0545c4674ed0c0916c38
+branch=task/TASK-0054-nucleo-backup-cifrado
+commit-files=15 commit-fora-dos-touches=0
+nuget directory-packages-props-changed=0 added-package-lines=0
+WIP-ODEV docs/sdd/ideas/BACKLOG.md
+WIP-ODEV docs/sdd/plan/plan.md
+WIP-ODEV docs/sdd/specs/SPEC-0012-backup-rotação-p07.md
+WIP-ODEV docs/sdd/tasks/TASK-0054-nucleo-backup-cifrado.md
+WIP-ODEV docs/sdd/tasks/TASK-0055-coordinator-agendador-rotas.md
+WIP-ODEV docs/sdd/tasks/TASK-0056-restore-drills.md
+WIP-ODEV docs/sdd/tasks/TASK-0057-s3-offsite.md
+WIP-ODEV docs/sdd/tasks/TASK-0058-rotacao-chave-rk-rc.md
+WIP-ODEV docs/sdd/tasks/TASK-0059-import-kit-copia-instancia.md
+WIP-ODEV docs/sdd/tasks/TASK-0060-tela-redundancia.md
+git-status qa-artifacts=7 wip-odev=10 fora-dos-touches=0
+git-backend-entries=0
+residue=0
+blob backend/src/Squid.Persistence/schema/0010_backup.sql match=TRUE
+blob backend/src/Squid.Worker/Backup/LocalDiskTarget.cs match=TRUE
+blob backend/src/Squid.Service/SquidServiceHost.cs match=TRUE
+blob backend/src/Squid.Worker/Backup/BackupPipeline.cs match=TRUE
+blob backend/src/Squid.Worker/Backup/SqliteBackupEnvelopeStore.cs match=TRUE
+blob-identity=5 of 5
+mtime-count=5 (esperado 5)
+MTIME backend\src\Squid.Persistence\schema\0010_backup.sql
+MTIME backend\src\Squid.Service\SquidServiceHost.cs
+MTIME backend\src\Squid.Worker\Backup\BackupPipeline.cs
+MTIME backend\src\Squid.Worker\Backup\LocalDiskTarget.cs
+MTIME backend\src\Squid.Worker\Backup\SqliteBackupEnvelopeStore.cs
+fora-dos-touches=0
+SUMMARY head=28dcab9 commit-files=15 pkg-props=0 pkg-added=0 qa-artifacts=7 wip-odev=10 backend-entries=0 residue=0 blob=5/5 mtime=5 fails=0

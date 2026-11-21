@@ -1,0 +1,14 @@
+command: bash docs/sdd/_tools/sdd-test.sh test (Linux podman-machine, sem target)
+exit:    1
+when:    2026-11-21 12:40:08
+---
+wsl : sdd-test: no *.sln found within depth 3; pass the path
+No linha:1 caractere:137
++ ... e); $out = (wsl -d podman-machine-default -- bash /mnt/c/dev/squid-sq ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (sdd-test: no *....; pass the path:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+test: 
+/mnt/c/dev/squid-squad-net/squid-execution/docs/sdd/_tools/sdd-test.sh: line 64: dotnet: command not found
+test: exit 127 (real test failure)
