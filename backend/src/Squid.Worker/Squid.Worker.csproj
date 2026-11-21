@@ -22,8 +22,10 @@
   <ItemGroup>
     <!-- The media contracts the thumbnail pass and its serving route share (SPEC-0009 section J,
          TASK-0032): IMediaStore's volume layout and the registered placeholder — contracts only,
-         never a route call. The roots still do not reference each other (the dependency rule
-         proves Squid.Service -> Squid.Worker), and the pump and quota sweep reach neither edge. -->
+         never a route call. The roots reference each other in exactly one place since TASK-0054:
+         Squid.Service -> Squid.Worker carries the backup core of SPEC-0012 section A (a root
+         composes roots — the dependency rule proves the edge), and the pump and quota sweep reach
+         neither side of it. -->
     <ProjectReference Include="..\Squid.Api\Squid.Api.csproj" />
     <ProjectReference Include="..\Squid.Domain\Squid.Domain.csproj" />
     <ProjectReference Include="..\Squid.Persistence\Squid.Persistence.csproj" />
