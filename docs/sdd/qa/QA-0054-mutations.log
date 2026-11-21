@@ -1,0 +1,44 @@
+T1 PRE at=122201 ac=AC-01 hash=0a2424c688bf93e5df48f487a0295c1da7abbd0d head-match=true find-hits=1
+T1 RUN wrapper=1 logExit=1 aprovado=9 falha=1 total=10 log=20261121-122223-test-filter.log
+T1 RED-AC Squid.Tests.Backup.BackupMigrationTests.Ac01_The_0010_version_creates_both_2_10_tables_and_reapplying_changes_nothing
+T1 EXPECT-OK expect=Ac01_The_0010_version_creates_both_2_10_tables_and_reapplying_changes_nothing
+T1 RESTORE-OK hash=PRE residue=0
+T2 PRE at=122223 ac=AC-02 hash=aca3b0fd53a71f70253f123b9ba0bf96c4df419d head-match=true find-hits=1
+T2 RUN wrapper=1 logExit=1 aprovado=9 falha=1 total=10 log=20261121-122240-test-filter.log
+T2 RED-AC Squid.Tests.Backup.LocalDiskTargetTests.Ac02_The_five_operations_run_over_the_configured_volume
+T2 EXPECT-OK expect=Ac02_The_five_operations_run_over_the_configured_volume
+T2 RESTORE-OK hash=PRE residue=0
+T2w PRE at=122241 ac=AC-02 hash=9d999e3fd9dd21af5c47328a2a9581ad2c753ea0 head-match=true find-hits=1
+T2w RUN wrapper=1 logExit=1 aprovado=9 falha=1 total=10 log=20261121-122301-test-filter.log
+T2w RED-AC Squid.Tests.Backup.BackupWiringTests.Ac02_The_registered_target_operates_over_the_configured_backup_local_path
+T2w EXPECT-OK expect=Ac02_The_registered_target_operates_over_the_configured_backup_local_path
+T2w RESTORE-OK hash=PRE residue=0
+T3 PRE at=122301 ac=AC-03 hash=29cff7f407eff8ef0428346699b1d341dfaaf4f0 head-match=true find-hits=1
+T3 RUN wrapper=1 logExit=1 aprovado=7 falha=3 total=10 log=20261121-122319-test-filter.log
+T3 RED-AC Squid.Tests.Backup.BackupPipelineTests.Ac03_The_destination_gets_ciphertext_and_header_never_a_plaintext_or_key_byte; Squid.Tests.Backup.BackupPipelineTests.Ac05_Each_backup_wraps_its_own_dk_and_both_ciphertexts_decrypt_with_the_same_rk; Squid.Tests.Backup.BackupPipelineTests.Ac04_ac06_Verified_run_sets_verifiedAt_and_registers_the_section_2_10_row
+T3 EXPECT-OK expect=Ac03_The_destination_gets_ciphertext_and_header_never_a_plaintext_or_key_byte
+T3 RESTORE-OK hash=PRE residue=0
+T4a PRE at=122320 ac=AC-04 hash=29cff7f407eff8ef0428346699b1d341dfaaf4f0 head-match=true find-hits=1
+T4a RUN wrapper=1 logExit=1 aprovado=9 falha=1 total=10 log=20261121-122339-test-filter.log
+T4a RED-AC Squid.Tests.Backup.BackupPipelineTests.Ac04_ac06_Verified_run_sets_verifiedAt_and_registers_the_section_2_10_row
+T4a EXPECT-OK expect=Ac04_ac06_Verified_run_sets_verifiedAt_and_registers_the_section_2_10_row
+T4a RESTORE-OK hash=PRE residue=0
+T4b PRE at=122339 ac=AC-04 hash=29cff7f407eff8ef0428346699b1d341dfaaf4f0 head-match=true find-hits=1
+T4b RUN wrapper=1 logExit=1 aprovado=9 falha=1 total=10 log=20261121-122357-test-filter.log
+T4b RED-AC Squid.Tests.Backup.BackupPipelineTests.Ac04_The_order_is_hash_then_send_then_reread_and_a_divergence_is_corrupt
+T4b EXPECT-OK expect=Ac04_The_order_is_hash_then_send_then_reread_and_a_divergence_is_corrupt
+T4b RESTORE-OK hash=PRE residue=0
+T5 PRE at=122357 ac=AC-05 hash=29cff7f407eff8ef0428346699b1d341dfaaf4f0 head-match=true find-hits=1
+T5 RUN wrapper=3 logExit=1 aprovado=9 falha=1 total=10 log=20261121-122415-test-filter.log
+T5 RED-AC Squid.Tests.Backup.BackupPipelineTests.Ac05_Each_backup_wraps_its_own_dk_and_both_ciphertexts_decrypt_with_the_same_rk
+T5 EXPECT-OK expect=Ac05_Each_backup_wraps_its_own_dk_and_both_ciphertexts_decrypt_with_the_same_rk
+T5 RESTORE-OK hash=PRE residue=0
+T6 PRE at=122415 ac=AC-06 hash=f943af8eaf9d60402107b979b03da913caa64c98 head-match=true find-hits=1
+T6 RUN wrapper=1 logExit=1 aprovado=9 falha=1 total=10 log=20261121-122436-test-filter.log
+T6 RED-AC Squid.Tests.Backup.BackupPipelineTests.Ac04_ac06_Verified_run_sets_verifiedAt_and_registers_the_section_2_10_row
+T6 EXPECT-OK expect=Ac04_ac06_Verified_run_sets_verifiedAt_and_registers_the_section_2_10_row
+T6 RESTORE-OK hash=PRE residue=0
+CLEANUP default-backups-folder removed
+GREEN wrapper=0 logExit=0 aprovado=10 falha=0 log=20261121-122458-test-filter.log
+UNTRACKED backend=0 (esperado 0: a QA nao acrescentou arquivos em backend)
+SUMMARY cycles=8 failed=0 residue-backend=0 temp-backups=0 elapsed-s=178

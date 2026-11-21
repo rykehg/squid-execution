@@ -1,0 +1,8 @@
+test: backend/Squid.slnx
+   at SkiaSharp.SkiaApi.sk_version_get_milestone()
+   at SkiaSharp.SkiaSharpVersion.get_Native()
+   at SkiaSharp.SkiaSharpVersion.CheckNativeLibraryCompatible(Boolean throwIfIncompatible)
+   at SkiaSharp.SkiaApi..cctor()
+
+Failed!  - Failed:    51, Passed:   556, Skipped:     0, Total:   607, Duration: 5 m 57 s - Squid.Tests.dll (net10.0)
+test: exit 1 (real test failure)

@@ -9,6 +9,10 @@
     <ProjectReference Include="..\Squid.Persistence\Squid.Persistence.csproj" />
     <ProjectReference Include="..\Squid.Protocols\Squid.Protocols.csproj" />
     <ProjectReference Include="..\Squid.ReadModels\Squid.ReadModels.csproj" />
+    <!-- The backup core of SPEC-0012 section A (TASK-0054) lives in the Worker (CPU-heavy work,
+         isolated from the silo scheduler) and this root wires it: a composition root may
+         reference another root (Directory.Build.targets, layer "root"), never a layer. -->
+    <ProjectReference Include="..\Squid.Worker\Squid.Worker.csproj" />
   </ItemGroup>
 
   <!-- The versioned schema scripts (SPEC-0009 section B) keep their canonical home in

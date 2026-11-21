@@ -33,6 +33,7 @@ using Squid.Protocols.ActivityPub;
 using Squid.ReadModels.Federation;
 using Squid.ReadModels.Projections;
 using Squid.ReadModels.Quota;
+using Squid.Worker.Backup;
 
 namespace Squid.Service;
 
@@ -192,6 +193,19 @@ public static class SquidServiceHost
         // GAP-17: one injectable clock for the section G timers — the succession inactivity and
         // the delete grace read it instead of the wall, so no test ever sleeps 90 days.
         builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+
+        // Backup core (SPEC-0012 section A/B, TASK-0054): the local target over the configured
+        // volume Backup:Local:Path (default: a backups/ folder beside the binaries until a
+        // deployment names the volume), the registry store over this same migrated file, and the
+        // pipeline whose order contract backup-recovery section 3 fixes. Registered, never started
+        // — the scheduler and operator route of TASK-0055 drive it. This root is the only layer
+        // allowed to reach the Worker: a composition root composes roots (Directory.Build.targets,
+        // layer "root"), never a layer.
+        builder.Services.AddSingleton<IBackupTarget>(_ =>
+            new LocalDiskTarget(configuration["Backup:Local:Path"]
+                ?? Path.Combine(AppContext.BaseDirectory, "backups")));
+        builder.Services.AddSingleton(_ => new SqliteBackupEnvelopeStore(connectionString));
+        builder.Services.AddSingleton<BackupPipeline>();
 
         // Inbox pipeline (SPEC-0011 section E, TASK-0044): the §3 order and its application, over
         // the window grain, the follow/like documents (no table, no migration — the actor-status

@@ -1,0 +1,10 @@
+VERIFY T1 ac=AC-01 hits=1 ok=true
+VERIFY T2 ac=AC-02 hits=1 ok=true
+VERIFY T2w ac=AC-02 hits=1 ok=true
+VERIFY T3 ac=AC-03 hits=1 ok=true
+VERIFY T4a ac=AC-04 hits=1 ok=true
+VERIFY T4b ac=AC-04 hits=1 ok=true
+VERIFY T5 ac=AC-05 hits=1 ok=true
+VERIFY T6 ac=AC-06 hits=1 ok=true
+VERIFY-ASCII non-ascii-bytes=0 ok=true
+VERIFY total=8 bad=0

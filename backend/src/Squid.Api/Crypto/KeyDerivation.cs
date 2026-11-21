@@ -6,8 +6,9 @@ namespace Squid.Api.Crypto;
 
 /// <summary>
 /// Key material derived from the `RK` (SPEC-0007 B-02): the Ed25519 pair by
-/// <c>HKDF(RK, "fed/ed25519-sign")</c> and the RSA-2048 private key wrapped by
-/// <c>HKDF(RK, "fed/rsa-wrap")</c>. Derivation is pure — the same `RK` always yields the same
+/// <c>HKDF(RK, "fed/ed25519-sign")</c>, the RSA-2048 private key wrapped by
+/// <c>HKDF(RK, "fed/rsa-wrap")</c> and — SPEC-0012 section A — the per-backup data key wrapped by
+/// <c>HKDF(RK, "fed/backup-kek")</c>. Derivation is pure — the same `RK` always yields the same
 /// material — and only public halves leave this class in clear.
 /// </summary>
 public static class KeyDerivation
@@ -17,6 +18,9 @@ public static class KeyDerivation
 
     /// <summary>HKDF info label that wraps the RSA private key (B-02).</summary>
     public const string RsaWrapInfo = "fed/rsa-wrap";
+
+    /// <summary>HKDF info label that wraps a per-backup `DK` (SPEC-0012 section A, AC-05).</summary>
+    public const string BackupKekInfo = "fed/backup-kek";
 
     private const int AesKeySize = 32;
 
@@ -75,6 +79,43 @@ public static class KeyDerivation
         finally
         {
             CryptographicOperations.ZeroMemory(key);
+        }
+    }
+
+    /// <summary>
+    /// Wraps a per-backup data key (`DK`) so only the matching `RK` opens it — SPEC-0012 section
+    /// A: every backup uses its own random `DK`, wrapped by <c>HKDF(RK, "fed/backup-kek")</c> and
+    /// stored beside the ciphertext; a destination that leaks the box still cannot read a byte.
+    /// </summary>
+    public static byte[] WrapBackupKey(RootKey rootKey, ReadOnlySpan<byte> dataKey)
+    {
+        var kek = Derive(rootKey, BackupKekInfo, AesKeySize);
+        try
+        {
+            return AesGcmBox.Seal(kek, dataKey);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(kek);
+        }
+    }
+
+    /// <summary>
+    /// Opens a wrapped `DK`. A wrong `RK` surfaces the typed AEAD failure as a
+    /// <see cref="CryptographicException"/> whose message carries no key material.
+    /// </summary>
+    public static byte[] UnwrapBackupKey(RootKey rootKey, byte[] wrapped)
+    {
+        ArgumentNullException.ThrowIfNull(wrapped);
+
+        var kek = Derive(rootKey, BackupKekInfo, AesKeySize);
+        try
+        {
+            return AesGcmBox.Open(kek, wrapped);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(kek);
         }
     }
 
