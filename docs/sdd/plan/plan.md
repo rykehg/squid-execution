@@ -52,7 +52,7 @@ engana teste e revisão humana.
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
 | P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — **8/8 DONE com QA PASSED na 1ª tentativa** (QA-0033..QA-0040); gate da casa 480/480; detalhe em `plan/history/0006-plan.md` | **CLOSED** | 2026-11-12 12:46:09 |
 | P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica (**interop real movida para o fim da P-07 — decisão humana 2026-11-19 23:01:34**) | TASK-0041..TASK-0053 — **13 entregas, 12/13 DONE com QA PASSED na 1ª tentativa** (QA-0041..QA-0048, QA-0050..QA-0053; 0050 do parked SSRF da 0044, 0051 do gate GAP-50, 0052 do S-41, 0053 da D-01 da 0047; a ex-0049 saiu da fase); gate da casa 480 → **597/597** | **CLOSED** | 2026-11-20 12:29:58 |
-| P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) **+ entrega final: interop real Mastodon/Friendica (ex-TASK-0049, re-paiada da P-06 por decisão humana 2026-11-19)** | a cortar (+ TASK-0049 já cortada, re-paiada) | NOT_STARTED | — |
+| P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) **+ entrega final: interop real Mastodon/Friendica (ex-TASK-0049, re-paiada da P-06 por decisão humana 2026-11-19)** | TASK-0054..TASK-0060 (SPEC-0012) — **7 entregas cortadas** + TASK-0049 (já cortada, re-paiada, última) = 8 | **OPEN** | — |
 | P-08 | Front web SSR, preview social e compartilhamento externo | a cortar | NOT_STARTED | — |
 
 ### P-01 — entregas
@@ -173,47 +173,63 @@ aparece; dedupe rejeita entrega repetida; peer derrubado não trava o envio; Mas
 reais exibem o post público e nenhuma entrega falha por assinatura. Spec:
 `specs/SPEC-0011-federacao-p06.md`.
 
+### P-07 — entregas
+
+| Task | Entrega | Touches | Parallel-safe |
+| --- | --- | --- | --- |
+| TASK-0054 | Núcleo do backup cifrado: migration `0010_backup.sql` (`backup_envelope`/`key_epoch`), `IBackupTarget` + `LocalDiskTarget`, cifra na origem (ChaCha20-Poly1305, `DK`/backup, `HKDF("fed/backup-kek")`) na ordem cifrar→hash→enviar→verificar | `backend/src/Squid.Persistence/schema/**`, `backend/src/Squid.Api/Crypto/**`, `backend/src/Squid.Worker/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Backup/**` | no (base da fase) |
+| TASK-0055 | `BackupCoordinatorGrain` + agendador `Backup:IntervalMinutes` (1440) + `POST /api/admin/backup/run` + `GET /api/admin/backup/status` (contrato §6, alerta > 24 h) | `backend/src/Squid.Grains/**`, `backend/src/Squid.Worker/**`, `backend/src/Squid.Api/Admin/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Backup/**` | no (serial, blockedBy 0054) |
+| TASK-0056 | Restore (contrato §4) + 5 drills no gate (`Category=RestoreDrill`: roundtrip SC-009, interrupted, schema-old, wrong-key, incremental) + runbook `restaurar-backup` EXECUTÁVEL | `backend/src/Squid.Worker/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Backup/**`, `docs/runbooks/restaurar-backup.md` | no (serial, blockedBy 0055) |
+| TASK-0057 | `S3CompatibleTarget` com client à mão (`PUT/GET/LIST/DELETE` + SigV4, zero pacote) + fake S3 em processo + drill `restore-offsite` | `backend/src/Squid.Worker/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Backup/**` | no (serial, blockedBy 0056) |
+| TASK-0058 | Rotação `RK`/`RC` da instância: `keyEpoch++`, reembrulho `0009`+`DK`s, `RC` nova, kit reemitido com keyring (R-20) + runbook `rotacionar-chave` EXECUTÁVEL — **fecha S-39** | `backend/src/Squid.Api/{Crypto,Recovery,Admin}/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/{Crypto,Recovery}/**`, `docs/runbooks/**` | no (serial, blockedBy 0054+0056) |
+| TASK-0059 | Import de kit embrulha cópia `0009` quando `Squid:RecoveryKey` existe — **fecha S-42** | `backend/src/Squid.Api/{Recovery,Crypto}/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Recovery/**` | no (serial, blockedBy 0058) |
+| TASK-0060 | Tela de redundância (opção A): `redundancy.score` no status + página HTML fina `GET /admin/backup` | `backend/src/Squid.Api/Admin/**`, `backend/src/Squid.Service/**`, `backend/tests/Squid.Tests/Backup/**` | no (serial, blockedBy 0057) |
+| TASK-0049 | Interop real Mastodon/Friendica + facet de fecho do DoD (SC-016, §7 itens 11–13) — **gate humano** (pares Docker locais com o humano) | `backend/tests/Squid.Tests/Federation/**`, correções mínimas provadas por log real, `docs/runbooks/federacao-interop.md` | no (serial; última) |
+
+Escopo da P-07: **Sprint 6 inteiro + rotação `RK`/`RC` (S-39) + S-42 + tela de redundância**
+(entrevista 2026-11-20, 2 rodadas / 6 questões — decisões 1..6 na SPEC-0012). Gate de saída
+(DoD Sprint 6): CI destrói e restaura, hashes conferem (SC-009); off-site restaura sem o disco
+local; rotação mantém a cadeia coerente e o kit reemitido restaura a `RK`; S-39 e S-42 fechados;
+e ao fim, com o humano junto, a interop real (SC-016). Spec:
+`specs/SPEC-0012-backup-rotação-p07.md`.
+
 ## Current state
 
-- phase: **P-06 (Federação) CLOSED** (2026-11-20 12:29:58) — **12/13 entregas DONE com QA
-  PASSED na 1ª tentativa** (TASK-0041..TASK-0048 + TASK-0050..TASK-0053; QA-0041..QA-0048,
-  QA-0050..QA-0053; gates 484 → **597/597**; 4 entregas nasceram do fluxo: 0050 parked SSRF,
-  0051 gate humano GAP-50, 0052 defeito S-41, 0053 D-01 da 0047). A **TASK-0049 (interop real,
-  gate humano) re-paiada para o fim da P-07** por decisão humana 2026-11-19 23:01:34 — `SC-016`
-  fica aberto até lá. Consolidação do memory bank feita (`FEATURE_CONCLUIDA` em
-  `progress/0001.md`); snapshot congelado em `plan/history/0007-plan.md`; README (§Estado atual)
-  e ponteiros de runbook atualizados. A partir do fecho de cada fase o **código é a fonte real**
-  daquela fase (divergência = `[DIVERGENCIA]`, código vence); P-01 fecha no 0002, P-02 no 0003,
-  P-03 no 0004, P-04 no 0005, P-05 no 0006, P-06 no 0007.
-- authority: **CODE** para P-01..P-06 (fechadas); a P-07, quando aberta, nasce com authority
-  SPEC até o próprio fecho.
+- phase: **P-07 (Backup cifrado + rotação + tela + interop real) OPEN** — aberta em 2026-11-20
+  (entrevista 2 rodadas / 6 questões, todos os defaults aceitos); `SPEC-0012` ATIVA e
+  **7 entregas cortadas: TASK-0054..TASK-0060** (seriais) **+ TASK-0049 (interop real, gate
+  humano) como última**. P-06 fechou antes (2026-11-20 12:29:58): 12/13 entregas DONE com QA
+  PASSED na 1ª tentativa, gates 484 → **597/597**; a 0049 foi re-paiada para o fim desta fase
+  por decisão humana 2026-11-19 23:01:34 — `SC-016` fica aberto até lá. Consolidação da P-06
+  feita (`FEATURE_CONCLUIDA` em `progress/0001.md`); snapshot em `plan/history/0007-plan.md`.
+  A partir do fecho de cada fase o **código é a fonte real** daquela fase (divergência =
+  `[DIVERGENCIA]`, código vence); P-01 fecha no 0002, P-02 no 0003, P-03 no 0004, P-04 no 0005,
+  P-05 no 0006, P-06 no 0007.
+- authority: **CODE** para P-01..P-06 (fechadas); **P-07 nasce com authority SPEC** (SPEC-0012)
+  até o próprio fecho.
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **PARADO no fecho da P-06** — não inicio a P-07 por conta própria. Próximo passo
-  humano: nova sessão com `/odev` para abrir a **P-07 (Backup cifrado + rotação de chave +
-  entrega final TASK-0049/interop real)** com entrevista/corte de spec (insumos: doc 05 §Sprint 6,
-  FR-042..FR-046, data-model §2.10 BackupEnvelope/KeyEpoch, contrato backup-recovery.md,
-  runbooks `restaurar-backup`/`rotacionar-chave` em PENDENTE-fase, S-39/S-42, e a TASK-0049 já
-  cortada como entrega final). Nada de deploy (nenhum push é meu de fazer — a CI só roda pós-push,
-  gate humano; **push humano ~2026-11-19/20 levou a P-06 a `origin/develop` (até `41c419d`;
-  o re-paiamento da 0049 ficou 1 commit atrás) — run do CI pós-push não verificado daqui**;
-  gate local em 597/597; suíte Linux executada em contêiner na P-06 com falhas todas de ambiente).
+- nextAction: **dispatch DEV da TASK-0054** (base da P-07) quando o humano ordenar; ordem da
+  fase: 0054 → 0055 → 0056 → 0057 → 0058 → 0059 → 0060 → **0049 (última, com o humano junto:
+  pares Docker locais validando logs)**. Nada de deploy (nenhum push é meu de fazer — a CI só
+  roda pós-push, gate humano; push humano ~2026-11-19/20 levou a P-06 a `origin/develop` (até
+  `41c419d`) — run do CI pós-push não verificado daqui; gate local em 597/597).
 - **Git a partir da P-05 (gate PHASE 2026-11-11 20:42:28, modelo C)**: branch por task
   `task/TASK-NNNN-<slug>` desde `develop`; DEV commita ao fim da entrega, QA commita no PASSED,
   ODEV mergeia em `develop` no `DONE` e commita docs; push/force/`main`/apagar branch =
   proibido a agentes, merge+tag de fecho em `main` = humano. Os dispatchs DEV/QA devem incluir
   a linha de autorização de commit deste gate. Commits da P-01..P-04 não mudam.
-- blocking gaps: NENHUM — **P-06 fechada com todos os gates respondidos**: GAP-09 (chave em
-  runtime) e GAP-50 (duplo embrulho) fechados por decisão humana; GAP-41..GAP-47 e GAP-49..GAP-51
-  assumidos na SPEC-0011; `S-26` fechou na TASK-0043 (inbox/outbox/followers/following — `rel=profile`
-  continua P-08) e `I-11` na TASK-0041; abertos e carregados: GAP-02 (fonte NuGet),
-  GAP-04/05/06 (não revisitadas), GAP-13..GAP-18 (SPEC-0008), GAP-21..GAP-28 (SPEC-0009),
-  GAP-29..GAP-40 (SPEC-0010 — 36 ao vivo não decidido, 37 UI do aviso é P-08),
-  S-11/S-12/S-19/S-22..S-45 (backlog — S-40..S-45 novos na P-06), **SC-016/interop real aberto
-  até o fim da P-07 (ex-TASK-0049)**, suite Linux com falhas de ambiente (I-10/S-44),
-  CI pós-push não verificado (último run verde 98/98 de 07/11; push humano de ~19/11 sem leitura
-  do resultado daqui).
+- blocking gaps: NENHUM — P-07 nasce com todos os gates respondidos: decisões 1..6 da
+  entrevista 2026-11-20 registradas na SPEC-0012 (ambos targets; S-42 junto com a rotação;
+  tela = opção A; S3 sem pacote; agendador 1440 + rota admin; rotação só de material de
+  instância); `GAP-52..GAP-55` assumidos na SPEC-0012; **S-39 → TASK-0058 e S-42 → TASK-0059**
+  (cortados, não mais soltos); **S-46 novo** (rotação de chave de ator fora do MVP — decisão 6).
+  Abertos e carregados de fases anteriores: GAP-02 (fonte NuGet), GAP-04/05/06, GAP-13..GAP-18
+  (SPEC-0008), GAP-21..GAP-28 (SPEC-0009), GAP-29..GAP-40 (SPEC-0010), S-11/S-12/S-19/S-22..S-45
+  (backlog), **SC-016/interop real aberto até o fim da P-07 (TASK-0049)**, suite Linux com
+  falhas de ambiente (I-10/S-44), CI pós-push não verificado (último run verde 98/98 de 07/11;
+  push humano de ~19/11 sem leitura do resultado daqui).
 
 ## Adopted legacy documentation
 
@@ -291,3 +307,5 @@ nomes** — nenhum arquivo deles é copiado, nem como trecho.
 | 2026-11-13 21:23:34 | **D-01 da TASK-0044 (gate humano)**: destino de um `Create` remoto = **só destino nomeado** — inbox `/c/{slug}`, ou `squid:slug`/caminho `/c/{slug}` em `audience`/`to`/`cc`/`inReplyTo`; sem destino → `202` sem aplicar; fallback de membria (menor slug) **rejeitado**; a saída da TASK-0045 nomeia o destino (`audience` + `squid:slug`) — SPEC-0011 §E e AC-01/GAP-48 da TASK-0045 emendados, contrato não muda | TASK | Henrique |
 | 2026-11-14 09:10:08 | **GAP-50 da P-06 (gate humano, opção 1 — "seguir com 1")**: **duplo embrulho** — o registro embrulha a mesma RSA do ator também com a `Squid:RecoveryKey` de instância e guarda a cópia em tabela própria `0009_*`; runtime desembrulha com o segredo de boot e assina **sempre com a chave do ator** (contrato §5); kit/GAP-01 intactos; **atores registrados antes da config não federam** (limite aceito); alternativa 2 (embrulhar a RK do ator) rejeitada por privilégio mínimo — SPEC-0011 §B emendada, TASK-0051 cortada e colocada antes da 0047 | TASK | Henrique |
 | 2026-11-19 23:01:34 | **TASK-0049 (interop real, gate humano) sai da P-06 e vira a entrega FINAL da P-07**: fica `TASK_READY` **em aberto por agora** (nenhum dispatch sem ordem nova) — bloco de controle re-paiado (`phase: P-07`), Intent anotado, ACs/touches inalterados; linha da P-06 no plano marcada 12/13 com fecho aguardando confirmação, linha da P-07 ganha a entrega final; decisão de **escopo de fase** (a P-06 perde o cláusula de interop do DoD — SC-016 passa a ser coberto no fim da P-07) | PHASE | Henrique |
+| 2026-11-20 14:07:55 | Abertura da P-07 (entrevista rodada 1): escopo = **Sprint 6 inteiro com AMBOS os targets** (`LocalDiskTarget` + `S3CompatibleTarget`, drill `restore-offsite` no CI); **S-42 fecha junto com a rotação** (task própria logo após); **tela de redundância desejada funcionando** (última entrega de backend — custo respondido com a opção A vs antecipar o Nuxt da P-08) | PHASE | Henrique |
+| 2026-11-20 21:07:26 | Abertura da P-07 (entrevista rodada 2, defaults aceitos): **opção A confirmada** para a tela (endpoint JSON + página HTML fina servida pelo backend, sem stack de front — a P-08 substitui só a vista); **S3 = client escrito à mão** (`PUT/GET/LIST/DELETE` + SigV4, zero pacote, fake S3 em processo valida assinatura; endpoint real `Backup:S3:*` por config); **gatilho = agendador `Backup:IntervalMinutes` (1440) + `POST /api/admin/backup/run`**, alerta `last_success_at` > 24 h; **rotação = só material de instância** (`keyEpoch++`, reembrulho `0009`+`DK`s, `RC` nova, kit reemitido com keyring — R-20), **rotação de ator fora → S-46** | PHASE | Henrique |
