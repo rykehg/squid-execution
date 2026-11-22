@@ -75,16 +75,19 @@ public sealed class RestorePipeline
             // touched beyond that no-op — which is what keeps a refusal byte-identical (AC-04).
             await _destination.PrepareAsync(ct);
 
-            // Step 2: the epochs this kit can open (1..current; rotation extends the keyring in
-            // TASK-0058) — an envelope beyond them has no key here and says so before a download.
-            var currentEpoch = await _store.CurrentEpochAsync(ct);
+            // Step 2: the epochs this kit can open — the keyring every rotation reissue carries
+            // keeps retired epochs readable (SPEC-0012 section E, R-20), while a single-key setup
+            // falls back to the ledger exactly as before. An envelope beyond them has no key here
+            // and says so before a download.
+            var keyring = new Dictionary<int, RootKey>(_keys.ResolveRing());
+            keyring.TryAdd(await _store.CurrentEpochAsync(ct), rootKey);
             var chain = await SelectChainAsync(ct);
             foreach (var envelope in chain)
             {
-                if (envelope.KeyEpoch > currentEpoch)
+                if (!keyring.ContainsKey(envelope.KeyEpoch))
                 {
                     throw new RestoreFailure(
-                        $"época de chave {envelope.KeyEpoch} sem chave no kit (época disponível {currentEpoch})");
+                        $"época de chave {envelope.KeyEpoch} sem chave no kit (época disponível {keyring.Keys.Max()})");
                 }
             }
 
@@ -94,7 +97,7 @@ public sealed class RestorePipeline
             var seqTo = 0L;
             foreach (var envelope in chain)
             {
-                var state = await OpenAsync(envelope, rootKey, ct);
+                var state = await OpenAsync(envelope, keyring[envelope.KeyEpoch], ct);
                 instanceId ??= state.InstanceId;
                 events.AddRange(state.Events);
                 seqTo = Math.Max(seqTo, state.SeqTo);

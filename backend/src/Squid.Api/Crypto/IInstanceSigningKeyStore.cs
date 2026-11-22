@@ -14,4 +14,15 @@ public interface IInstanceSigningKeyStore
 
     /// <summary>The instance-wrapped copy (base64), or null when this actor has none (AC-05).</summary>
     Task<string?> FindAsync(string handle);
+
+    /// <summary>Every stored copy, by handle — what a key rotation re-wraps (SPEC-0012 section E).</summary>
+    Task<IReadOnlyDictionary<string, string>> ListAllAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Upserts the given rows in ONE transaction: the rotation's re-wrap of the whole table, so a
+    /// failure cannot leave the copies half opened by the old key and half by the new one. Rows
+    /// not named here are never deleted — a copy written concurrently by a registration stays,
+    /// and its activation fails loudly if the swap already moved the key (SPEC-0012 section E).
+    /// </summary>
+    Task SaveManyAsync(IReadOnlyDictionary<string, string> rows, CancellationToken ct = default);
 }

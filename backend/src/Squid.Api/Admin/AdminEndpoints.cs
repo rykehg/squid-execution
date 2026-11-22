@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
+using Squid.Api.Crypto;
 using Squid.Grains.Backup;
 using Squid.Api.Posts;
 
@@ -68,6 +70,9 @@ public static class AdminEndpoints
         // own gate — an immediate run and the section 6 status.
         app.MapPost("/api/admin/backup/run", BackupRunAsync);
         app.MapGet("/api/admin/backup/status", BackupStatusAsync);
+        // SPEC-0012 section E (TASK-0058, fecha S-39): the operator's key rotation, same gate —
+        // the one route that ever answers with the reissued kit, exactly once.
+        app.MapPost("/api/admin/recovery/rotate", RotateAsync);
         return app;
     }
 
@@ -452,6 +457,62 @@ public static class AdminEndpoints
                 last_drill_result = state.LastDrillResult,
             },
         });
+    }
+
+    /// <summary>
+    /// <c>POST /api/admin/recovery/rotate</c> (SPEC-0012 section E, TASK-0058): rotates the
+    /// instance material — new <c>Squid:RecoveryKey</c>, <c>keyEpoch++</c> with the previous epoch
+    /// retired, the <c>0009</c> copies and the kit keyring re-wrapped, a fresh `RC`, and the
+    /// reissued kit (old epochs included, R-20) answered ONCE. The gate runs first like every
+    /// route of this file; the kit's material reaches only this body — never the log (only the
+    /// epoch is logged), never a second response, never another route (AC-06).
+    /// </summary>
+    private static async Task<IResult> RotateAsync(
+        HttpContext context, IConfiguration configuration, KeyRotationService rotation,
+        ILoggerFactory logs)
+    {
+        var (_, refusal) = Gate(context, configuration);
+        if (refusal is not null)
+        {
+            return refusal;
+        }
+
+        var logger = logs.CreateLogger("Squid.Api.Admin.Recovery");
+        try
+        {
+            var kit = await rotation.RotateAsync(context.RequestAborted);
+            logger.LogInformation("instance key rotated to epoch {KeyEpoch}", kit.KeyEpoch);
+            return Results.Json(new
+            {
+                keyEpoch = kit.KeyEpoch,
+                recoveryCredential = kit.RecoveryCredential,
+                mnemonic = kit.Mnemonic,
+                encryptedRootKey = kit.EncryptedRootKey,
+                createdAt = kit.CreatedAt,
+                keyring = kit.Keyring.Select(entry => new { epoch = entry.Epoch, key = entry.Key }),
+            });
+        }
+        catch (RotationUnavailableException unavailable)
+        {
+            logger.LogWarning("rotation refused: {Reason}", unavailable.Message);
+            return AuthErrors.Write(context, StatusCodes.Status503ServiceUnavailable,
+                "rotation_unavailable", unavailable.Message);
+        }
+        catch (CryptographicException)
+        {
+            // Detail to the log only, and even there without material (FR-053): a copy or keyring
+            // row the current key will not open means the configuration moved out of band.
+            logger.LogWarning(
+                "rotation failed: existing instance material does not open with the current key");
+            return AuthErrors.Write(context, StatusCodes.Status500InternalServerError,
+                "rotation_failed", "não foi possível reembrulhar o material existente com a chave atual.");
+        }
+        catch (Exception failure)
+        {
+            logger.LogWarning("rotation failed: {Reason}", failure.Message);
+            return AuthErrors.Write(context, StatusCodes.Status500InternalServerError,
+                "rotation_failed", "não foi possível concluir a rotação agora.");
+        }
     }
 
     /// <summary>

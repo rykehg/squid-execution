@@ -19,7 +19,9 @@ namespace Squid.Api.Crypto;
 /// </summary>
 public sealed class RuntimeSigningKeyRing : IActorSigningKeyRing
 {
-    private readonly RootKey? _rootKey;
+    // Not readonly: a rotation swaps it in place (SPEC-0012 section E), so the very same ring the
+    // routes resolved keeps signing with the new material without a restart (AC-05).
+    private RootKey? _rootKey;
 
     private readonly bool _configured;
 
@@ -34,6 +36,18 @@ public sealed class RuntimeSigningKeyRing : IActorSigningKeyRing
 
     /// <summary>True only when a well-formed secret was configured at boot — what the warning watches.</summary>
     public bool OutputEnabled => _rootKey is not null;
+
+    /// <summary>
+    /// Swaps the in-process key after a rotation (SPEC-0012 section E): registrations wrap with
+    /// the new material and the copies the rotation re-wrapped open with it — outbound signing
+    /// goes on with no forced restart beyond the normal configuration reload (AC-05). Only ever
+    /// called when the ring was configured with a usable key: rotation refuses otherwise.
+    /// </summary>
+    public void RotateTo(RootKey rootKey)
+    {
+        ArgumentNullException.ThrowIfNull(rootKey);
+        _rootKey = rootKey;
+    }
 
     /// <summary>
     /// Reads the configuration value against the store the copies live in. Anything that is not

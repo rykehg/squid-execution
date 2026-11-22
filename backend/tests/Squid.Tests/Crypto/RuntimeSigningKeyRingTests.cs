@@ -105,5 +105,19 @@ public sealed class RuntimeSigningKeyRingTests
 
         public Task<string?> FindAsync(string handle) =>
             Task.FromResult(_rows.TryGetValue(handle, out var wrapped) ? wrapped : null);
+
+        public Task<IReadOnlyDictionary<string, string>> ListAllAsync(CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyDictionary<string, string>>(
+                new Dictionary<string, string>(_rows, StringComparer.Ordinal));
+
+        public Task SaveManyAsync(IReadOnlyDictionary<string, string> rows, CancellationToken ct = default)
+        {
+            foreach (var (handle, wrapped) in rows)
+            {
+                _rows[handle] = wrapped;
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }
