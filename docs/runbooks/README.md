@@ -7,7 +7,8 @@ TASK-0048 — seis no total.
 
 Regra de honestidade (GAP-18): um runbook que manda num comando que não roda é pior que runbook
 ausente. Hoje `rotacionar-chave.md` segue esboço com ponteiro de fase (**P-07**, decidido
-2026-11-12, fecha S-39) e a geração de `restaurar-backup.md` também é **P-07**;
+2026-11-12, fecha S-39) e a geração de `restaurar-backup.md` era **P-07** — **entregue e
+EXECUTÁVEL pela TASK-0056** (2026-11-22);
 `peer-entrega-travada.md` e `dlq-cheia.md` viraram **EXECUTÁVEL** na P-06 junto com o motor de
 entrega (TASK-0046, comandos provados na TASK-0048). Em `federacao-interop.md` o caminho local é
 EXECUTÁVEL e a interop com pares reais + a instância pública são **gate humano** (TASK-0049).
@@ -17,7 +18,7 @@ EXECUTÁVEL e a interop com pares reais + a instância pública são **gate huma
 | Runbook | Escopo | Status | O que falta e em que fase |
 | --- | --- | --- | --- |
 | [disco-cheio.md](disco-cheio.md) | liberar espaço em disco com o stack parado | EXECUTÁVEL | — |
-| [restaurar-backup.md](restaurar-backup.md) | devolver o SQLite de um arquivo para o volume | PARCIAL | geração do backup — P-07 |
+| [restaurar-backup.md](restaurar-backup.md) | gerar o backup cifrado e restaurar (log + projeções + ledger de cota) | **EXECUTÁVEL** (P-07, TASK-0056 — comandos executados e logados, ver `runs/test-runs/20261122-runbook-restaurar-backup.log`) | — |
 | [rotacionar-chave.md](rotacionar-chave.md) | rotacionar `RK`/`RC` | PENDENTE-fase | dono: **P-07** (decidido 2026-11-12, fecha S-39) — chaves existem desde a P-02, mecanismo nasce na P-07 |
 | [peer-entrega-travada.md](peer-entrega-travada.md) | entrega federada travada num par | EXECUTÁVEL | — (motor de entrega da P-06: TASK-0046; comandos provados na TASK-0048) |
 | [dlq-cheia.md](dlq-cheia.md) | fila de falhas de entrega cheia | EXECUTÁVEL | — (idem) |

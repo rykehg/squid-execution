@@ -92,6 +92,11 @@ Decisões humanas desta abertura (entrevista 2026-11-20, 2 rodadas, Henrique):
   recente + incrementais em ordem de `seqTo` → decifra e valida hash de cada payload → aplica
   migrações de `format` (falha explícita se incompatível) → reaplica ledger de cota e projeções →
   compara contagens e hashes por agregado → `/ready` verde.
+- **Cobertura** (esclarecida em 2026-11-22 após o flag `[DIVERGENCIA]` da TASK-0056): o que
+  volta é **log de atividade + projeções + ledger de cota** — contas, sessões, documentos de
+  contêiner/membro, estado de ator e linhas de objeto **não vêm do backup**; depois de um
+  restore abre-se sessão nova (runbook Verificação 4, executado). Cobertura total = `S-49`
+  (decisão de escopo do humano).
 - Restaurar **nunca** recria chave a partir de nada além da `RK` (R-01); nunca assistido por
   e-mail/SMS.
 - Cinco drills correm **no gate** (`Category=RestoreDrill`), e o pipeline falha quando qualquer
@@ -204,8 +209,11 @@ Decisões humanas desta abertura (entrevista 2026-11-20, 2 rodadas, Henrique):
 
 - `PeerShardingTarget`, SSS/guardiões, Reed-Solomon — fase 2+ (R-12, I-04).
 - **Rotação de chave de ator** — decisão 6, vira `S-46` no backlog.
-- **Backup dos blobs de mídia do volume** — o envelope cobre o estado do SQLite (contrato §3/§4:
-  snapshot do agregado, ledger e projeções); mídia continua no volume nomeado — `GAP-55`.
+- **Cobertura do envelope além do contrato §4** — o envelope cobre log de atividade, projeções e
+  ledger de cota (o que os drills provam); blobs de mídia, contas, sessões, documentos de
+  contêiner/membro, estado de ator e linhas de objeto **não vêm do backup** (restauram por
+  re-registro/reabertura, runbook Verificação 4) — cobertura total é `S-49` no backlog,
+  decisão de escopo do humano — `GAP-55`.
 - Front Nuxt/SSR, preview social, share sheet — P-08 inteiro; aqui só a página fina do backend.
 - Expurgo/retenção automática de envelopes (política de idade) — rotação/expurgo manual registrado.
 - Restauração assistida por e-mail/SMS — proibida pelo contrato §4.
@@ -218,7 +226,7 @@ Decisões humanas desta abertura (entrevista 2026-11-20, 2 rodadas, Henrique):
 | GAP-52 | ASSUMED | S3 testado contra fake S3 em processo com validação SigV4 real; client escrito à mão (zero pacote); endpoint real por config — default aceito pelo humano 2026-11-20 21:07:26 |
 | GAP-53 | ASSUMED | gatilho = agendador `Backup:IntervalMinutes` (1440) + `POST /api/admin/backup/run`; alerta de `last_success_at` > 24 h — default aceito 2026-11-20 21:07:26 |
 | GAP-54 | RESOLVED (HUMAN) | rotação só de material de instância (`keyEpoch++`, reembrulho `0009`+`DK`s, `RC` nova, kit com keyring); rotação de ator fora → `S-46` — decisão 6, 2026-11-20 21:07:26 |
-| GAP-55 | ASSUMED | blobs de mídia fora do envelope de backup (contrato §3/§4 nunca os incluem); restore devolve estado íntegro e `/ready` verde, mídia segue no volume — se o humano quiser mídia no backup, task nova |
+| GAP-55 | ASSUMED | cobertura do envelope = a do contrato §4, provada pelos drills: **log de atividade + projeções + ledger de cota**; **fora** da cobertura: blobs de mídia e o estado direto de contas/sessões/contêineres/membros/atores/objetos (restaura-se por re-registro/reabertura — runbook Verificação 4, executado na TASK-0056); redação minha anterior ("estado íntegro") corrigida em 2026-11-22 — se o humano quiser cobertura total, task nova (**S-49**) |
 | S-39 | RESOLVED (CUT) | rotação `RK`/`RC` + reemissão do kit + teste de cadeia → **TASK-0058**; runbook `rotacionar-chave` EXECUTÁVEL |
 | S-42 | RESOLVED (CUT) | cópia `0009` no import de kit → **TASK-0059** |
 
