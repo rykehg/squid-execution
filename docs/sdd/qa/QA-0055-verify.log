@@ -1,0 +1,13 @@
+VERIFY M1 ac=AC-01 hits=1 ok=true filter=FullyQualifiedName~Squid.Tests.Backup.BackupCoordinatorTests
+VERIFY M2a ac=AC-02 hits=1 ok=true filter=FullyQualifiedName~Ac02_The_interval_defaults
+VERIFY M2b ac=AC-02 hits=1 ok=true filter=FullyQualifiedName~Ac02_The_scheduler_runs_a_backup_on_its_own_after_the_interval
+VERIFY M3 ac=AC-03 hits=1 ok=true filter=FullyQualifiedName~Ac03_ac04_ac05
+VERIFY M4 ac=AC-04 hits=1 ok=true filter=FullyQualifiedName~Ac03_ac04_ac05
+VERIFY M5 ac=AC-05 hits=1 ok=true filter=FullyQualifiedName~Squid.Tests.Backup
+VERIFY M6 ac=AC-05 hits=1 ok=true filter=FullyQualifiedName~Squid.Tests.Backup
+VERIFY M7 ac=AC-06 hits=1 ok=true filter=FullyQualifiedName~Squid.Tests.Backup.BackupCoordinatorTests
+VERIFY M8 ac=S-47 hits=1 ok=true filter=FullyQualifiedName~Squid.Tests.Backup.BackupHeaderTests
+VERIFY M9 ac=S-48 hits=1 ok=true filter=FullyQualifiedName~Squid.Tests.Backup.BackupHeaderTests
+VERIFY M10 ac=S-48 hits=1 ok=true filter=FullyQualifiedName~Squid.Tests.Backup.BackupHeaderTests
+VERIFY-ASCII non-ascii-bytes=0 ok=true
+VERIFY total=11 bad=0

@@ -1,0 +1,8 @@
+HEAD=bdf1ccf commits-over-develop=1 commit-time-utc=2026-11-22 00:04:32Z (esperado 1 commit bdf1ccf)
+commit-files=25 outside-touches=0 
+pkg-props-changed=0 pkg-files-in-commit=0 pkg-ref-added-lines=0 (esperado 0/0/0)
+backend-tracked-status=0 backend-untracked=0 (esperado 0/0)
+blobs-identical=8/8 (esperado 8/8)
+mtime-newer-than-commit=8 delta-vs-mutated=0 
+docs-status=8 entries: M docs/sdd/plan/plan.md | M docs/sdd/tasks/TASK-0055-coordinator-agendador-rotas.md | ?? docs/sdd/qa/QA-0055-mutations.log | ?? docs/sdd/qa/QA-0055-verify.log | ?? docs/sdd/qa/qa-linux-task-0055.sh | ?? docs/sdd/qa/qa-mutate-task-0055.ps1 | ?? docs/sdd/qa/qa-scope-task-0055.ps1 | ?? docs/sdd/qa/qa-scope-task-0055.sh
+SUMMARY head=bdf1ccf commit-files=25 outside-touches=0 pkg-added=0 residue-backend=0 untracked-backend=0 blobs=8/8 mtime-delta=0 fails=0

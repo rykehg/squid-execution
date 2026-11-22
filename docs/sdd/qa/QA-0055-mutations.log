@@ -1,0 +1,58 @@
+M1 PRE at=213157 ac=AC-01 hash=beb25c66f84919774e3798046e8ba4a7ee014eb3 head-match=true find-hits=1
+M1 RUN wrapper=1 logExit=1 aprovado=2 falha=1 total=3 filter=FullyQualifiedName~Squid.Tests.Backup.BackupCoordinatorTests log=20261121-213229-test-filter.log
+M1 RED-AC Squid.Tests.Backup.BackupCoordinatorTests.Ac01_The_coordinator_runs_the_section_3_flow_and_registers_the_envelope
+M1 EXPECT-OK expect=Ac01_The_coordinator_runs_the_section_3_flow_and_registers_the_envelope
+M1 RESTORE-OK hash=PRE residue=0
+M2a PRE at=213229 ac=AC-02 hash=c47ded63c56c0240b788fc151078da9b75a1081c head-match=true find-hits=1
+M2a RUN wrapper=1 logExit=1 aprovado=0 falha=1 total=1 filter=FullyQualifiedName~Ac02_The_interval_defaults log=20261121-213258-test-filter.log
+M2a RED-AC Squid.Tests.Backup.BackupSchedulerTests.Ac02_The_interval_defaults_to_1440_minutes_and_honours_the_configuration
+M2a EXPECT-OK expect=Ac02_The_interval_defaults_to_1440_minutes_and_honours_the_configuration
+M2a RESTORE-OK hash=PRE residue=0
+M2b PRE at=213258 ac=AC-02 hash=c1abde81801bafd6940671f99b3ccdcd9e720049 head-match=true find-hits=1
+M2b RUN wrapper=1 logExit=1 aprovado=0 falha=1 total=1 filter=FullyQualifiedName~Ac02_The_scheduler_runs_a_backup_on_its_own_after_the_interval log=20261121-213518-test-filter.log
+M2b RED-AC Squid.Tests.Backup.BackupSchedulerTests.Ac02_The_scheduler_runs_a_backup_on_its_own_after_the_interval
+M2b EXPECT-OK expect=Ac02_The_scheduler_runs_a_backup_on_its_own_after_the_interval
+M2b RESTORE-OK hash=PRE residue=0
+M3 PRE at=213518 ac=AC-03 hash=8cbe078dfdf33f7da79f8d77aee2e01dd9073394 head-match=true find-hits=1
+M3 RUN wrapper=1 logExit=1 aprovado=0 falha=1 total=1 filter=FullyQualifiedName~Ac03_ac04_ac05 log=20261121-213540-test-filter.log
+M3 RED-AC Squid.Tests.Backup.BackupAdminRouteTests.Ac03_ac04_ac05_The_routes_are_operator_only_and_the_status_answers_section_6
+M3 EXPECT-OK expect=Ac03_ac04_ac05_The_routes_are_operator_only_and_the_status_answers_section_6
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE at=213541 ac=AC-04 hash=8cbe078dfdf33f7da79f8d77aee2e01dd9073394 head-match=true find-hits=1
+M4 RUN wrapper=1 logExit=1 aprovado=0 falha=1 total=1 filter=FullyQualifiedName~Ac03_ac04_ac05 log=20261121-213604-test-filter.log
+M4 RED-AC Squid.Tests.Backup.BackupAdminRouteTests.Ac03_ac04_ac05_The_routes_are_operator_only_and_the_status_answers_section_6
+M4 EXPECT-OK expect=Ac03_ac04_ac05_The_routes_are_operator_only_and_the_status_answers_section_6
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE at=213604 ac=AC-05 hash=a7efead85449599427376a07f4a6353c22b7755d head-match=true find-hits=1
+M5 RUN wrapper=1 logExit=1 aprovado=20 falha=3 total=23 filter=FullyQualifiedName~Squid.Tests.Backup log=20261121-213737-test-filter.log
+M5 RED-AC Squid.Tests.Backup.BackupAlerterTests.Ac05_The_alert_is_emitted_as_a_warning; Squid.Tests.Backup.BackupAlerterTests.Ac05_A_last_success_older_than_24_h_alerts_and_a_fresh_one_does_not; Squid.Tests.Backup.BackupAdminRouteTests.Ac03_ac04_ac05_The_routes_are_operator_only_and_the_status_answers_section_6
+M5 EXPECT-OK expect=Ac05_A_last_success_older_than_24_h_alerts_and_a_fresh_one_does_not; Ac05_The_alert_is_emitted_as_a_warning; Ac03_ac04_ac05_The_routes_are_operator_only_and_the_status_answers_section_6
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE at=213738 ac=AC-05 hash=a7efead85449599427376a07f4a6353c22b7755d head-match=true find-hits=1
+M6 RUN wrapper=1 logExit=1 aprovado=21 falha=2 total=23 filter=FullyQualifiedName~Squid.Tests.Backup log=20261121-213910-test-filter.log
+M6 RED-AC Squid.Tests.Backup.BackupAlerterTests.Ac05_Any_verify_failure_alerts_on_its_own; Squid.Tests.Backup.BackupAdminRouteTests.Ac05_An_unverified_envelope_counts_and_alerts_immediately
+M6 EXPECT-OK expect=Ac05_Any_verify_failure_alerts_on_its_own; Ac05_An_unverified_envelope_counts_and_alerts_immediately
+M6 RESTORE-OK hash=PRE residue=0
+M7 PRE at=213911 ac=AC-06 hash=01c95ae7ca94e5ea52f49c4280bffa9ca4df72ad head-match=true find-hits=1
+M7 RUN wrapper=1 logExit=1 aprovado=1 falha=2 total=3 filter=FullyQualifiedName~Squid.Tests.Backup.BackupCoordinatorTests log=20261121-213924-test-filter.log
+M7 RED-AC Squid.Tests.Backup.BackupCoordinatorTests.Ac06_A_destination_failure_is_reported_and_registers_nothing; Squid.Tests.Backup.BackupCoordinatorTests.Ac06_A_state_source_failure_is_reported_instead_of_throwing
+M7 EXPECT-OK expect=Ac06_A_destination_failure_is_reported_and_registers_nothing; Ac06_A_state_source_failure_is_reported_instead_of_throwing
+M7 RESTORE-OK hash=PRE residue=0
+M8 PRE at=213925 ac=S-47 hash=d9d48a4c90ba7240413c708a1e9d35c19e675822 head-match=true find-hits=1
+M8 RUN wrapper=1 logExit=1 aprovado=1 falha=1 total=2 filter=FullyQualifiedName~Squid.Tests.Backup.BackupHeaderTests log=20261121-213938-test-filter.log
+M8 RED-AC Squid.Tests.Backup.BackupHeaderTests.S47_The_destination_header_carries_the_state_the_reread_decided
+M8 EXPECT-OK expect=S47_The_destination_header_carries_the_state_the_reread_decided
+M8 RESTORE-OK hash=PRE residue=0
+M9 PRE at=213938 ac=S-48 hash=27bcccc8d5a6cc01d56366ba836311f905cc62e8 head-match=true find-hits=1
+M9 RUN wrapper=1 logExit=1 aprovado=1 falha=1 total=2 filter=FullyQualifiedName~Squid.Tests.Backup.BackupHeaderTests log=20261121-213952-test-filter.log
+M9 RED-AC Squid.Tests.Backup.BackupHeaderTests.S48_A_header_it_cannot_read_is_skipped_instead_of_breaking_discovery
+M9 EXPECT-OK expect=S48_A_header_it_cannot_read_is_skipped_instead_of_breaking_discovery
+M9 RESTORE-OK hash=PRE residue=0
+M10 PRE at=213952 ac=S-48 hash=27bcccc8d5a6cc01d56366ba836311f905cc62e8 head-match=true find-hits=1
+M10 RUN wrapper=3 logExit=1 aprovado=0 falha=2 total=2 filter=FullyQualifiedName~Squid.Tests.Backup.BackupHeaderTests log=20261121-214006-test-filter.log
+M10 RED-AC Squid.Tests.Backup.BackupHeaderTests.S48_A_header_it_cannot_read_is_skipped_instead_of_breaking_discovery; Squid.Tests.Backup.BackupHeaderTests.S47_The_destination_header_carries_the_state_the_reread_decided
+M10 EXPECT-OK expect=S47_The_destination_header_carries_the_state_the_reread_decided; S48_A_header_it_cannot_read_is_skipped_instead_of_breaking_discovery
+M10 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=23 falha=0 log=20261121-214140-test-filter.log
+UNTRACKED backend=0 (esperado 0: a QA nao acrescentou arquivos em backend)
+SUMMARY cycles=11 failed=0 residue-backend=0 green-aprovado=23 elapsed-s=583
