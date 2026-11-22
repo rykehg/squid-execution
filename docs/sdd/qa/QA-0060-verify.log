@@ -1,0 +1,26 @@
+VERIFY M1 ac=AC-01 edit=1 hits=1 ok=true
+VERIFY-CYCLE M1 ac=AC-01 kind=edit edits=1 why-present=true
+VERIFY M2 ac=AC-01 edit=1 hits=1 ok=true
+VERIFY-CYCLE M2 ac=AC-01 kind=edit edits=1 why-present=true
+VERIFY M3 ac=AC-02 edit=1 hits=1 ok=true
+VERIFY-CYCLE M3 ac=AC-02 kind=edit edits=1 why-present=true
+VERIFY M4 ac=AC-03 edit=1 hits=1 ok=true
+VERIFY-CYCLE M4 ac=AC-03 kind=edit edits=1 why-present=true
+VERIFY M5 ac=AC-04 edit=1 hits=1 ok=true
+VERIFY-CYCLE M5 ac=AC-04 kind=edit edits=1 why-present=true
+VERIFY M6 ac=AC-05 edit=1 hits=1 ok=true
+VERIFY-CYCLE M6 ac=AC-05 kind=edit edits=1 why-present=true
+VERIFY M7 ac=AC-01 edit=1 hits=1 ok=true
+VERIFY-CYCLE M7 ac=AC-01 kind=edit edits=1 why-present=true
+VERIFY M8 ac=S-52 edit=1 hits=1 ok=true
+VERIFY-CYCLE M8 ac=S-52 kind=edit edits=1 why-present=true
+VERIFY M9 ac=S-52 edit=1 hits=1 ok=true
+VERIFY-CYCLE M9 ac=S-52 kind=edit edits=1 why-present=true
+VERIFY M10 ac=AC-02 edit=1 hits=1 ok=true
+VERIFY-CYCLE M10 ac=AC-02 kind=edit edits=1 why-present=true
+VERIFY S1 ac=AC-06 edit=1 hits=1 ok=true
+VERIFY-CYCLE S1 ac=AC-06 kind=scope edits=1 why-present=true
+VERIFY S2 ac=AC-04 edit=1 hits=1 ok=true
+VERIFY-CYCLE S2 ac=AC-04 kind=scope edits=1 why-present=true
+VERIFY-ASCII non-ascii-bytes=0 ok=true
+VERIFY total=12 bad=0
