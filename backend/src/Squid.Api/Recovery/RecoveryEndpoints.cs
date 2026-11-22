@@ -178,9 +178,15 @@ public static class RecoveryEndpoints
     /// RSA (FR-006). The AEAD is the only oracle for kit and password: it answers before anything
     /// is written, so a wrong password changes no row (B-15), and importing what is already there
     /// returns the same identity instead of failing (idempotent, B-14).
+    /// SPEC-0012 section F (TASK-0059, S-42): with <c>Squid:RecoveryKey</c> configured the restore
+    /// also births the <c>0009</c> instance copy of that same actor RSA — the double wrap
+    /// registration takes (SPEC-0011 section B) — so the restored identity federates outbound
+    /// without a new registration. Without the configuration no copy is born and the answer stays
+    /// byte-identical to the one before the task.
     /// </summary>
     private static async Task<IResult> ImportAsync(
         ImportRequest request, ActorGrain actors, IAuthStore store, IRecoveryStore recovery,
+        RuntimeSigningKeyRing instanceKeys, IInstanceSigningKeyStore instanceCopies,
         HttpContext context)
     {
         var handle = request.Handle ?? string.Empty;
@@ -216,10 +222,16 @@ public static class RecoveryEndpoints
 
         ActorKeyMaterial material;
         string wrappedSigningKey;
+        byte[]? instanceCopy = null;
         try
         {
             using var rsa = KeyDerivation.UnwrapRsaPrivateKey(rootKey, wrapped);
             wrappedSigningKey = Convert.ToBase64String(wrapped);
+            // Double wrap reusada do registro (SPEC-0011 section B, mandada por SPEC-0012 F):
+            // com o segredo de boot a MESMA RSA do ator também é selada com HKDF(RK_instance,
+            // "fed/rsa-wrap") — só bytes embrulhados em memória aqui, gravados abaixo depois que
+            // a identidade existe. Sem a configuração a resposta é nula e nada muda.
+            instanceCopy = instanceKeys.WrapInstanceCopy(rsa);
             material = new ActorKeyMaterial(
                 [
                     new ActorPublicKey("RSA-2048", "#main-key",
@@ -268,6 +280,16 @@ public static class RecoveryEndpoints
                     Convert.ToBase64String(encrypted),
                     request.CreatedAt ?? DateTimeOffset.UtcNow),
             });
+        }
+
+        // The instance copy rides the same non-transactional shortcut registration takes: a usable
+        // secret wraps it and the row lands after the identity exists (never on the 409 path), no
+        // secret → no copy and this import is the one of before, byte for byte (SPEC-0012 F).
+        // INSERT OR REPLACE on the handle's primary key is what keeps a repeat import idempotent
+        // (B-14): same answer, never a second row.
+        if (instanceCopy is not null)
+        {
+            await instanceCopies.SaveAsync(handle, Convert.ToBase64String(instanceCopy));
         }
 
         // Holding the kit with the password is the proof FR-007 asks for: the import marks it verified.
