@@ -5,13 +5,14 @@ namespace Squid.Worker.Backup;
 /// <summary>
 /// <see cref="IBackupTarget"/> over the configured volume (<c>Backup:Local:Path</c>, SPEC-0012
 /// section A): one envelope lives as <c>&lt;id&gt;.bin</c> — the ciphertext PutAsync received — plus
-/// <c>&lt;id&gt;.json</c> — its envelope, the header the pipeline re-reads. The JSON is written LAST,
-/// so a backup interrupted mid-write is invisible to <see cref="ListAsync"/>: discovery of "what
-/// was already sent" (contract section 1) only ever sees envelopes whose ciphertext landed
-/// completely. The destination is untrusted by design: it gets ciphertext and the wrapped-DK
-/// header, never a key in clear (AC-03).
+/// <c>&lt;id&gt;.json</c> — its envelope, the header the pipeline re-reads. The JSON is written LAST
+/// and always through a temp file moved into place, so a backup interrupted mid-write is invisible
+/// to <see cref="ListAsync"/>: discovery of "what was already sent" (contract section 1) only ever
+/// sees envelopes whose ciphertext landed completely, and a header torn by anything else is skipped
+/// instead of breaking the discovery. The destination is untrusted by design: it gets ciphertext and
+/// the wrapped-DK header, never a key in clear (AC-03).
 /// </summary>
-public sealed class LocalDiskTarget : IBackupTarget
+public sealed class LocalDiskTarget : IBackupTarget, IEnvelopeStateWriter
 {
     private readonly string _path;
 
@@ -41,10 +42,27 @@ public sealed class LocalDiskTarget : IBackupTarget
             await ciphertext.CopyToAsync(file, ct);
         }
 
-        await File.WriteAllTextAsync(
-            PathOf(envelope.Id, ".json"),
-            JsonSerializer.Serialize(envelope, BackupEnvelope.JsonOptions),
-            ct);
+        await WriteHeaderAsync(envelope, ct);
+    }
+
+    /// <inheritdoc />
+    public Task WriteEnvelopeStateAsync(BackupEnvelope envelope, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(envelope);
+        return WriteHeaderAsync(envelope, ct);
+    }
+
+    /// <summary>
+    /// Serializes the header through a temp file moved over the final one (S-48): a torn
+    /// <c>&lt;id&gt;.json</c> is never visible to a reader, and the temp name is not a
+    /// <c>*.json</c> match, so it can never be mistaken for a stored envelope.
+    /// </summary>
+    private async Task WriteHeaderAsync(BackupEnvelope envelope, CancellationToken ct)
+    {
+        var json = JsonSerializer.Serialize(envelope, BackupEnvelope.JsonOptions);
+        var temporary = PathOf(envelope.Id, ".tmp");
+        await File.WriteAllTextAsync(temporary, json, ct);
+        File.Move(temporary, PathOf(envelope.Id, ".json"), overwrite: true);
     }
 
     /// <inheritdoc />
@@ -69,9 +87,29 @@ public sealed class LocalDiskTarget : IBackupTarget
         foreach (var file in Directory.EnumerateFiles(_path, "*.json"))
         {
             ct.ThrowIfCancellationRequested();
-            var envelope = JsonSerializer.Deserialize<BackupEnvelope>(
-                    await File.ReadAllTextAsync(file, ct), BackupEnvelope.JsonOptions)
-                ?? throw new InvalidOperationException($"backup envelope '{Path.GetFileName(file)}' has no content");
+
+            // S-48: discovery must survive a header it cannot read — a torn file, a foreign file
+            // or one removed under us is skipped, never a throw that breaks ListAsync (contract
+            // section 1 makes this the ONLY discovery of what was sent).
+            BackupEnvelope? envelope;
+            try
+            {
+                envelope = JsonSerializer.Deserialize<BackupEnvelope>(
+                    await File.ReadAllTextAsync(file, ct), BackupEnvelope.JsonOptions);
+            }
+            catch (Exception failure) when (failure is JsonException
+                or IOException
+                or UnauthorizedAccessException
+                or InvalidOperationException)
+            {
+                continue;
+            }
+
+            if (envelope is null)
+            {
+                continue;
+            }
+
             if (envelope.SeqTo >= fromSeq)
             {
                 found.Add(envelope);
@@ -96,9 +134,11 @@ public sealed class LocalDiskTarget : IBackupTarget
     public Task DeleteAsync(string envelopeId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        // File.Delete is a no-op for a missing file: rotation/purge is idempotent.
+        // File.Delete is a no-op for a missing file: rotation/purge is idempotent. The temp file
+        // of an interrupted header write goes with it, so no orphan outlives its envelope.
         File.Delete(PathOf(envelopeId, ".bin"));
         File.Delete(PathOf(envelopeId, ".json"));
+        File.Delete(PathOf(envelopeId, ".tmp"));
         return Task.CompletedTask;
     }
 

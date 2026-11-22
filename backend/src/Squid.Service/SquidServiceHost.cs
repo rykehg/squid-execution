@@ -26,6 +26,7 @@ using Squid.Api.Recovery;
 using Squid.Api.Threads;
 using Squid.Domain;
 using Squid.Grains.Actors;
+using Squid.Grains.Backup;
 using Squid.Grains.Inbox;
 using Squid.Grains.Peers;
 using Squid.Persistence;
@@ -206,6 +207,23 @@ public static class SquidServiceHost
                 ?? Path.Combine(AppContext.BaseDirectory, "backups")));
         builder.Services.AddSingleton(_ => new SqliteBackupEnvelopeStore(connectionString));
         builder.Services.AddSingleton<BackupPipeline>();
+
+        // Backup orchestration (SPEC-0012 section C, TASK-0055): the options the scheduler and
+        // the operator route read from the SAME constants, the instance `RK` the per-backup `DK`
+        // wraps under, the Worker runner and status reader behind the ports the grains layer
+        // declares (ADR-35 — Squid.Grains reaches neither storage nor a root), the coordinator
+        // itself, and the hosted scheduler that fires it every Backup:IntervalMinutes (default
+        // 1440) without any request. Registered before the test seam below, so a configure
+        // callback can still replace any one of them (last registration wins).
+        builder.Services.AddSingleton(_ => BackupOptions.From(configuration));
+        builder.Services.AddSingleton<IBackupKeySource>(_ => new ConfiguredBackupKeySource(configuration));
+        builder.Services.AddSingleton<IBackupRunner, BackupRunner>();
+        builder.Services.AddSingleton<IBackupStatusSource>(
+            _ => new SqliteBackupStatusSource(connectionString));
+        builder.Services.AddSingleton<IBackupStateSource, SqliteBackupStateSource>();
+        builder.Services.AddSingleton<BackupAlerter>();
+        builder.Services.AddSingleton<BackupCoordinatorGrain>();
+        builder.Services.AddSingleton<IHostedService, BackupScheduler>();
 
         // Inbox pipeline (SPEC-0011 section E, TASK-0044): the §3 order and its application, over
         // the window grain, the follow/like documents (no table, no migration — the actor-status

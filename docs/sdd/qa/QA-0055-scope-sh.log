@@ -1,0 +1,9 @@
+HEAD=bdf1ccf commits-over-develop=1 (esperado 1 commit bdf1ccf)
+commit-files=25 outside-touches=0
+pkg-files-in-commit=0 pkg-ref-added-lines=0 (esperado 0/0)
+backend-tracked-status=0 backend-untracked=0 (esperado 0/0)
+blobs-identical=8/8 (esperado 8/8)
+mtime-newer-than-commit=8 expected=8 delta=0
+docs-status=12 entries (WIP do ODEV + artefatos da QA; informativo)
+SUMMARY head=bdf1ccf commit-files=25 outside-touches=0 pkg-files=0 pkg-added=0 residue-backend=0 untracked-backend=0 blobs=8/8 mtime-delta=0 fails=0
+exit: 0
