@@ -100,8 +100,12 @@ public sealed class BackupAdminRouteTests
             Assert.Equal(HttpStatusCode.OK, stale.StatusCode);
             using (var document = JsonDocument.Parse(await stale.Content.ReadAsStringAsync()))
             {
-                Assert.Equal(aged, document.RootElement.GetProperty("backup")
-                    .GetProperty("last_success_at").GetString());
+                // Compared as INSTANTS: the JSON writer trims the trailing zero of the 7-digit
+                // round-trip fraction, so the two spellings can differ while naming the same
+                // moment — string equality flaked on the digit (caught by TASK-0056's gate).
+                Assert.Equal(DateTimeOffset.Parse(aged),
+                    DateTimeOffset.Parse(document.RootElement.GetProperty("backup")
+                        .GetProperty("last_success_at").GetString()));
             }
 
             Assert.Contains(alerts.Lines,

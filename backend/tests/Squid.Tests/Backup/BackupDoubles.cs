@@ -72,8 +72,13 @@ internal sealed class BrokenTarget : IBackupTarget
     public Task DeleteAsync(string envelopeId, CancellationToken ct) => Task.CompletedTask;
 }
 
-/// <summary>A destination whose re-read comes back tampered — the divergence that marks `Corrupt`.</summary>
-internal sealed class FlippingTarget : IBackupTarget
+/// <summary>
+/// A destination whose re-read comes back tampered — the divergence that marks `Corrupt`. It
+/// forwards the S-47 state seam exactly as the production composition does (the real target IS
+/// the writer), so the header on the volume carries the decided `Corrupt` state a restore reads
+/// back — the tampering itself only exists between the send and the re-read.
+/// </summary>
+internal sealed class FlippingTarget : IBackupTarget, IEnvelopeStateWriter
 {
     private readonly IBackupTarget _inner;
 
@@ -102,6 +107,11 @@ internal sealed class FlippingTarget : IBackupTarget
 
     public Task DeleteAsync(string envelopeId, CancellationToken ct) =>
         _inner.DeleteAsync(envelopeId, ct);
+
+    public Task WriteEnvelopeStateAsync(BackupEnvelope envelope, CancellationToken ct) =>
+        _inner is IEnvelopeStateWriter writer
+            ? writer.WriteEnvelopeStateAsync(envelope, ct)
+            : Task.CompletedTask;
 }
 
 /// <summary>An <c>ILogger&lt;T&gt;</c> that keeps every formatted line, for the alerts of section 6.</summary>

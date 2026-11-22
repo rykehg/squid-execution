@@ -10,9 +10,11 @@ namespace Squid.Worker.Backup;
 /// newest confirmed <c>verified_at</c>, and <c>verify_failures</c> counts the envelopes that were
 /// registered WITHOUT a confirmed re-read — the pipeline registers a divergent hash as `Corrupt`
 /// with <c>verified_at</c> NULL, so that column is exactly the failure counter section 6 alerts on.
-/// Restore drills have no table until TASK-0056 records one, so their two fields answer null.
+/// The two <c>restore.*</c> fields come from the drill ledger of TASK-0056 — null only while this
+/// database has never run a drill, which is the honest answer, never a hardcoded one.
 /// </summary>
-public sealed class SqliteBackupStatusSource(string connectionString) : IBackupStatusSource
+public sealed class SqliteBackupStatusSource(string connectionString, SqliteRestoreDrillLedger drills)
+    : IBackupStatusSource
 {
     /// <inheritdoc />
     public async Task<BackupStatus> ReadAsync(CancellationToken ct)
@@ -31,7 +33,9 @@ public sealed class SqliteBackupStatusSource(string connectionString) : IBackupS
         var lastSuccessAt = reader.IsDBNull(2) ? null : Parse(reader.GetString(2));
         var verifyFailures = reader.IsDBNull(3) ? 0L : reader.GetInt64(3);
 
-        return new BackupStatus(lastSuccessAt, count, bytes, verifyFailures, null, null);
+        var drill = await drills.LatestAsync(ct);
+        return new BackupStatus(lastSuccessAt, count, bytes, verifyFailures, drill?.RanAt,
+            drill is null ? null : $"{drill.Drill}: {drill.Result}");
     }
 
     /// <summary>Reads an `O`-format instant back; an unparseable value is not a verified success.</summary>
