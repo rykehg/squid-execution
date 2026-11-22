@@ -6,8 +6,8 @@ manual de federação pedido pelo humano (decisões 3 e 5 da SPEC-0011), entregu
 TASK-0048 — seis no total.
 
 Regra de honestidade (GAP-18): um runbook que manda num comando que não roda é pior que runbook
-ausente. Hoje `rotacionar-chave.md` segue esboço com ponteiro de fase (**P-07**, decidido
-2026-11-12, fecha S-39) e a geração de `restaurar-backup.md` era **P-07** — **entregue e
+ausente. Hoje `rotacionar-chave.md` é **EXECUTÁVEL desde a TASK-0058** (2026-11-22, fecha S-39 —
+2 rotações reais executadas) e a geração de `restaurar-backup.md` era **P-07** — **entregue e
 EXECUTÁVEL pela TASK-0056** (2026-11-22);
 `peer-entrega-travada.md` e `dlq-cheia.md` viraram **EXECUTÁVEL** na P-06 junto com o motor de
 entrega (TASK-0046, comandos provados na TASK-0048). Em `federacao-interop.md` o caminho local é
@@ -19,7 +19,7 @@ EXECUTÁVEL e a interop com pares reais + a instância pública são **gate huma
 | --- | --- | --- | --- |
 | [disco-cheio.md](disco-cheio.md) | liberar espaço em disco com o stack parado | EXECUTÁVEL | — |
 | [restaurar-backup.md](restaurar-backup.md) | gerar o backup cifrado e restaurar (log + projeções + ledger de cota) | **EXECUTÁVEL** (P-07, TASK-0056 — comandos executados e logados, ver `runs/test-runs/20261122-runbook-restaurar-backup.log`) | — |
-| [rotacionar-chave.md](rotacionar-chave.md) | rotacionar `RK`/`RC` | PENDENTE-fase | dono: **P-07** (decidido 2026-11-12, fecha S-39) — chaves existem desde a P-02, mecanismo nasce na P-07 |
+| [rotacionar-chave.md](rotacionar-chave.md) | rotacionar `RK`/`RC` da instância + reemitir o kit | **EXECUTÁVEL** (P-07, TASK-0058 — 2 rotações reais executadas e logadas, ver `runs/test-runs/20261122-071147-runbook-rotacionar-chave.log`; fecha S-39) | — |
 | [peer-entrega-travada.md](peer-entrega-travada.md) | entrega federada travada num par | EXECUTÁVEL | — (motor de entrega da P-06: TASK-0046; comandos provados na TASK-0048) |
 | [dlq-cheia.md](dlq-cheia.md) | fila de falhas de entrega cheia | EXECUTÁVEL | — (idem) |
 | [federacao-interop.md](federacao-interop.md) | manual: dois silos locais, Mastodon/Friendica em Docker e validação da comunicação | EXECUTÁVEL (caminho local) · **gate humano** (pares de referência e instância pública) | execução conjunta com o humano — **P-07/TASK-0049** (re-paiada da P-06 em 2026-11-19) |
