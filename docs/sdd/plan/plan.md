@@ -210,11 +210,14 @@ e ao fim, com o humano junto, a interop real (SC-016). Spec:
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **dispatch DEV da TASK-0054** (base da P-07) quando o humano ordenar; ordem da
-  fase: 0054 → 0055 → 0056 → 0057 → 0058 → 0059 → 0060 → **0049 (última, com o humano junto:
-  pares Docker locais validando logs)**. Nada de deploy (nenhum push é meu de fazer — a CI só
-  roda pós-push, gate humano; push humano ~2026-11-19/20 levou a P-06 a `origin/develop` (até
-  `41c419d`) — run do CI pós-push não verificado daqui; gate local em 597/597).
+- nextAction: **dispatch automático em cadeia (ordem humana 2026-11-21 19:38:38)** — TASK-0054
+  fechou (DONE, QA-0054 PASSED 7/7, merge em develop); o ODEV encadeia DEV→QA das
+  **TASK-0055..0060** sem pedir `/odev continue` a cada veredito (todas seriais: 0055 → 0056 →
+  0057 → 0058 → 0059 → 0060). **Fora do automático: TASK-0049 (interop real) — gate humano,
+  dispatch só com o humano presente** (pares Docker locais validando logs). Nada de deploy
+  (nenhum push é meu de fazer — a CI só roda pós-push, gate humano; push humano ~2026-11-19/20
+  levou a P-06 a `origin/develop`; develop local está 4 commits à frente — merge+docs da
+  TASK-0054 feitos, sem push; gate local em 607/607).
 - **Git a partir da P-05 (gate PHASE 2026-11-11 20:42:28, modelo C)**: branch por task
   `task/TASK-NNNN-<slug>` desde `develop`; DEV commita ao fim da entrega, QA commita no PASSED,
   ODEV mergeia em `develop` no `DONE` e commita docs; push/force/`main`/apagar branch =
@@ -309,3 +312,4 @@ nomes** — nenhum arquivo deles é copiado, nem como trecho.
 | 2026-11-19 23:01:34 | **TASK-0049 (interop real, gate humano) sai da P-06 e vira a entrega FINAL da P-07**: fica `TASK_READY` **em aberto por agora** (nenhum dispatch sem ordem nova) — bloco de controle re-paiado (`phase: P-07`), Intent anotado, ACs/touches inalterados; linha da P-06 no plano marcada 12/13 com fecho aguardando confirmação, linha da P-07 ganha a entrega final; decisão de **escopo de fase** (a P-06 perde o cláusula de interop do DoD — SC-016 passa a ser coberto no fim da P-07) | PHASE | Henrique |
 | 2026-11-20 14:07:55 | Abertura da P-07 (entrevista rodada 1): escopo = **Sprint 6 inteiro com AMBOS os targets** (`LocalDiskTarget` + `S3CompatibleTarget`, drill `restore-offsite` no CI); **S-42 fecha junto com a rotação** (task própria logo após); **tela de redundância desejada funcionando** (última entrega de backend — custo respondido com a opção A vs antecipar o Nuxt da P-08) | PHASE | Henrique |
 | 2026-11-20 21:07:26 | Abertura da P-07 (entrevista rodada 2, defaults aceitos): **opção A confirmada** para a tela (endpoint JSON + página HTML fina servida pelo backend, sem stack de front — a P-08 substitui só a vista); **S3 = client escrito à mão** (`PUT/GET/LIST/DELETE` + SigV4, zero pacote, fake S3 em processo valida assinatura; endpoint real `Backup:S3:*` por config); **gatilho = agendador `Backup:IntervalMinutes` (1440) + `POST /api/admin/backup/run`**, alerta `last_success_at` > 24 h; **rotação = só material de instância** (`keyEpoch++`, reembrulho `0009`+`DK`s, `RC` nova, kit reemitido com keyring — R-20), **rotação de ator fora → S-46** | PHASE | Henrique |
+| 2026-11-21 19:38:38 | **Dispatch automático autorizado**: o ODEV encadeia DEV→QA sozinho nas tasks que subagentes podem concluir (P-07: TASK-0055..0060 em cadeia serial, cada veredito dispara o próximo passo sem pedir `/odev continue`); **fora do automático**: TASK-0049/interop real (gate humano — pares Docker com o humano presente), push, merge/tag em `main`, instalação de pacotes e qualquer gate de produção — continuam proibidos a agentes | PHASE | Henrique |

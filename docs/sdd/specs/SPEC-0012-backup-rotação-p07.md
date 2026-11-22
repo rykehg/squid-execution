@@ -154,6 +154,7 @@ Decisões humanas desta abertura (entrevista 2026-11-20, 2 rodadas, Henrique):
 | Direction | Name | Shape | Notes |
 | --- | --- | --- | --- |
 | in | config `Backup:IntervalMinutes` | int | default 1440; agendador |
+| in | config `Backup:InstanceId` | string | default `default`; chave do `instanceId` do contrato §3 (rota + agendador usam o mesmo helper) — enumerada aqui por nota MINOR da QA-0055, 2026-11-21 |
 | in | config `Backup:Local:Path` | string | volume do `LocalDiskTarget` |
 | in | config `Backup:S3:Endpoint/Region/Bucket/AccessKey/SecretKey` | string | só por config/segredo externo (contrato §7) |
 | in | `POST /api/admin/backup/run` | vazio | operador; dispara backup e devolve o envelope |
