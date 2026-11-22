@@ -130,7 +130,10 @@ public static class SquidServiceHost
         // GAP-23 now lives in the migration's single-row table (TASK-0024) and is taken there by
         // the store's atomic increment; the interface callers see did not change.
         builder.Services.AddSingleton<IObjectStore>(_ => new SqliteObjectStore(storage));
-        builder.Services.AddSingleton<IActivityStore>(_ => new SqliteActivityStore(storage, connectionString));
+        // The concrete instance is kept beside the port: the restore destination of TASK-0056
+        // reaches RestoreAsync on it (the interface belongs to Squid.Api and carries no restore).
+        var activityStore = new SqliteActivityStore(storage, connectionString);
+        builder.Services.AddSingleton<IActivityStore>(activityStore);
         builder.Services.AddSingleton<IActorStatusStore>(_ => new SqliteActorStatusStore(storage));
         // Denunciation queue (SPEC-0009 section I, TASK-0031, FR-028): the operator's reports
         // over the same SQLite file — one document, the ETag-guarded pattern of the trail, and
@@ -218,12 +221,29 @@ public static class SquidServiceHost
         builder.Services.AddSingleton(_ => BackupOptions.From(configuration));
         builder.Services.AddSingleton<IBackupKeySource>(_ => new ConfiguredBackupKeySource(configuration));
         builder.Services.AddSingleton<IBackupRunner, BackupRunner>();
-        builder.Services.AddSingleton<IBackupStatusSource>(
-            _ => new SqliteBackupStatusSource(connectionString));
         builder.Services.AddSingleton<IBackupStateSource, SqliteBackupStateSource>();
         builder.Services.AddSingleton<BackupAlerter>();
         builder.Services.AddSingleton<BackupCoordinatorGrain>();
         builder.Services.AddSingleton<IHostedService, BackupScheduler>();
+
+        // Restore (SPEC-0012 section D, TASK-0056): the drill ledger contract section 6 publishes
+        // through `restore.last_drill_*` (one row of the state store the log already owns — the
+        // status route stops answering null the moment a restore passed), the destination half of
+        // section 4 (schema, log, projections, quota — the only layer that opens the database),
+        // and the pipeline itself over the same target/registry/key the backup side uses. The
+        // status reader takes the ledger so its two fields are read, never hardcoded.
+        builder.Services.AddSingleton(new SqliteRestoreDrillLedger(storage));
+        builder.Services.AddSingleton<IRestoreDestination>(provider => new SqliteRestoreDestination(
+            connectionString,
+            activityStore,
+            provider.GetRequiredService<SqliteActivityLog>(),
+            provider.GetRequiredService<IActivityProjector>(),
+            provider.GetRequiredService<IQuotaLedger>(),
+            provider.GetRequiredService<MediaOptions>().BlobRoot,
+            provider.GetRequiredService<TimeProvider>()));
+        builder.Services.AddSingleton<RestorePipeline>();
+        builder.Services.AddSingleton<IBackupStatusSource>(provider => new SqliteBackupStatusSource(
+            connectionString, provider.GetRequiredService<SqliteRestoreDrillLedger>()));
 
         // Inbox pipeline (SPEC-0011 section E, TASK-0044): the §3 order and its application, over
         // the window grain, the follow/like documents (no table, no migration — the actor-status

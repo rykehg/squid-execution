@@ -1,0 +1,10 @@
+VERIFY M1 ac=AC-01 hits=1 ok=true probe=false
+VERIFY M2 ac=AC-02 hits=1 ok=true probe=false
+VERIFY M3 ac=AC-03 hits=1 ok=true probe=false
+VERIFY M4 ac=AC-04 hits=1 ok=true probe=false
+VERIFY M5 ac=AC-05 hits=1 ok=true probe=false
+VERIFY M6 ac=AC-06 hits=1 ok=true probe=false
+VERIFY M7 ac=AC-06 hits=1 ok=true probe=false
+VERIFY M8 ac=SECTION-4-STEP-4 hits=1 ok=true probe=true
+VERIFY-ASCII non-ascii-bytes=0 ok=true
+VERIFY total=8 bad=0

@@ -1,0 +1,10 @@
+HEAD=3fdfc69 commits-over-develop=1 commit-time-utc=2026-11-22 03:56:40Z (esperado 1 commit 3fdfc69)
+commit-files=16 outside-touches=0 
+pkg-props-changed=0 pkg-files-in-commit=0 pkg-ref-added-lines=0 (esperado 0/0/0)
+backend-tracked-status=0 backend-untracked=0 (esperado 0/0)
+blobs-identical=6/6 (esperado 6/6)
+mtime-newer-than-commit=6 delta-vs-mutated=0 
+docs-status=18 entries: M docs/runbooks/README.md | M docs/sdd/ideas/BACKLOG.md | M docs/sdd/specs/SPEC-0012-backup-rotação-p07.md | M docs/sdd/tasks/TASK-0056-restore-drills.md | ?? docs/sdd/qa/QA-0056-linux-build.log | ?? docs/sdd/qa/QA-0056-linux-test.log | ?? docs/sdd/qa/QA-0056-mutations.log | ?? docs/sdd/qa/QA-0056-restore-drills.md | ?? docs/sdd/qa/QA-0056-runbook-attempt1.log | ?? docs/sdd/qa/QA-0056-runbook.log | ?? docs/sdd/qa/QA-0056-scope-sh.log | ?? docs/sdd/qa/QA-0056-scope.log | ?? docs/sdd/qa/QA-0056-verify.log | ?? docs/sdd/qa/qa-linux-task-0056.sh | ?? docs/sdd/qa/qa-mutate-task-0056.ps1 | ?? docs/sdd/qa/qa-runbook-task-0056.ps1 | ?? docs/sdd/qa/qa-scope-task-0056.ps1 | ?? docs/sdd/qa/qa-scope-task-0056.sh
+docs-unexpected=0  (esperado 0: so WIP do ODEV + artefatos da QA)
+tree-outside-docs-backend=0  (esperado 0)
+SUMMARY head=3fdfc69 commit-files=16 outside-touches=0 pkg-added=0 residue-backend=0 untracked-backend=0 blobs=6/6 mtime-delta=0 docs-unexpected=0 outside-tree=0 fails=0

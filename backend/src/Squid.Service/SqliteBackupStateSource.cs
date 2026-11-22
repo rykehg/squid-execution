@@ -1,5 +1,6 @@
 using Squid.Api.Posts;
 using Squid.Grains.Backup;
+using Squid.Worker.Backup;
 
 namespace Squid.Service;
 
@@ -9,7 +10,8 @@ namespace Squid.Service;
 /// <c>WHERE seq &gt; @lastBackedUpSeq</c>" with a global record of the last consolidated seq) —
 /// the same number the envelope's <c>seqFrom/seqTo</c> claim, so the interval on the envelope and
 /// the interval in the payload are the same one by construction. It lives in the composition root
-/// because only this layer may reach <c>IActivityStore</c> and open the database (ADR-35).
+/// because only this layer may reach <c>IActivityStore</c> and open the database (ADR-35); the
+/// snapshot record itself lives with the Worker that serializes and restores it (TASK-0056).
 /// </summary>
 public sealed class SqliteBackupStateSource(IActivityStore activities) : IBackupStateSource
 {
@@ -27,9 +29,14 @@ public sealed class SqliteBackupStateSource(IActivityStore activities) : IBackup
     public async Task<object> SnapshotAsync(string instanceId, long seqFrom, long seqTo, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        // ReadAsync is already the delta read (Seq > seqFrom); the upper bound closes the window
-        // the envelope will claim, so a run never serializes beyond its own seqTo.
-        var events = await activities.ReadAsync(seqFrom);
+        // The port's delta read is exclusive (Seq > afterSeq) while the envelope claims the
+        // INCLUSIVE interval [seqFrom..seqTo] (contract section 2), so the window reads one below
+        // its own floor: seqFrom itself is the first event of the delta the runner derived as
+        // previous seqTo + 1 — without it every incremental backup would drop that boundary event
+        // and a restored chain would lose one event per run (TASK-0056's drills caught exactly
+        // that). The upper bound still closes the window, so a run never serializes beyond its
+        // own seqTo.
+        var events = await activities.ReadAsync(seqFrom - 1);
         var window = events
             .Where(activity => activity.Seq <= seqTo)
             .OrderBy(activity => activity.Seq)
@@ -37,13 +44,3 @@ public sealed class SqliteBackupStateSource(IActivityStore activities) : IBackup
         return new BackupActivitySnapshot(instanceId, seqFrom, seqTo, window);
     }
 }
-
-/// <summary>
-/// What one backup run serializes: the instance it belongs to and the activity window the
-/// envelope covers. The Worker compresses and ciphers it; no key and no plaintext ever leaves.
-/// </summary>
-public sealed record BackupActivitySnapshot(
-    string InstanceId,
-    long SeqFrom,
-    long SeqTo,
-    IReadOnlyList<ActivityEvent> Events);

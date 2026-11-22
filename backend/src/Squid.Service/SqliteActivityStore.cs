@@ -89,6 +89,43 @@ public sealed class SqliteActivityStore : IActivityStore
                 .ToList();
     }
 
+    /// <summary>
+    /// The restore write of contract backup-recovery section 4 step 6 (TASK-0056): the log comes
+    /// back wholesale with the events the backup carried, KEEPING their original <c>Seq</c> —
+    /// restore never renumbers an event (the identity of data-model §2.8) — and the GAP-23 counter
+    /// follows the log without ever going backwards, so a database restored over a newer one still
+    /// issues numbers no event ever carried. One transaction over the same row and the same ETag
+    /// rule as <see cref="AppendAsync"/>.
+    /// </summary>
+    public async Task RestoreAsync(IReadOnlyList<ActivityEvent> events)
+    {
+        ArgumentNullException.ThrowIfNull(events);
+
+        var restored = events.OrderBy(activity => activity.Seq).ToList();
+        var lastSeq = restored.Count == 0 ? 0 : restored[^1].Seq;
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        await BusyTimeoutAsync(connection);
+        await using var transaction = connection.BeginTransaction(deferred: false);
+
+        var (_, version) = await ReadRowAsync(connection, transaction);
+        await WriteRowAsync(connection, transaction,
+            JsonSerializer.Serialize(new ActivityDocument(lastSeq, restored)), version);
+
+        await using var counter = connection.CreateCommand();
+        counter.Transaction = transaction;
+        counter.CommandText = $"UPDATE {CounterTable} SET last_seq = MAX(last_seq, @LastSeq) WHERE id = 1";
+        counter.Parameters.AddWithValue("@LastSeq", lastSeq);
+        if (await counter.ExecuteNonQueryAsync() == 0)
+        {
+            throw new IOException(
+                $"the {CounterTable} row is missing — the versioned schema/0001 migration must run before the log is restored");
+        }
+
+        await transaction.CommitAsync();
+    }
+
     /// <summary>Reads the log document (and its ETag form) inside the append transaction.</summary>
     private static async Task<(string? State, string? Version)> ReadRowAsync(
         SqliteConnection connection, SqliteTransaction transaction)

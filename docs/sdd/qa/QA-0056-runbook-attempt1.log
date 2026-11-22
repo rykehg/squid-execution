@@ -1,0 +1,28 @@
+=== QA-0056 runbook spot-check - 2026-11-22 01:41:03 - cwd C:\dev\squid-squad-net\squid-execution
+OK   pre-condicao binario :: C:\dev\squid-squad-net\squid-execution\backend\src\Squid.Service\bin\Debug\net10.0\Squid.Service.dll
+OK   estado limpo na raiz :: db-existe=False backups-existe=False (esperado False/False; nada aqui foi criado por mim - aborto, nao apago)
+OK   porta 8080 livre :: listeners=0
+RK gerada (32 bytes CSPRNG, valor NUNCA registrado aqui) e RK errada de controle gerada
+servico subiu PID=53936 (ASPNETCORE_URLS=http://127.0.0.1:8080, Instance:Operators=operador)
+OK   health do servico :: curl -fsS http://localhost:8080/health exit=0
+OK   A.1 register :: register=201 session-existe=True csrf-existe=True
+FAIL A.2 backup/run :: exit=0 Verified=False seqFrom=False
+A.2 body={"error":{"code":"policy_denied","message":"a rota exige o papel de operador da instância.","traceId":"00-316ab39a7f8bc62545e65b235bb649e6-58db283c1dce2d82-01"}}
+FAIL A.3 status :: exit=0 last_success_at=False envelopes_count=False
+A.3 body={"error":{"code":"policy_denied","message":"a rota exige o papel de operador da instância.","traceId":"00-b2d3a371c28d54eb5aa40fac7f24dbe8-7006b2a866b612a9-01"}}
+service parado
+OK   B.1 parar o servico :: PID encerrado; o arquivo de destino fica livre
+OK   B.2 Remove-Item :: arquivo ausente depois do B.2: True
+FAIL B.3 restore (RK do kit) :: exit=1 stdout=dotnet.exe : restore: falhou — nenhum backup encontrado no destino No C:\dev\squid-squad-net\squid-execution\docs\sdd\qa\qa-runbook-task-0056.ps1:135 caractere:7 + $b3 = & dotnet backend/src/Squid.Service/bin/Debug/net10.0/Squid.Serv ... + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ + CategoryInfo : NotSpecified: (restore: falhou...rado no destino:String) [], RemoteException + FullyQualifiedErrorId : NativeCommandError
+B.3 out=dotnet.exe : restore: falhou — nenhum backup encontrado no destino No C:\dev\squid-squad-net\squid-execution\docs\sdd\qa\qa-runbook-task-0056.ps1:135 caractere:7 + $b3 = & dotnet backend/src/Squid.Service/bin/Debug/net10.0/Squid.Serv ... + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ + CategoryInfo : NotSpecified: (restore: falhou...rado no destino:String) [], RemoteException + FullyQualifiedErrorId : NativeCommandError
+OK   B.3 recusa com RK errada :: exit=1 stderr=dotnet.exe : restore: falhou — nenhum backup encontrado no destino No C:\dev\squid-squad-net\squid-execution\docs\sdd\qa\qa-runbook-task-0056.ps1:144 caractere:7 + $wk = & dotnet backend/src/Squid.Service/bin/Debug/net10.0/Squid.Serv ... + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ + CategoryInfo : NotSpecified: (restore: falhou...rado no destino:String) [], RemoteException + FullyQualifiedErrorId : NativeCommandError
+B.3 wrong-key out=dotnet.exe : restore: falhou — nenhum backup encontrado no destino No C:\dev\squid-squad-net\squid-execution\docs\sdd\qa\qa-runbook-task-0056.ps1:144 caractere:7 + $wk = & dotnet backend/src/Squid.Service/bin/Debug/net10.0/Squid.Serv ... + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ + CategoryInfo : NotSpecified: (restore: falhou...rado no destino:String) [], RemoteException + FullyQualifiedErrorId : NativeCommandError
+servico (2) subiu PID=51036 sobre o banco restaurado
+OK   V.1 health :: curl -fsS http://localhost:8080/health exit=0
+OK   V.2 ready :: curl -fsS http://localhost:8080/ready exit=0 (sobre o banco restaurado)
+OK   V.4 sessao nova apos o restore :: register=201
+FAIL V.4 status restore: passed :: exit=0 passed=False drill-at-preenchido=True
+V.4 body={"error":{"code":"policy_denied","message":"a rota exige o papel de operador da instância.","traceId":"00-3c96db466e056a0b552c46741ec59063-47a0b83f2e7e84f2-01"}}
+service parado
+OK   teardown limpo :: db=False backups=False (esperado False/False)
+SUMMARY fails=4 (secao C - ciclo podman P-01 - fora do escopo AC-07: nao executada por esta QA)
