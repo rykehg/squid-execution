@@ -1,0 +1,46 @@
+M1 PRE at=084733 ac=AC-01 hash=785331a75a7e014112ca206b99cdf4d029101a43 head-match=true edits=1
+M1 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 filter=FullyQualifiedName~KeyRotation log=20261122-084811-test-filter.log
+M1 RED-AC Squid.Tests.Recovery.KeyRotationRouteTests.Ac01_rotate_is_operator_only_and_retires_the_previous_epoch
+M1 EXPECT-OK expect=Ac01_rotate_is_operator_only_and_retires_the_previous_epoch
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE at=084811 ac=AC-01 hash=8cc162a4660b47398ecfb2262635ab1f42b8d4b4 head-match=true edits=2
+M2 RUN wrapper=1 logExit=1 aprovado=5 falha=2 total=7 filter=FullyQualifiedName~KeyRotation log=20261122-084851-test-filter.log
+M2 RED-AC Squid.Tests.Recovery.KeyRotationChainTests.Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works; Squid.Tests.Recovery.KeyRotationRouteTests.Ac01_rotate_is_operator_only_and_retires_the_previous_epoch
+M2 EXPECT-OK expect=Ac01_rotate_is_operator_only_and_retires_the_previous_epoch; Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE at=084851 ac=AC-02 hash=005e73d0a3037982f6c90879c0545bb3447bb6b1 head-match=true edits=1
+M3 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 filter=FullyQualifiedName~KeyRotation log=20261122-084928-test-filter.log
+M3 RED-AC Squid.Tests.Recovery.KeyRotationChainTests.Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M3 EXPECT-OK expect=Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE at=084928 ac=AC-04 hash=005e73d0a3037982f6c90879c0545bb3447bb6b1 head-match=true edits=1
+M4 BUILD-FAIL wrapper=1 logExit=1 log=20261122-084940-test-filter.log
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE at=084940 ac=AC-05 hash=005e73d0a3037982f6c90879c0545bb3447bb6b1 head-match=true edits=1
+M5 RUN wrapper=3 logExit=1 aprovado=4 falha=3 total=7 filter=FullyQualifiedName~KeyRotation log=20261122-085012-test-filter.log
+M5 RED-AC Squid.Tests.Recovery.KeyRotationChainTests.Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works; Squid.Tests.Recovery.KeyRotationRouteTests.Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer; Squid.Tests.Recovery.KeyRotationRouteTests.Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key
+M5 EXPECT-OK expect=Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key; Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE at=085013 ac=AC-04 hash=47cf2f8ec3d98287239abe8ccf5820a90fa10ab8 head-match=true edits=1
+M6 RUN wrapper=1 logExit=1 aprovado=5 falha=2 total=7 filter=FullyQualifiedName~KeyRotation log=20261122-085045-test-filter.log
+M6 RED-AC Squid.Tests.Recovery.KeyRotationRouteTests.Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer; Squid.Tests.Recovery.KeyRotationRouteTests.Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key
+M6 EXPECT-OK expect=Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key; Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer
+M6 RESTORE-OK hash=PRE residue=0
+M7 PRE at=085046 ac=AC-06 hash=785331a75a7e014112ca206b99cdf4d029101a43 head-match=true edits=1
+M7 RUN wrapper=0 logExit=0 aprovado=7 falha=0 total=7 filter=FullyQualifiedName~KeyRotation log=20261122-085119-test-filter.log
+M7 RED-AC NONE
+M7 EXPECT-MISS expect=Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer logExit=0 falha=0 missed=Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer
+M7 RESTORE-OK hash=PRE residue=0
+M8 PRE at=085119 ac=AC-03 hash=340649b5f512da9898706d4fb33b66d1c56bc53b head-match=true edits=1
+M8 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 filter=FullyQualifiedName~KeyRotation log=20261122-085157-test-filter.log
+M8 RED-AC Squid.Tests.Recovery.KeyRotationChainTests.Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M8 EXPECT-OK expect=Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M8 RESTORE-OK hash=PRE residue=0
+M9 PRE at=085157 ac=AC-05 hash=005e73d0a3037982f6c90879c0545bb3447bb6b1 head-match=true edits=1
+M9 RUN wrapper=0 logExit=0 aprovado=7 falha=0 total=7 filter=FullyQualifiedName~KeyRotation log=20261122-085235-test-filter.log
+M9 RED-AC NONE
+M9 PROBE-GREEN expect=NONE (no KeyRotation scenario fails without the ring swap)
+M9 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=7 falha=0 log=20261122-085312-test-filter.log
+UNTRACKED backend=0 (esperado 0: a QA nao acrescentou arquivos em backend)
+SUMMARY cycles=9 failed=2 residue-backend=0 green-aprovado=7 elapsed-s=339

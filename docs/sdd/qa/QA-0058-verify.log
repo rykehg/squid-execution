@@ -1,0 +1,23 @@
+VERIFY M1 ac=AC-01 edit=1 hits=1 ok=true
+VERIFY-CYCLE M1 ac=AC-01 edits=1 ok=true probe=false
+VERIFY M2 ac=AC-01 edit=1 hits=1 ok=true
+VERIFY M2 ac=AC-01 edit=2 hits=1 ok=true
+VERIFY-CYCLE M2 ac=AC-01 edits=2 ok=true probe=false
+VERIFY M3 ac=AC-02 edit=1 hits=1 ok=true
+VERIFY-CYCLE M3 ac=AC-02 edits=1 ok=true probe=false
+VERIFY M4 ac=AC-04 edit=1 hits=1 ok=true
+VERIFY-CYCLE M4 ac=AC-04 edits=1 ok=true probe=false
+VERIFY M5 ac=AC-05 edit=1 hits=1 ok=true
+VERIFY-CYCLE M5 ac=AC-05 edits=1 ok=true probe=false
+VERIFY M6 ac=AC-04 edit=1 hits=1 ok=true
+VERIFY-CYCLE M6 ac=AC-04 edits=1 ok=true probe=false
+VERIFY M7 ac=AC-06 edit=1 hits=1 ok=true
+VERIFY-CYCLE M7 ac=AC-06 edits=1 ok=true probe=false
+VERIFY M7b ac=AC-06 edit=1 hits=1 ok=true
+VERIFY-CYCLE M7b ac=AC-06 edits=1 ok=true probe=true
+VERIFY M8 ac=AC-03 edit=1 hits=1 ok=true
+VERIFY-CYCLE M8 ac=AC-03 edits=1 ok=true probe=false
+VERIFY M9 ac=AC-05 edit=1 hits=1 ok=true
+VERIFY-CYCLE M9 ac=AC-05 edits=1 ok=true probe=false
+VERIFY-ASCII non-ascii-bytes=0 ok=true
+VERIFY total=10 bad=0
