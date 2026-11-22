@@ -1,0 +1,30 @@
+M1 PRE at=114930 ac=AC-01 hash=9a4b9c68fa93e1b544a29ad43fa970ef962fea68 head-match=true edits=1
+M1 RUN wrapper=1 logExit=1 aprovado=1 falha=5 total=6 filter=FullyQualifiedName~ImportInstanceCopy log=20261122-115025-test-filter.log
+M1 RED-AC Squid.Tests.Recovery.ImportInstanceCopyTests.Ac04_importing_the_same_kit_twice_answers_the_same_and_keeps_one_row; Squid.Tests.Recovery.ImportInstanceCopyTests.Ac01_with_the_secret_the_import_births_the_copy_and_the_identity_federates; Squid.Tests.Recovery.ImportInstanceCopyTests.Ac03_the_copy_never_leaves_the_table_in_clear_nor_reaches_route_or_log; Squid.Tests.Recovery.ImportInstanceCopyQaTests.Conflict_path_a_foreign_kit_409s_and_never_writes_its_copy; Squid.Tests.Recovery.ImportInstanceCopyQaTests.Obs01_after_the_in_memory_rotation_an_import_wraps_with_the_current_key
+M1 EXPECT-OK expect=Ac01_with_the_secret_the_import_births; Ac03_the_copy_never_leaves_the_table_in_clear; Ac04_importing_the_same_kit_twice; Conflict_path_a_foreign_kit_409s
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE at=115025 ac=AC-04 hash=59eb698fe3c253922c1f9bdf846e3f6a3f1f01e8 head-match=true edits=1
+M2 RUN wrapper=1 logExit=1 aprovado=5 falha=1 total=6 filter=FullyQualifiedName~ImportInstanceCopy log=20261122-115119-test-filter.log
+M2 RED-AC Squid.Tests.Recovery.ImportInstanceCopyTests.Ac04_importing_the_same_kit_twice_answers_the_same_and_keeps_one_row
+M2 EXPECT-OK expect=Ac04_importing_the_same_kit_twice
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE at=115119 ac=AC-01 hash=9a4b9c68fa93e1b544a29ad43fa970ef962fea68 head-match=true edits=2
+M3 RUN wrapper=1 logExit=1 aprovado=5 falha=1 total=6 filter=FullyQualifiedName~ImportInstanceCopy log=20261122-115211-test-filter.log
+M3 RED-AC Squid.Tests.Recovery.ImportInstanceCopyQaTests.Conflict_path_a_foreign_kit_409s_and_never_writes_its_copy
+M3 EXPECT-OK expect=Conflict_path_a_foreign_kit_409s
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE at=115211 ac=AC-02 hash=9a4b9c68fa93e1b544a29ad43fa970ef962fea68 head-match=true edits=0
+M4 REVERT ref=develop work-blob=47cf2f8ec3d98287239abe8ccf5820a90fa10ab8
+M4 RUN wrapper=1 logExit=1 aprovado=1 falha=5 total=6 filter=FullyQualifiedName~ImportInstanceCopy log=20261122-115303-test-filter.log
+M4 RED-AC Squid.Tests.Recovery.ImportInstanceCopyTests.Ac04_importing_the_same_kit_twice_answers_the_same_and_keeps_one_row; Squid.Tests.Recovery.ImportInstanceCopyTests.Ac01_with_the_secret_the_import_births_the_copy_and_the_identity_federates; Squid.Tests.Recovery.ImportInstanceCopyTests.Ac03_the_copy_never_leaves_the_table_in_clear_nor_reaches_route_or_log; Squid.Tests.Recovery.ImportInstanceCopyQaTests.Conflict_path_a_foreign_kit_409s_and_never_writes_its_copy; Squid.Tests.Recovery.ImportInstanceCopyQaTests.Obs01_after_the_in_memory_rotation_an_import_wraps_with_the_current_key
+M4 GREEN-EXPECT-MISS expect=Ac02_without_the_secret_the_import_answers turned red=Ac02_without_the_secret_the_import_answers
+M4 EXPECT-OK expect=Ac01_with_the_secret_the_import_births; Ac03_the_copy_never_leaves_the_table_in_clear; Ac04_importing_the_same_kit_twice; Conflict_path_a_foreign_kit_409s
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE at=115304 ac=AC-03 hash=9a4b9c68fa93e1b544a29ad43fa970ef962fea68 head-match=true edits=1
+M5 RUN wrapper=1 logExit=1 aprovado=3 falha=3 total=6 filter=FullyQualifiedName~ImportInstanceCopy log=20261122-115357-test-filter.log
+M5 RED-AC Squid.Tests.Recovery.ImportInstanceCopyTests.Ac04_importing_the_same_kit_twice_answers_the_same_and_keeps_one_row; Squid.Tests.Recovery.ImportInstanceCopyTests.Ac03_the_copy_never_leaves_the_table_in_clear_nor_reaches_route_or_log; Squid.Tests.Recovery.ImportInstanceCopyTests.Ac02_without_the_secret_the_import_answers_as_before_and_births_no_copy
+M5 EXPECT-OK expect=Ac02_without_the_secret_the_import_answers; Ac03_the_copy_never_leaves_the_table_in_clear
+M5 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=6 falha=0 log=20261122-115446-test-filter.log
+UNTRACKED backend=1 rogue=0 (esperado 0: so o cenario novo da QA-0059)
+SUMMARY cycles=5 failed=1 residue-backend=0 green-aprovado=6 elapsed-s=316
