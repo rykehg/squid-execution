@@ -3,8 +3,10 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Squid.Api.Auth;
 using Squid.Api.Containers;
+using Squid.Grains.Backup;
 using Squid.Api.Posts;
 
 namespace Squid.Api.Admin;
@@ -20,8 +22,9 @@ public sealed record SuspendRequest(string? Justification);
 /// <c>/api/admin/*</c> route of the phase must pass, the audit query of contracts/http-api.md
 /// §7 that the gate protects, and — since SPEC-0009 section I (TASK-0031, FR-028/FR-008) — the
 /// denunciation queue, its <c>keep|remove|ban</c> resolution and the direct suspension of §7.
-/// The remaining admin routes (peers, backup) belong to the phases that own them — this file
-/// grows only what the phase's tasks table it.
+/// Since SPEC-0012 section C (TASK-0055) it also carries the two backup routes the operator owns:
+/// the immediate run and the section 6 status — this file grows only what the phase's tasks
+/// table it.
 /// </summary>
 public static class AdminEndpoints
 {
@@ -61,6 +64,10 @@ public static class AdminEndpoints
         // The suspension of §7: the actor id may be the whole canonical URI, so the /suspend
         // suffix rides a catch-all exactly like the post routes' id (contract §7, GAP-27 family).
         app.MapPost("/api/admin/actors/{*target}", ActorTargetAsync);
+        // SPEC-0012 section C (TASK-0055): the operator's two backup routes, behind this file's
+        // own gate — an immediate run and the section 6 status.
+        app.MapPost("/api/admin/backup/run", BackupRunAsync);
+        app.MapGet("/api/admin/backup/status", BackupStatusAsync);
         return app;
     }
 
@@ -377,6 +384,74 @@ public static class AdminEndpoints
 
         return await SuspendAsync(
             path[..^SuspendSuffix.Length], request, context, configuration, auth, statuses, audit, time);
+    }
+
+    /// <summary>
+    /// <c>POST /api/admin/backup/run</c> (SPEC-0012 section C, contract §3): the operator's
+    /// immediate backup through the coordinator, answered with the envelope it registered —
+    /// section 2's shape. The ladder is this file's gate first (no session 401, outside
+    /// <c>Instance:Operators</c> 403 <c>policy_denied</c>), then the run: a failed backup answers
+    /// a fixed 500 with the detail only in the log, so no path, table name or stack ever reaches
+    /// the client (FR-053) and the process keeps serving (AC-06).
+    /// </summary>
+    private static async Task<IResult> BackupRunAsync(
+        HttpContext context, IConfiguration configuration, BackupCoordinatorGrain coordinator,
+        ILoggerFactory loggerFactory)
+    {
+        var (_, refusal) = Gate(context, configuration);
+        if (refusal is not null)
+        {
+            return refusal;
+        }
+
+        var instanceId = BackupInstance.Resolve(configuration[BackupInstance.IdKey]);
+        var result = await coordinator.RunAsync(instanceId, context.RequestAborted);
+        if (!result.Succeeded)
+        {
+            loggerFactory.CreateLogger("Squid.Api.Admin.Backup")
+                .LogWarning("backup run failed: {BackupError}", result.Error);
+            return AuthErrors.Write(context, StatusCodes.Status500InternalServerError,
+                "backup_failed", "não foi possível executar o backup agora.");
+        }
+
+        return Results.Json(result.Envelope);
+    }
+
+    /// <summary>
+    /// <c>GET /api/admin/backup/status</c> (SPEC-0012 section C, contract §6): the six states
+    /// <c>backup.*</c> and <c>restore.*</c> of the section, read from the registry behind its port
+    /// and raised through <see cref="BackupAlerter"/> so a stale last success or a verify failure
+    /// is said out loud the moment anyone looks. The gate runs first, exactly like every other
+    /// route of this file.
+    /// </summary>
+    private static async Task<IResult> BackupStatusAsync(
+        HttpContext context, IConfiguration configuration, IBackupStatusSource status,
+        BackupAlerter alerts)
+    {
+        var (_, refusal) = Gate(context, configuration);
+        if (refusal is not null)
+        {
+            return refusal;
+        }
+
+        var state = await status.ReadAsync(context.RequestAborted);
+        alerts.Raise(state);
+
+        return Results.Json(new
+        {
+            backup = new
+            {
+                last_success_at = state.LastSuccessAt,
+                envelopes_count = state.EnvelopesCount,
+                bytes_total = state.BytesTotal,
+                verify_failures = state.VerifyFailures,
+            },
+            restore = new
+            {
+                last_drill_at = state.LastDrillAt,
+                last_drill_result = state.LastDrillResult,
+            },
+        });
     }
 
     /// <summary>

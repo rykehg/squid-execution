@@ -121,6 +121,15 @@ public sealed class BackupPipeline
                 }
             }
 
+            // S-47: the header on the destination was serialized BEFORE this re-read could know
+            // the result, so the decided state (Verified + verifiedAt, or Corrupt) is written back
+            // now — metadata only, the ciphertext is never sent twice. Targets that do not offer
+            // the seam keep the pre-verification header; the registry below is the state of record.
+            if (_target is IEnvelopeStateWriter writer)
+            {
+                await writer.WriteEnvelopeStateAsync(envelope, ct);
+            }
+
             // registra — Corrupt included: the row keeps verified_at NULL, restore never uses it.
             await _store.RegisterAsync(envelope, ct);
             return envelope;

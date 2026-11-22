@@ -43,4 +43,20 @@ public sealed class SqliteBackupEnvelopeStore
             (object?)envelope.VerifiedAt?.ToString("O", CultureInfo.InvariantCulture) ?? DBNull.Value);
         await insert.ExecuteNonQueryAsync(ct);
     }
+
+    /// <summary>
+    /// The epoch the next envelope must carry (data-model section 2.10's invariant "nenhum envelope
+    /// sem KeyEpoch valida"): the highest row of the <c>key_epoch</c> ledger, which TASK-0058's
+    /// rotation advances — and 1 while no rotation has ever happened, so the first backup of a
+    /// fresh instance already carries a valid epoch instead of 0.
+    /// </summary>
+    public async Task<int> CurrentEpochAsync(CancellationToken ct)
+    {
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COALESCE(MAX(epoch), 1) FROM key_epoch";
+        var value = await command.ExecuteScalarAsync(ct);
+        return Convert.ToInt32(value, CultureInfo.InvariantCulture);
+    }
 }
