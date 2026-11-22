@@ -52,7 +52,7 @@ engana teste e revisão humana.
 | P-04 | Publicação e feed: post, timeline incremental, SSE ao vivo | TASK-0023..TASK-0032 (SPEC-0009) — **10/10 DONE com QA PASSED** (QA-0022..QA-0032); gate da casa 432/432; detalhe em `plan/history/0005-plan.md` | **CLOSED** | 2026-11-11 20:00:27 |
 | P-05 | Mensageria: conversa 1-1 e em grupo, ordem total, resposta e reação | TASK-0033..TASK-0040 (SPEC-0010) — **8/8 DONE com QA PASSED na 1ª tentativa** (QA-0033..QA-0040); gate da casa 480/480; detalhe em `plan/history/0006-plan.md` | **CLOSED** | 2026-11-12 12:46:09 |
 | P-06 | Federação: dois silos, assinatura RSA-SHA256, interop real Mastodon/Friendica (**interop real movida para o fim da P-07 — decisão humana 2026-11-19 23:01:34**) | TASK-0041..TASK-0053 — **13 entregas, 12/13 DONE com QA PASSED na 1ª tentativa** (QA-0041..QA-0048, QA-0050..QA-0053; 0050 do parked SSRF da 0044, 0051 do gate GAP-50, 0052 do S-41, 0053 da D-01 da 0047; a ex-0049 saiu da fase); gate da casa 480 → **597/597** | **CLOSED** | 2026-11-20 12:29:58 |
-| P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) **+ entrega final: interop real Mastodon/Friendica (ex-TASK-0049, re-paiada da P-06 por decisão humana 2026-11-19)** | TASK-0054..TASK-0060 (SPEC-0012) — **7 entregas cortadas** + TASK-0049 (já cortada, re-paiada, última) = 8 | **OPEN** | — |
+| P-07 | Backup cifrado e restore drill no CI **+ rotação de chave `RK`/`RC`** (dono decidido pelo humano 2026-11-12 — S-39) **+ entrega final: interop real Mastodon/Friendica (ex-TASK-0049, re-paiada da P-06 por decisão humana 2026-11-19)** | TASK-0054..TASK-0060 (SPEC-0012) — **7/7 DONE com QA PASSED na 1ª tentativa** (QA-0054..QA-0060; gates 597 → **653/653**; S-39→0058, S-42→0059 fechados) + TASK-0049 (já cortada, re-paiada) = **falta 1: a 0049, gate humano** | **OPEN (7/8)** | — |
 | P-08 | Front web SSR, preview social e compartilhamento externo | a cortar | NOT_STARTED | — |
 
 ### P-01 — entregas
@@ -210,14 +210,15 @@ e ao fim, com o humano junto, a interop real (SC-016). Spec:
 - workspace: `C:\dev\squid-squad-net\squid-execution` (desde 2026-11-05). O caminho antigo
   `C:\Users\Ryke\Projetos\squid-squad-net` carrega rótulo de integridade que nega escrita e **não é
   mais o workspace**; fica apenas como backup. Ver `runs/RUNBOOK-retomada.md`.
-- nextAction: **dispatch automático em cadeia (ordem humana 2026-11-21 19:38:38)** — TASK-0054
-  fechou (DONE, QA-0054 PASSED 7/7, merge em develop); o ODEV encadeia DEV→QA das
-  **TASK-0055..0060** sem pedir `/odev continue` a cada veredito (todas seriais: 0055 → 0056 →
-  0057 → 0058 → 0059 → 0060). **Fora do automático: TASK-0049 (interop real) — gate humano,
-  dispatch só com o humano presente** (pares Docker locais validando logs). Nada de deploy
-  (nenhum push é meu de fazer — a CI só roda pós-push, gate humano; push humano ~2026-11-19/20
-  levou a P-06 a `origin/develop`; develop local está 4 commits à frente — merge+docs da
-  TASK-0054 feitos, sem push; gate local em 607/607).
+- nextAction: **PARADO no fim das tasks automáticas** — as **7 tasks novas da P-07
+  (TASK-0054..0060) estão DONE com QA PASSED na 1ª tentativa** (QA-0054..QA-0060; gates
+  597 → **653/653**; S-39 fechado na 0058, S-42 fechado na 0059, S-47/S-48 corrigidos na 0055,
+  S-52 fechado na 0060; 26 mutações can-fail por task, todas restauradas byte-exact).
+  Tudo mergeado em `develop` (28 commits à frente de `origin/develop`, **sem push — gate
+  humano**). Falta **uma entrega: a TASK-0049 (interop real Mastodon/Friendica, SC-016) —
+  GATE HUMANO**: dispatch só com o humano presente, com os pares Docker locais subidos e os
+  logs validados junto (decisão 6 da SPEC-0011 + re-paiamento 2026-11-19). Nada de deploy
+  (nenhum push é meu de fazer — a CI só roda pós-push; run do CI pós-push não verificado daqui).
 - **Git a partir da P-05 (gate PHASE 2026-11-11 20:42:28, modelo C)**: branch por task
   `task/TASK-NNNN-<slug>` desde `develop`; DEV commita ao fim da entrega, QA commita no PASSED,
   ODEV mergeia em `develop` no `DONE` e commita docs; push/force/`main`/apagar branch =
