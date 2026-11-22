@@ -1,0 +1,10 @@
+HEAD=77d1a44 commits-over-develop=1 commit-time-utc=2026-11-22 14:18:03Z (esperado 1 commit 77d1a44)
+commit-files=2 outside-touches=0 
+pkg-props-changed=0 pkg-files-in-commit=0 pkg-ref-added-lines=0 (esperado 0/0/0)
+backend-tracked-status=0 backend-untracked=1 rogue-untracked=0 (esperado 0/1/0)
+blobs-identical=2/2 (esperado 2/2)
+mtime-newer-than-commit=3 delta-vs-mutated=0 
+docs-status=15 entries: M docs/sdd/tasks/TASK-0059-import-kit-copia-instancia.md | ?? docs/sdd/qa/QA-0059-import-kit-copia-instancia.md | ?? docs/sdd/qa/QA-0059-linux-build.log | ?? docs/sdd/qa/QA-0059-linux-test-gate.log | ?? docs/sdd/qa/QA-0059-linux-test-importcopy.log | ?? docs/sdd/qa/QA-0059-linux2-build.log | ?? docs/sdd/qa/QA-0059-linux2-test-importcopy.log | ?? docs/sdd/qa/QA-0059-mutations-run1.log | ?? docs/sdd/qa/QA-0059-mutations.log | ?? docs/sdd/qa/QA-0059-scope.log | ?? docs/sdd/qa/QA-0059-verify.log | ?? docs/sdd/qa/qa-linux-task-0059.sh | ?? docs/sdd/qa/qa-linux2-task-0059.sh | ?? docs/sdd/qa/qa-mutate-task-0059.ps1 | ?? docs/sdd/qa/qa-scope-task-0059.ps1
+docs-unexpected=0  (esperado 0: so WIP do ODEV + artefatos da QA)
+tree-outside-docs-backend=0  (esperado 0)
+SUMMARY head=77d1a44 commits=1 commit-files=2 outside-touches=0 pkg-added=0 residue-backend=0 untracked-backend=1 rogue=0 blobs=2/2 mtime-delta=0 docs-unexpected=0 outside-tree=0 fails=0

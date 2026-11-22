@@ -1,0 +1,12 @@
+VERIFY M1 ac=AC-01 edit=1 hits=1 ok=true
+VERIFY-CYCLE M1 ac=AC-01 edits=1 ok=true why-present=true
+VERIFY M2 ac=AC-04 edit=1 hits=1 ok=true
+VERIFY-CYCLE M2 ac=AC-04 edits=1 ok=true why-present=true
+VERIFY M3 ac=AC-01 edit=1 hits=1 ok=true
+VERIFY M3 ac=AC-01 edit=2 hits=1 ok=true
+VERIFY-CYCLE M3 ac=AC-01 edits=2 ok=true why-present=true
+VERIFY M4 ac=AC-02 kind=revert ref=develop differs=true dev-blob=47cf2f8ec3d98287239abe8ccf5820a90fa10ab8
+VERIFY M5 ac=AC-03 edit=1 hits=1 ok=true
+VERIFY-CYCLE M5 ac=AC-03 edits=1 ok=true why-present=true
+VERIFY-ASCII non-ascii-bytes=0 ok=true
+VERIFY total=5 bad=0
