@@ -19,15 +19,17 @@ using Squid.Worker.Quota;
 namespace Squid.Tests.Backup;
 
 /// <summary>
-/// The five blocking drills of contract backup-recovery section 5 that belong to TASK-0056
-/// (SPEC-0012 section D), each one an end-to-end run of the real pieces: the coordinator and the
-/// pipeline of TASK-0054/0055 back up through <c>SqliteBackupStateSource</c>, the database the
-/// backup covered is deleted, and <see cref="RestorePipeline"/> brings it back — 100% of the
-/// aggregate hashes identical (SC-009), the interrupted run resumed from the intact <c>seqTo</c>
-/// with no Corrupt envelope ever accepted, an older <c>format</c> migrated and an unknown one
-/// refused out loud, a <c>keyEpoch</c> without a key refusing before anything is written, and the
-/// delta-only chain pinned as it works today. AC-06 then checks the read side confers and the
-/// status route publishes the drill the restore recorded.
+/// The blocking drills of contract backup-recovery section 5: the five of TASK-0056
+/// (SPEC-0012 section D) and the sixth, <c>restore-offsite</c>, of TASK-0057 — each one an
+/// end-to-end run of the real pieces: the coordinator and the pipeline of TASK-0054/0055 back up
+/// through <c>SqliteBackupStateSource</c>, the database the backup covered is deleted, and
+/// <see cref="RestorePipeline"/> brings it back — 100% of the aggregate hashes identical
+/// (SC-009), the interrupted run resumed from the intact <c>seqTo</c> with no Corrupt envelope
+/// ever accepted, an older <c>format</c> migrated and an unknown one refused out loud, a
+/// <c>keyEpoch</c> without a key refusing before anything is written, the delta-only chain pinned
+/// as it works today, and the off-site destination restoring with the local disk gone.
+/// AC-06 then checks the read side confers and the status route publishes the drill the restore
+/// recorded.
 /// </summary>
 [Trait("Category", "RestoreDrill")]
 [Collection("ServiceHost")] // one fact starts a host; hosts never overlap (localhost clustering)
@@ -228,6 +230,65 @@ public sealed class RestoreDrillTests
         Assert.True(new StorageReadiness(ProjectionDb.ConnectionOf(scenario.Db)).IsAccessible());
     }
 
+    [Fact] // AC-03 of TASK-0057 — the sixth drill of contract backup-recovery section 5
+    public async Task Restore_offsite_brings_back_the_complete_state_without_the_local_disk()
+    {
+        await using var scenario = await Scenario.CreateAsync(withOffsite: true);
+
+        // The coverage GAP-55 adjudicates — activity log + projections + quota, nothing more.
+        await File.WriteAllBytesAsync(Path.Combine(scenario.Blobs, "a.bin"), new byte[1000]);
+        var seeded = await scenario.SeedAsync(5);
+        var before = AggregateDigests.Of(seeded);
+        await scenario.ProjectOnceAsync(); // the pass the pump runs
+        await new QuotaReconciler(scenario.Quota, scenario.Blobs).ReconcileAsync();
+        var projectionsBefore = await scenario.ProjectionsAsync();
+        var quotaBefore = await ProjectionDb.ScalarAsync<long>(scenario.Db,
+            "SELECT used_bytes FROM quota_ledger");
+        Assert.Equal(1000, quotaBefore);
+
+        // Backup local + off-site: one row per destination, both verified (estado por destino).
+        var envelope = await scenario.BackupAsync();
+        Assert.Equal(0, envelope.SeqFrom); // the first run of a destination is the full window (§2)
+        Assert.Equal(2, await ProjectionDb.ScalarAsync<long>(scenario.Db,
+            "SELECT COUNT(*) FROM backup_envelope"));
+        Assert.Equal(2, await ProjectionDb.ScalarAsync<long>(scenario.Db,
+            "SELECT COUNT(*) FROM backup_envelope WHERE verified_at IS NOT NULL"));
+        Assert.Equal(
+            new[] { "local-disk", "s3-offsite" },
+            await ProjectionDb.QueryAsync<string>(scenario.Db,
+                "SELECT DISTINCT target_id FROM backup_envelope ORDER BY target_id"));
+        Assert.NotEmpty(await scenario.Offsite!.ListAsync(0, CancellationToken.None));
+
+        // "apagar o disco local": the backup volume itself is gone — and so is the database the
+        // backup covered, because with an intact database the comparison below would be vacuous.
+        scenario.DeleteVolume();
+        Assert.False(Directory.Exists(scenario.Volume));
+        scenario.DeleteDatabase();
+        Assert.Empty(await scenario.Target.ListAsync(0, CancellationToken.None)); // nothing local left
+
+        // Restore do off-site: the chain comes from the S3 destination alone.
+        var restore = await scenario.NewRestore(scenario.Offsite).RunAsync();
+        Assert.True(restore.Succeeded, restore.Error);
+        Assert.Equal(seeded.Length, restore.Report!.Events);
+
+        // Estado completo e hashes idênticos (SC-009) over exactly the adjudicated scope.
+        Assert.True(AggregateDigests.Matches(before, await scenario.DigestsAsync()),
+            "SC-009 exige 100% dos hashes idênticos por agregado após o restore off-site");
+        Assert.Equal(projectionsBefore, await scenario.ProjectionsAsync());
+        Assert.Equal(quotaBefore, await ProjectionDb.ScalarAsync<long>(scenario.Db,
+            "SELECT used_bytes FROM quota_ledger"));
+
+        // "/ready verde" through the route itself, over the restored database.
+        await using var host = await BackupHost.StartAsync(
+        [
+            "--Storage:Path=" + scenario.Db,
+            "--Logging:LogLevel:Default=Warning",
+            "--Backup:IntervalMinutes=0", // the scheduler has no business in this fact
+        ]);
+        var ready = await host.NewClient().SendAsync(HttpMethod.Get, "/ready");
+        Assert.Equal(HttpStatusCode.OK, ready.StatusCode);
+    }
+
     [Fact] // the drill ledger of contract §6, wired into GET /api/admin/backup/status
     public async Task The_drill_a_restore_records_stops_the_status_route_answering_null()
     {
@@ -311,20 +372,34 @@ public sealed class RestoreDrillTests
         public IQuotaLedger Quota { get; }
         public SqliteActivityLog Log { get; }
         public IActivityProjector Projector { get; }
-        public BackupCoordinatorGrain Coordinator { get; }
+        public BackupCoordinatorGrain Coordinator { get; private set; }
 
-        public static async Task<Scenario> CreateAsync()
+        /// <summary>The off-site destination of TASK-0057 — null unless the fact asked for it.</summary>
+        public FakeS3? S3 { get; private set; }
+
+        /// <summary>The S3CompatibleTarget bound to <see cref="S3"/>, or null for the local-only drills.</summary>
+        public S3CompatibleTarget? Offsite { get; private set; }
+
+        /// <summary>One scenario per fact; <paramref name="withOffsite"/> starts the fake S3 too.</summary>
+        public static async Task<Scenario> CreateAsync(bool withOffsite = false)
         {
             var scenario = new Scenario();
             await SchemaMigrator.ApplyAsync(
                 ProjectionDb.ConnectionOf(scenario.Db), SchemaMigrations.Load());
+            if (withOffsite)
+            {
+                scenario.S3 = await FakeS3.StartAsync("squid-backup", "AKIA0TASK0057DRL", "task-0057-drill-secret");
+                scenario.Offsite = new S3CompatibleTarget(scenario.S3.Options);
+                scenario.Coordinator = scenario.CoordinatorOver(scenario.Target, scenario.Offsite);
+            }
+
             return scenario;
         }
 
         /// <summary>The coordinator over any destination — a drill swaps the target to kill a run.</summary>
-        public BackupCoordinatorGrain CoordinatorOver(IBackupTarget target) =>
+        public BackupCoordinatorGrain CoordinatorOver(IBackupTarget target, IBackupTarget? offsite = null) =>
             new(new SqliteBackupStateSource(Activities),
-                new BackupRunner(target, Envelopes, new BackupPipeline(target, Envelopes), Keys));
+                new BackupRunner(target, Envelopes, new BackupPipeline(target, Envelopes), Keys, offsite));
 
         /// <summary>Appends <paramref name="count"/> realistic activity events (valid post summaries).</summary>
         public async Task<ActivityEvent[]> SeedAsync(int count)
@@ -369,13 +444,19 @@ public sealed class RestoreDrillTests
 
         public Task<RestoreResult> RestoreAsync() => NewRestore().RunAsync();
 
-        public RestorePipeline NewRestore() => new(
-            Target, Envelopes, Keys,
+        public RestorePipeline NewRestore() => NewRestore(Target);
+
+        /// <summary>The restore flow over any destination — TASK-0057 restores off-site.</summary>
+        public RestorePipeline NewRestore(IBackupTarget target) => new(
+            target, Envelopes, Keys,
             new SqliteRestoreDestination(Connection, Activities, Log, Projector, Quota, Blobs),
             Drills);
 
         /// <summary>"Apagar o diretório": the covered database is deleted before the restore.</summary>
         public void DeleteDatabase() => File.Delete(Db);
+
+        /// <summary>"Apagar o disco local": the backup volume itself is destroyed (restore-offsite).</summary>
+        public void DeleteVolume() => Directory.Delete(Volume, recursive: true);
 
         public async Task<IReadOnlyDictionary<string, AggregateDigest>> DigestsAsync() =>
             AggregateDigests.Of(await Activities.ReadAsync(0));
@@ -464,8 +545,14 @@ public sealed class RestoreDrillTests
             await File.WriteAllTextAsync(path, node.ToJsonString());
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
+            Offsite?.Dispose();
+            if (S3 is not null)
+            {
+                await S3.DisposeAsync();
+            }
+
             ProjectionDb.TryDelete(Db);
             try
             {
@@ -484,8 +571,6 @@ public sealed class RestoreDrillTests
             {
                 // Same: a leftover temp folder is not a product failure.
             }
-
-            return ValueTask.CompletedTask;
         }
 
         /// <summary>One <c>timeline_item</c> row, bound the way Dapper binds a constructor.</summary>
