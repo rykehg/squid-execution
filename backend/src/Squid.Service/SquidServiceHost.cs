@@ -264,6 +264,15 @@ public static class SquidServiceHost
         builder.Services.AddSingleton<RestorePipeline>();
         builder.Services.AddSingleton<IBackupStatusSource>(provider => new SqliteBackupStatusSource(
             connectionString, provider.GetRequiredService<SqliteRestoreDrillLedger>()));
+        // Redundancy (SPEC-0012 section G, TASK-0060): the score of contract section 6 read from
+        // the registry rows — never from a destination header (the S-47 honesty rule) — with the
+        // destinations THIS host writes as its denominator: the local volume always, the off-site
+        // one only when Backup:S3:* is complete, exactly the pair the runner above resolves.
+        builder.Services.AddSingleton<IBackupRedundancySource>(provider =>
+            new SqliteBackupRedundancySource(
+                connectionString,
+                provider.GetRequiredService<IBackupTarget>().TargetId,
+                provider.GetService<S3CompatibleTarget>()?.TargetId));
 
         // Inbox pipeline (SPEC-0011 section E, TASK-0044): the §3 order and its application, over
         // the window grain, the follow/like documents (no table, no migration — the actor-status
@@ -390,6 +399,21 @@ public static class SquidServiceHost
                     + "local reads and writes keep working");
         }
 
+        // S-52 (backlog, the shortcut BackupS3Options documents): a Backup:S3:* key that is set
+        // but unusable would disable the off-site destination in silence — the operator would
+        // only find out at the disaster. The boot says it out loud and keeps serving (the same
+        // never-a-boot-failure rule the federation warning above follows); the redundancy score
+        // then honestly answers 1/1 — sem recuperação de desastre.
+        if (s3Options is null && HasPartialS3Configuration(configuration))
+        {
+            app.Services.GetRequiredService<ILoggerFactory>()
+                .CreateLogger("Squid.Service.Backup")
+                .LogWarning(
+                    "off-site backup disabled: Backup:S3:* is present but unusable "
+                    + "(endpoint, bucket, access key and secret key must all be valid); "
+                    + "the local destination keeps working");
+        }
+
         if (trustProxy)
         {
             app.UseForwardedHeaders();
@@ -455,4 +479,17 @@ public static class SquidServiceHost
 
         return app;
     }
+
+    /// <summary>
+    /// S-52's tell: any <c>Backup:S3:*</c> key set at all. Read together with
+    /// <c>BackupS3Options.From</c> returning null it means "configured but unusable" — a typo'd
+    /// key or a half-filled destination — which is exactly the case the boot warning reports;
+    /// a host with no S3 key at all is the plain local-only default and says nothing.
+    /// </summary>
+    private static bool HasPartialS3Configuration(IConfiguration configuration) =>
+        configuration["Backup:S3:Endpoint"] is { Length: > 0 }
+        || configuration["Backup:S3:Region"] is { Length: > 0 }
+        || configuration["Backup:S3:Bucket"] is { Length: > 0 }
+        || configuration["Backup:S3:AccessKey"] is { Length: > 0 }
+        || configuration["Backup:S3:SecretKey"] is { Length: > 0 };
 }

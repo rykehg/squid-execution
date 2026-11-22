@@ -9,10 +9,10 @@ Write responsibility: the control block, AC list and Doubts are written by ODEV 
 ```yaml
 runId: R-20261120-01
 taskId: TASK-0060
-status: TASK_READY
+status: IN_DEVELOPMENT
 agent: odev
 phase: P-07
-sequence: 7
+sequence: 2
 createdAt: 2026-11-20 21:50:58
 updatedAt: 2026-11-20 21:50:58
 parent: SPEC-0012
@@ -103,6 +103,11 @@ Append only. One line per event, real timestamp, no edits to earlier lines. Form
 
 `- YYYY-MM-DD HH:MM:SS | ROLE | what was done or decided`
 - 2026-11-20 21:50:58 | odev | task created from SPEC-0012 (opcao A: redundancy.score + pagina HTML fina /admin/backup; blockedBy TASK-0057)
+- 2026-11-22 12:49:39 | odev | dispatch DEV (runId R-20261120-01, sequencia 1 -> 2, branch task/TASK-0060-tela-redundancia desde develop; encadeamento automatico - TASK-0059 DONE com QA-0059 PASSED 5/5, S-42 fechado; ULTIMA task nova antes da gate-humana TASK-0049)
+- 2026-11-22 13:58:56 | dev | feasibility round 1/2: baseline gate 647/647 exit 0 em develop; touches confirmados - port IBackupRedundancySource em Squid.Api/Admin (precedente IBackupKeySource) e SQL em Squid.Service (precedente SqliteKeyEpochStore), porque tocar Squid.Grains ou Squid.Worker violaria AC-06; D-01 resolvido por SPEC-0012 G - o sufixo depende do alvo off-site segurar o envelope mais recente verificado, tambem quando so existe o local (1/1 leva o sufixo); branch task/TASK-0060-tela-redundancia criada desde develop
+- 2026-11-22 13:59:11 | dev | implementado: redundancy.score no GET /api/admin/backup/status + rota GET /admin/backup servindo a pagina HTML inline (BackupPage, mesmos campos da secao 6) + SqliteBackupRedundancySource sobre o registry (numerador = alvos configurados com linha verificada na janela do envelope verificado mais recente, regra de honestidade S-47 - nunca o cabecalho do destino) + warning de boot S-52 quando Backup:S3:* existe mas nao parseia; 5 testes novos em RedundancyScoreTests, 5/5 verdes
+- 2026-11-22 14:07:52 | dev | gate final: sdd-test.ps1 test exit 0 com 652/652 (647 baseline + 5 novos, 11m08s); AC-06 fechado - nenhum arquivo alterado fora dos touches, nenhum .csproj tocado e zero pacote NuGet novo; AC-01 a AC-05 todos implementados e verificados por teste executado
+- 2026-11-22 14:10:32 | dev | correcao interna na verificacao: o fato AC-05 falhou so na limpeza (argumentos de Cleanup invertidos - volume x storage), as assercoes de score 1/2 -> 2/2 ja tinham passado; ordem corrigida e re-execucao do filtro com 5/5 exit 0 - nenhuma correcao veio de QA (correctionAttempts segue 0/2)
 
 ## Evidence
 
@@ -111,3 +116,10 @@ Commands actually run, with exit code, and where the proof lives. No evidence, n
 | Date/Time | Role | Command | Exit | Artifact |
 | --- | --- | --- | --- | --- |
 | — | — | — | — | — |
+| 2026-11-22 13:59:32 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test | 0 | docs/sdd/runs/test-runs/20261122-132737-test-gate.log (baseline pre-mudanca 647/647) |
+| 2026-11-22 13:59:33 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 build | 0 | backend/Squid.slnx (exit 0, nenhum warning novo nos arquivos da task) |
+| 2026-11-22 13:59:33 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test -TestFilter FullyQualifiedName~RedundancyScoreTests | 0 | docs/sdd/runs/test-runs/20261122-135540-test-filter.log (5/5 novos) |
+| 2026-11-22 13:59:34 | dev | git status --porcelain | 0 | 6 fontes novas/modificadas, todas nos touches, nenhum .csproj ou pacote novo |
+| 2026-11-22 14:07:52 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test | 0 | docs/sdd/runs/test-runs/20261122-140724-test-gate.log (gate final 652/652) |
+| 2026-11-22 14:07:53 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-state.ps1 check docs/sdd/tasks/TASK-0060-tela-redundancia.md | 0 | docs/sdd/tasks/TASK-0060-tela-redundancia.md |
+| 2026-11-22 14:10:33 | dev | powershell -NoProfile -ExecutionPolicy Bypass -File docs/sdd/_tools/sdd-test.ps1 test -TestFilter FullyQualifiedName~RedundancyScoreTests | 1 | docs/sdd/runs/test-runs/20261122-135312-test-filter.log (4/5 - so a limpeza do fato AC-05 com Cleanup invertido, corrigido na sequencia) |
