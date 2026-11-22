@@ -5,7 +5,8 @@ namespace Squid.Worker.Backup;
 /// ONLY ciphertext and non-sensitive metadata — no key ever transits; a target failure never
 /// corrupts the local backup; <see cref="ListAsync"/> is the single discovery of what was already
 /// sent (no parallel state in the coordinator); <see cref="DeleteAsync"/> exists for rotation and
-/// purge only. Implementations today: <see cref="LocalDiskTarget"/>; S3 is TASK-0057.
+/// purge only. Implementations today: <see cref="LocalDiskTarget"/> (primary) and
+/// <see cref="S3CompatibleTarget"/> (off-site, SPEC-0012 section B).
 /// </summary>
 public interface IBackupTarget
 {

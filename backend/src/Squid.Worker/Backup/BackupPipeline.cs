@@ -39,6 +39,10 @@ public sealed class BackupPipeline
     /// and returns the envelope as it was registered: `Verified` only when the re-read confirmed
     /// the hash, `Corrupt` when it did not. A target failure propagates — nothing half-verified is
     /// registered, and the local backup is never corrupted by the destination.
+    /// <paramref name="onPrepared"/> receives the envelope the moment it is complete (id, hash,
+    /// size) and before the send: the fanout of SPEC-0012 section B records that prepared state
+    /// when an off-site destination fails, so the registry keeps the state per destination
+    /// without this pipeline ever registering a failure itself.
     /// </summary>
     public async Task<BackupEnvelope> RunAsync<TSnapshot>(
         TSnapshot snapshot,
@@ -46,7 +50,8 @@ public sealed class BackupPipeline
         long seqTo,
         int keyEpoch,
         RootKey rootKey,
-        CancellationToken ct)
+        CancellationToken ct,
+        Action<BackupEnvelope>? onPrepared = null)
         where TSnapshot : notnull
     {
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -101,6 +106,7 @@ public sealed class BackupPipeline
             };
 
             // enviar → releitura e conferência do hash → verifiedAt (contract section 3).
+            onPrepared?.Invoke(envelope);
             await using (var source = new MemoryStream(blob, writable: false))
             {
                 await _target.PutAsync(envelope, source, ct);

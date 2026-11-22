@@ -220,7 +220,24 @@ public static class SquidServiceHost
         // callback can still replace any one of them (last registration wins).
         builder.Services.AddSingleton(_ => BackupOptions.From(configuration));
         builder.Services.AddSingleton<IBackupKeySource>(_ => new ConfiguredBackupKeySource(configuration));
-        builder.Services.AddSingleton<IBackupRunner, BackupRunner>();
+        // Off-site destination (SPEC-0012 section B, TASK-0057): S3CompatibleTarget is built ONLY
+        // when Backup:S3:* names endpoint/bucket/credential — the credential comes from
+        // configuration and nowhere else (contract section 7, AC-05); without those keys the
+        // runner below resolves no off-site target and the host is byte-identical to the
+        // local-only one. The read is eager, exactly like Backup:Local:Path above.
+        var s3Options = BackupS3Options.From(configuration);
+        if (s3Options is not null)
+        {
+            builder.Services.AddSingleton(new S3CompatibleTarget(s3Options));
+        }
+
+        builder.Services.AddSingleton<IBackupRunner>(provider => new BackupRunner(
+            provider.GetRequiredService<IBackupTarget>(),
+            provider.GetRequiredService<SqliteBackupEnvelopeStore>(),
+            provider.GetRequiredService<BackupPipeline>(),
+            provider.GetRequiredService<IBackupKeySource>(),
+            provider.GetService<S3CompatibleTarget>(),
+            provider.GetRequiredService<ILogger<BackupRunner>>()));
         builder.Services.AddSingleton<IBackupStateSource, SqliteBackupStateSource>();
         builder.Services.AddSingleton<BackupAlerter>();
         builder.Services.AddSingleton<BackupCoordinatorGrain>();
