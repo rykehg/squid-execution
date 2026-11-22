@@ -219,7 +219,10 @@ public static class SquidServiceHost
         // 1440) without any request. Registered before the test seam below, so a configure
         // callback can still replace any one of them (last registration wins).
         builder.Services.AddSingleton(_ => BackupOptions.From(configuration));
-        builder.Services.AddSingleton<IBackupKeySource>(_ => new ConfiguredBackupKeySource(configuration));
+        // The concrete source is kept beside the port: the rotation service below swaps the very
+        // instance this registration serves (SPEC-0012 section E), so both resolve the same key.
+        var backupKeys = new ConfiguredBackupKeySource(configuration);
+        builder.Services.AddSingleton<IBackupKeySource>(backupKeys);
         // Off-site destination (SPEC-0012 section B, TASK-0057): S3CompatibleTarget is built ONLY
         // when Backup:S3:* names endpoint/bucket/credential — the credential comes from
         // configuration and nowhere else (contract section 7, AC-05); without those keys the
@@ -341,6 +344,21 @@ public static class SquidServiceHost
             configuration["Squid:RecoveryKey"], instanceCopies);
         builder.Services.AddSingleton(federationKeys);
         builder.Services.AddSingleton<IActorSigningKeyRing>(federationKeys);
+
+        // Key rotation (SPEC-0012 section E, TASK-0058): the key_epoch ledger beside the backup
+        // registry (0010 — rows written only by rotation), the instance kit document over the same
+        // grain storage the recovery rows already use (no new table, no migration), and the
+        // service the rotate route drives — holding the SAME ring, key source and copy store the
+        // host just resolved, so its swap reaches every route without a restart.
+        builder.Services.AddSingleton<IKeyEpochStore>(_ => new SqliteKeyEpochStore(connectionString));
+        builder.Services.AddSingleton<IInstanceRecoveryKitStore>(
+            _ => new SqliteInstanceRecoveryKitStore(storage));
+        builder.Services.AddSingleton(provider => new KeyRotationService(
+            federationKeys,
+            backupKeys,
+            provider.GetRequiredService<IKeyEpochStore>(),
+            instanceCopies,
+            provider.GetRequiredService<IInstanceRecoveryKitStore>()));
 
         // SPEC-0011 section A (I-11, GAP-45): X-Forwarded-Proto/Host is honoured ONLY when the
         // operator declares a trusted proxy with Instance:ForwardedHeaders — without the key the

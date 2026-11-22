@@ -1,0 +1,10 @@
+HEAD=e3ec208 commits-over-develop=1 commit-time-utc=2026-11-22 10:37:42Z (esperado 1 commit e3ec208)
+commit-files=19 outside-touches=0 
+pkg-props-changed=0 pkg-files-in-commit=0 pkg-ref-added-lines=0 (esperado 0/0/0)
+backend-tracked-status=0 backend-untracked=1 rogue-untracked=0 (esperado 0/1/0)
+blobs-identical=6/6 (esperado 6/6)
+mtime-newer-than-commit=7 delta-vs-mutated=0 
+docs-status=11 entries: M docs/runbooks/README.md | M docs/sdd/ideas/BACKLOG.md | M docs/sdd/tasks/TASK-0058-rotacao-chave-rk-rc.md | ?? docs/sdd/qa/QA-0058-mutations-run1.log | ?? docs/sdd/qa/QA-0058-mutations.log | ?? docs/sdd/qa/QA-0058-rotacao-chave-rk-rc.md | ?? docs/sdd/qa/QA-0058-scope.log | ?? docs/sdd/qa/QA-0058-verify.log | ?? docs/sdd/qa/qa-linux-task-0058.sh | ?? docs/sdd/qa/qa-mutate-task-0058.ps1 | ?? docs/sdd/qa/qa-scope-task-0058.ps1
+docs-unexpected=0  (esperado 0: so WIP do ODEV + artefatos da QA)
+tree-outside-docs-backend=0  (esperado 0)
+SUMMARY head=e3ec208 commit-files=19 outside-touches=0 pkg-added=0 residue-backend=0 untracked-backend=1 rogue=0 blobs=6/6 mtime-delta=0 docs-unexpected=0 outside-tree=0 fails=0

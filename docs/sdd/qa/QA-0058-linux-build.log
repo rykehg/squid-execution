@@ -1,0 +1,8 @@
+build: backend/Squid.slnx
+/src/backend/src/Squid.Api/Media/MediaEndpoints.cs(86,16): warning CS0618: 'BadHttpRequestException' is obsolete: 'Moved to Microsoft.AspNetCore.Http.BadHttpRequestException. See https://aka.ms/badhttprequestexception for details.' [/src/backend/src/Squid.Api/Squid.Api.csproj]
+/src/backend/src/Squid.Worker/Thumbnail/ThumbnailGenerator.cs(41,13): warning CS0618: 'SKCanvas.DrawBitmap(SKBitmap, SKRect, SKPaint)' is obsolete: 'Use the overload with SKSamplingOptions instead.' [/src/backend/src/Squid.Worker/Squid.Worker.csproj]
+/src/backend/src/Squid.Service/BlurHashEncoder.cs(112,13): warning CS0618: 'SKCanvas.DrawBitmap(SKBitmap, SKRect, SKRect, SKPaint)' is obsolete: 'Use the overload with SKSamplingOptions instead.' [/src/backend/src/Squid.Service/Squid.Service.csproj]
+/src/backend/src/Squid.Service/Mp4Duration.cs(55,25): warning CS0675: Bitwise-or operator used on a sign-extended operand; consider casting to a smaller unsigned type first [/src/backend/src/Squid.Service/Squid.Service.csproj]
+/src/backend/src/Squid.Service/Mp4Duration.cs(55,25): warning CS0675: Bitwise-or operator used on a sign-extended operand; consider casting to a smaller unsigned type first [/src/backend/src/Squid.Service/Squid.Service.csproj]
+/src/backend/tests/Squid.Tests/Backup/BackupAdminRouteTests.cs(107,42): warning CS8604: Possible null reference argument for parameter 'input' in 'DateTimeOffset DateTimeOffset.Parse(string input)'. [/src/backend/tests/Squid.Tests/Squid.Tests.csproj]
+build: exit 0

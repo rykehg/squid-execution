@@ -1,0 +1,53 @@
+M1 PRE at=094922 ac=AC-01 hash=785331a75a7e014112ca206b99cdf4d029101a43 head-match=true edits=1
+M1 RUN wrapper=1 logExit=1 aprovado=7 falha=1 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095001-test-filter.log
+M1 RED-AC Squid.Tests.Recovery.KeyRotationRouteTests.Ac01_rotate_is_operator_only_and_retires_the_previous_epoch
+M1 EXPECT-OK expect=Ac01_rotate_is_operator_only_and_retires_the_previous_epoch
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE at=095001 ac=AC-01 hash=8cc162a4660b47398ecfb2262635ab1f42b8d4b4 head-match=true edits=2
+M2 RUN wrapper=1 logExit=1 aprovado=6 falha=2 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095040-test-filter.log
+M2 RED-AC Squid.Tests.Recovery.KeyRotationChainTests.Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works; Squid.Tests.Recovery.KeyRotationRouteTests.Ac01_rotate_is_operator_only_and_retires_the_previous_epoch
+M2 EXPECT-OK expect=Ac01_rotate_is_operator_only_and_retires_the_previous_epoch; Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE at=095041 ac=AC-02 hash=005e73d0a3037982f6c90879c0545bb3447bb6b1 head-match=true edits=1
+M3 RUN wrapper=1 logExit=1 aprovado=7 falha=1 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095120-test-filter.log
+M3 RED-AC Squid.Tests.Recovery.KeyRotationChainTests.Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M3 EXPECT-OK expect=Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE at=095120 ac=AC-04 hash=005e73d0a3037982f6c90879c0545bb3447bb6b1 head-match=true edits=1
+M4 RUN wrapper=3 logExit=1 aprovado=4 falha=4 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095157-test-filter.log
+M4 RED-AC Squid.Tests.Recovery.KeyRotationChainTests.Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works; Squid.Tests.Recovery.KeyRotationRouteTests.Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer; Squid.Tests.Recovery.KeyRotationRouteTests.Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key; Squid.Tests.Recovery.KeyRotationRingSwapTests.Ac05_after_rotation_the_runtime_ring_opens_the_rewrapped_copy_and_signs
+M4 EXPECT-OK expect=Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key; Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE at=095158 ac=AC-05 hash=005e73d0a3037982f6c90879c0545bb3447bb6b1 head-match=true edits=1
+M5 RUN wrapper=3 logExit=1 aprovado=4 falha=4 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095236-test-filter.log
+M5 RED-AC Squid.Tests.Recovery.KeyRotationChainTests.Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works; Squid.Tests.Recovery.KeyRotationRouteTests.Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer; Squid.Tests.Recovery.KeyRotationRouteTests.Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key; Squid.Tests.Recovery.KeyRotationRingSwapTests.Ac05_after_rotation_the_runtime_ring_opens_the_rewrapped_copy_and_signs
+M5 EXPECT-OK expect=Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key; Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE at=095236 ac=AC-04 hash=47cf2f8ec3d98287239abe8ccf5820a90fa10ab8 head-match=true edits=1
+M6 RUN wrapper=1 logExit=1 aprovado=6 falha=2 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095314-test-filter.log
+M6 RED-AC Squid.Tests.Recovery.KeyRotationRouteTests.Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer; Squid.Tests.Recovery.KeyRotationRouteTests.Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key
+M6 EXPECT-OK expect=Ac04_the_previous_credential_stops_verifying_and_the_reissued_kit_restores_the_root_key; Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer
+M6 RESTORE-OK hash=PRE residue=0
+M7 PRE at=095314 ac=AC-06 hash=785331a75a7e014112ca206b99cdf4d029101a43 head-match=true edits=1
+M7 RUN wrapper=1 logExit=1 aprovado=7 falha=1 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095352-test-filter.log
+M7 RED-AC Squid.Tests.Recovery.KeyRotationRouteTests.Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer
+M7 EXPECT-OK expect=Ac06_the_reissued_kit_is_answered_once_and_reaches_no_log_route_or_second_answer
+M7 RESTORE-OK hash=PRE residue=0
+M7b PRE at=095353 ac=AC-06 hash=785331a75a7e014112ca206b99cdf4d029101a43 head-match=true edits=1
+M7b RUN wrapper=0 logExit=0 aprovado=8 falha=0 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095432-test-filter.log
+M7b RED-AC NONE
+M7b PROBE-GREEN expect=NONE (no KeyRotation scenario fails under this mutation)
+M7b RESTORE-OK hash=PRE residue=0
+M8 PRE at=095433 ac=AC-03 hash=340649b5f512da9898706d4fb33b66d1c56bc53b head-match=true edits=1
+M8 RUN wrapper=1 logExit=1 aprovado=7 falha=1 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095515-test-filter.log
+M8 RED-AC Squid.Tests.Recovery.KeyRotationChainTests.Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M8 EXPECT-OK expect=Ac02_ac03_ac05_rotation_leaves_old_backups_identical_and_readable_while_the_new_chain_works
+M8 RESTORE-OK hash=PRE residue=0
+M9 PRE at=095516 ac=AC-05 hash=005e73d0a3037982f6c90879c0545bb3447bb6b1 head-match=true edits=1
+M9 RUN wrapper=3 logExit=1 aprovado=7 falha=1 total=8 filter=FullyQualifiedName~KeyRotation log=20261122-095559-test-filter.log
+M9 RED-AC Squid.Tests.Recovery.KeyRotationRingSwapTests.Ac05_after_rotation_the_runtime_ring_opens_the_rewrapped_copy_and_signs
+M9 EXPECT-OK expect=Ac05_after_rotation_the_runtime_ring_opens_the_rewrapped_copy_and_signs
+M9 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=8 falha=0 log=20261122-095641-test-filter.log
+UNTRACKED backend=1 rogue=0 (esperado 0: so o cenario novo da QA-0058)
+SUMMARY cycles=10 failed=0 residue-backend=0 green-aprovado=8 elapsed-s=440

@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Squid.Api.Auth;
@@ -15,6 +16,13 @@ public sealed record ImportRequest(
     string? EncryptedRootKey,
     string? WrappedSigningKey,
     DateTimeOffset? CreatedAt);
+
+/// <summary>
+/// The optional body of <c>POST /api/recovery/kit/verify</c>: with a <c>recoveryCredential</c>
+/// the caller proves it kept the INSTANCE kit (SPEC-0012 section E); without one the route keeps
+/// answering for the session's account kit exactly as contracts/http-api.md §3 says.
+/// </summary>
+public sealed record VerifyRequest(string? RecoveryCredential);
 
 /// <summary>
 /// Recovery surface of SPEC-0007 B-12..B-15 (FR-005..FR-007): the kit once over the wire, the
@@ -75,15 +83,41 @@ public static class RecoveryEndpoints
     /// <summary>
     /// <c>POST /api/recovery/kit/verify</c> (B-13): the caller proved it kept the kit, so the
     /// timestamp of that proof is recorded and <c>GET /api/auth/me</c> stops warning about it.
+    /// Since SPEC-0012 section E (TASK-0058) the same route also verifies the INSTANCE kit when
+    /// the body carries a <c>recoveryCredential</c> (AC-04): the credential rotation reissued is
+    /// compared against the persisted hash — the credential from before a rotation stops
+    /// verifying, and neither the credential itself nor any key is read back out of storage.
     /// </summary>
     private static async Task<IResult> VerifyAsync(
-        HttpContext context, IAuthStore store, IRecoveryStore recovery)
+        HttpContext context, IAuthStore store, IRecoveryStore recovery,
+        IInstanceRecoveryKitStore instanceKits)
     {
         var current = AuthSessions.Current(context);
         if (current is null)
         {
             return AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
                 "not_authenticated", "sessão inválida ou expirada.");
+        }
+
+        VerifyRequest? request = null;
+        if (context.Request.ContentLength is > 0)
+        {
+            try
+            {
+                request = await JsonSerializer.DeserializeAsync<VerifyRequest>(
+                    context.Request.Body, JsonOptions);
+            }
+            catch (JsonException)
+            {
+                return AuthErrors.Write(context, StatusCodes.Status422UnprocessableEntity,
+                    "validation_failed", "corpo inválido.");
+            }
+        }
+
+        if (request?.RecoveryCredential is not null)
+        {
+            return await VerifyInstanceAsync(context, instanceKits, request.RecoveryCredential,
+                current.Handle);
         }
 
         var account = await store.FindAsync(current.Handle);
@@ -97,6 +131,46 @@ public static class RecoveryEndpoints
         await recovery.MarkVerifiedAsync(current.Handle, now);
         return Results.Ok(new { handle = current.Handle, verifiedAt = now });
     }
+
+    /// <summary>
+    /// The instance half of the verification: hash-compare against the document the rotation
+    /// persisted. One refusal for everything — no kit yet, a malformed credential or the wrong
+    /// one answer alike (contracts/http-api.md §3's single typed 401, the import's rule).
+    /// </summary>
+    private static async Task<IResult> VerifyInstanceAsync(
+        HttpContext context, IInstanceRecoveryKitStore instanceKits, string credential, string handle)
+    {
+        byte[] submitted;
+        byte[] expected;
+        try
+        {
+            submitted = ParseRecoveryCredential(credential);
+            var kit = await instanceKits.FindAsync(context.RequestAborted);
+            expected = kit is null
+                ? []
+                : Convert.FromBase64String(kit.RecoveryCredentialHash);
+        }
+        catch (FormatException)
+        {
+            return InstanceCredentialDenied(context);
+        }
+
+        if (expected.Length != submitted.Length
+            || !CryptographicOperations.FixedTimeEquals(expected, SHA256.HashData(submitted)))
+        {
+            return InstanceCredentialDenied(context);
+        }
+
+        return Results.Json(
+            new { handle, scope = "instance", verifiedAt = DateTimeOffset.UtcNow });
+    }
+
+    /// <summary>The one typed refusal of an instance-kit verification attempt (SPEC-0012 section E, AC-04).</summary>
+    private static IResult InstanceCredentialDenied(HttpContext context) =>
+        AuthErrors.Write(context, StatusCodes.Status401Unauthorized,
+            "recovery_failed", "kit ou credencial inválidos.");
+
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     /// <summary>
     /// <c>POST /api/recovery/import</c> (B-14): opens the sealed `RK` with the password, rebuilds

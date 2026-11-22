@@ -22,6 +22,9 @@ public static class KeyDerivation
     /// <summary>HKDF info label that wraps a per-backup `DK` (SPEC-0012 section A, AC-05).</summary>
     public const string BackupKekInfo = "fed/backup-kek";
 
+    /// <summary>HKDF info label that wraps one retired epoch's `RK` inside the instance kit keyring (SPEC-0012 section E).</summary>
+    public const string KitKeyringInfo = "fed/kit-keyring";
+
     private const int AesKeySize = 32;
 
     /// <summary>The 32-byte Ed25519 public key for this `RK`.</summary>
@@ -109,6 +112,40 @@ public static class KeyDerivation
         ArgumentNullException.ThrowIfNull(wrapped);
 
         var kek = Derive(rootKey, BackupKekInfo, AesKeySize);
+        try
+        {
+            return AesGcmBox.Open(kek, wrapped);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(kek);
+        }
+    }
+
+    /// <summary>
+    /// Wraps one epoch's `RK` for the instance kit keyring (SPEC-0012 section E): the keyring row
+    /// the rotation persists opens only with the CURRENT instance key, so a database that leaks
+    /// still yields no root key — same shape as the backup `DK` under its own label.
+    /// </summary>
+    public static byte[] WrapKitKey(RootKey current, ReadOnlySpan<byte> epochKey)
+    {
+        var kek = Derive(current, KitKeyringInfo, AesKeySize);
+        try
+        {
+            return AesGcmBox.Seal(kek, epochKey);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(kek);
+        }
+    }
+
+    /// <summary>Opens a keyring row; a wrong current `RK` surfaces as the typed AEAD failure without material.</summary>
+    public static byte[] OpenKitKey(RootKey current, byte[] wrapped)
+    {
+        ArgumentNullException.ThrowIfNull(wrapped);
+
+        var kek = Derive(current, KitKeyringInfo, AesKeySize);
         try
         {
             return AesGcmBox.Open(kek, wrapped);
