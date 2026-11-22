@@ -25,8 +25,9 @@ public sealed record SuspendRequest(string? Justification);
 /// §7 that the gate protects, and — since SPEC-0009 section I (TASK-0031, FR-028/FR-008) — the
 /// denunciation queue, its <c>keep|remove|ban</c> resolution and the direct suspension of §7.
 /// Since SPEC-0012 section C (TASK-0055) it also carries the two backup routes the operator owns:
-/// the immediate run and the section 6 status — this file grows only what the phase's tasks
-/// table it.
+/// the immediate run and the section 6 status, plus — TASK-0060, section G — the thin HTML page
+/// that publishes the same state at <c>/admin/backup</c>. This file grows only what the phase's
+/// tasks table it.
 /// </summary>
 public static class AdminEndpoints
 {
@@ -70,6 +71,10 @@ public static class AdminEndpoints
         // own gate — an immediate run and the section 6 status.
         app.MapPost("/api/admin/backup/run", BackupRunAsync);
         app.MapGet("/api/admin/backup/status", BackupStatusAsync);
+        // SPEC-0012 section G (TASK-0060, opção A): the thin HTML page over that same state,
+        // outside the /api prefix because it is a view for a browser — the gate below is the
+        // same one, and the P-08 front replaces only this route's body.
+        app.MapGet("/admin/backup", BackupPageAsync);
         // SPEC-0012 section E (TASK-0058, fecha S-39): the operator's key rotation, same gate —
         // the one route that ever answers with the reissued kit, exactly once.
         app.MapPost("/api/admin/recovery/rotate", RotateAsync);
@@ -426,12 +431,14 @@ public static class AdminEndpoints
     /// <c>GET /api/admin/backup/status</c> (SPEC-0012 section C, contract §6): the six states
     /// <c>backup.*</c> and <c>restore.*</c> of the section, read from the registry behind its port
     /// and raised through <see cref="BackupAlerter"/> so a stale last success or a verify failure
-    /// is said out loud the moment anyone looks. The gate runs first, exactly like every other
-    /// route of this file.
+    /// is said out loud the moment anyone looks — plus <c>redundancy.score</c> (section G,
+    /// TASK-0060) read from the registry rows behind its own port, so the score counts what was
+    /// verified and never what a destination's header claims. The gate runs first, exactly like
+    /// every other route of this file.
     /// </summary>
     private static async Task<IResult> BackupStatusAsync(
         HttpContext context, IConfiguration configuration, IBackupStatusSource status,
-        BackupAlerter alerts)
+        IBackupRedundancySource redundancy, BackupAlerter alerts)
     {
         var (_, refusal) = Gate(context, configuration);
         if (refusal is not null)
@@ -440,6 +447,7 @@ public static class AdminEndpoints
         }
 
         var state = await status.ReadAsync(context.RequestAborted);
+        var score = await redundancy.ReadAsync(context.RequestAborted);
         alerts.Raise(state);
 
         return Results.Json(new
@@ -456,7 +464,32 @@ public static class AdminEndpoints
                 last_drill_at = state.LastDrillAt,
                 last_drill_result = state.LastDrillResult,
             },
+            redundancy = new { score = score.Score },
         });
+    }
+
+    /// <summary>
+    /// <c>GET /admin/backup</c> (SPEC-0012 section G, decision 3 — opção A): the thin HTML page
+    /// the backend itself serves over the very state the JSON route above answers — inline
+    /// markup, no front build, no package (AC-04). The ladder is the same gate first (no session
+    /// 401, outside <c>Instance:Operators</c> 403 <c>policy_denied</c>), then the two reads; the
+    /// alerts stay on the JSON route, so a browser and a curl never double-fire them. The P-08
+    /// front replaces this view only — the endpoint and its contract stay.
+    /// </summary>
+    private static async Task<IResult> BackupPageAsync(
+        HttpContext context, IConfiguration configuration, IBackupStatusSource status,
+        IBackupRedundancySource redundancy)
+    {
+        var (_, refusal) = Gate(context, configuration);
+        if (refusal is not null)
+        {
+            return refusal;
+        }
+
+        var state = await status.ReadAsync(context.RequestAborted);
+        var score = await redundancy.ReadAsync(context.RequestAborted);
+        return Results.Content(
+            BackupPage.Render(state, score), "text/html; charset=utf-8");
     }
 
     /// <summary>

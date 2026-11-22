@@ -1,0 +1,74 @@
+M1 PRE at=150630 ac=AC-01 kind=edit hash=6d8fd1fc96058187f8094a29fd3bc735e5c6114a head-match=true edits=1
+M1 RUN wrapper=3 logExit=1 aprovado=2 falha=4 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-150703-test-filter.log
+M1 RED Squid.Tests.Backup.RedundancyScoreTests.The_score_counts_the_destinations_holding_the_newest_verified_envelope :: Assert.Equal() Failure: Strings differ
+M1 RED Squid.Tests.Backup.RedundancyScoreTests.Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope :: Assert.Equal() Failure: Strings differ
+M1 RED Squid.Tests.Backup.RedundancyScoreTests.Ac01_The_score_format_is_the_one_doc_05_section_8_fixes :: Assert.Equal() Failure: Strings differ
+M1 RED Squid.Tests.Backup.RedundancyScoreTests.Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate :: Assert.Equal() Failure: Strings differ
+M1 GREEN-EXPECT-OK expect=S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent; Ac02_the_page_prints_the_drill_values_the_json_route_answers
+M1 EXPECT-OK expect=Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; The_score_counts_the_destinations_holding_the_newest_verified_envelope; Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate; Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE at=150703 ac=AC-01 kind=edit hash=7cf4349c6c0b0d8b11c451ca9fd833593542a6aa head-match=true edits=1
+M2 RUN wrapper=1 logExit=1 aprovado=5 falha=1 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-150737-test-filter.log
+M2 RED Squid.Tests.Backup.RedundancyScoreTests.The_score_counts_the_destinations_holding_the_newest_verified_envelope :: Assert.Equal() Failure: Strings differ
+M2 GREEN-EXPECT-OK expect=Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate; Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope; Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; Ac02_the_page_prints_the_drill_values_the_json_route_answers; S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent
+M2 EXPECT-OK expect=The_score_counts_the_destinations_holding_the_newest_verified_envelope
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE at=150737 ac=AC-02 kind=edit hash=a584ad4a796dd715de5fadc7aa2a8b371c81ec56 head-match=true edits=1
+M3 RUN wrapper=1 logExit=1 aprovado=4 falha=2 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-150812-test-filter.log
+M3 RED Squid.Tests.Backup.RedundancyScoreTests.Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope :: Assert.Contains() Failure: Sub-string not found
+M3 RED Squid.Tests.Backup.RedundancyScoreTests.Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate :: Assert.Contains() Failure: Sub-string not found
+M3 GREEN-EXPECT-OK expect=Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; The_score_counts_the_destinations_holding_the_newest_verified_envelope; Ac02_the_page_prints_the_drill_values_the_json_route_answers; S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent
+M3 EXPECT-OK expect=Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate; Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE at=150812 ac=AC-03 kind=edit hash=9aacd04cf4af95c57b801b210041c0ae9d70013f head-match=true edits=1
+M4 RUN wrapper=1 logExit=1 aprovado=5 falha=1 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-150844-test-filter.log
+M4 RED Squid.Tests.Backup.RedundancyScoreTests.Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate :: Assert.Equal() Failure: Values differ
+M4 GREEN-EXPECT-OK expect=Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope; Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; The_score_counts_the_destinations_holding_the_newest_verified_envelope; Ac02_the_page_prints_the_drill_values_the_json_route_answers; S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent
+M4 EXPECT-OK expect=Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE at=150845 ac=AC-04 kind=edit hash=a584ad4a796dd715de5fadc7aa2a8b371c81ec56 head-match=true edits=1
+M5 RUN wrapper=1 logExit=1 aprovado=5 falha=1 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-150919-test-filter.log
+M5 RED Squid.Tests.Backup.RedundancyScoreTests.Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate :: Assert.DoesNotContain() Failure: Sub-string found
+M5 GREEN-EXPECT-OK expect=Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope; Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; The_score_counts_the_destinations_holding_the_newest_verified_envelope; Ac02_the_page_prints_the_drill_values_the_json_route_answers; S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent
+M5 EXPECT-OK expect=Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE at=150919 ac=AC-05 kind=edit hash=7cf4349c6c0b0d8b11c451ca9fd833593542a6aa head-match=true edits=1
+M6 RUN wrapper=1 logExit=1 aprovado=4 falha=2 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-150954-test-filter.log
+M6 RED Squid.Tests.Backup.RedundancyScoreTests.The_score_counts_the_destinations_holding_the_newest_verified_envelope :: Assert.Equal() Failure: Strings differ
+M6 RED Squid.Tests.Backup.RedundancyScoreTests.Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope :: Assert.Equal() Failure: Strings differ
+M6 GREEN-EXPECT-OK expect=Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate; Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; Ac02_the_page_prints_the_drill_values_the_json_route_answers; S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent
+M6 EXPECT-OK expect=Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope; The_score_counts_the_destinations_holding_the_newest_verified_envelope
+M6 RESTORE-OK hash=PRE residue=0
+M7 PRE at=150954 ac=AC-01 kind=edit hash=7772415f7324052ee1b1d0060084a84be648162c head-match=true edits=1
+M7 RUN wrapper=1 logExit=1 aprovado=5 falha=1 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-151028-test-filter.log
+M7 RED Squid.Tests.Backup.RedundancyScoreTests.Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope :: Assert.Equal() Failure: Strings differ
+M7 GREEN-EXPECT-OK expect=Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate; The_score_counts_the_destinations_holding_the_newest_verified_envelope; Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; Ac02_the_page_prints_the_drill_values_the_json_route_answers; S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent
+M7 EXPECT-OK expect=Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope
+M7 RESTORE-OK hash=PRE residue=0
+M8 PRE at=151028 ac=S-52 kind=edit hash=7772415f7324052ee1b1d0060084a84be648162c head-match=true edits=1
+M8 RUN wrapper=1 logExit=1 aprovado=5 falha=1 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-151101-test-filter.log
+M8 RED Squid.Tests.Backup.RedundancyScoreTests.S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent :: Assert.Contains() Failure: Sub-string not found
+M8 GREEN-EXPECT-OK expect=Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate; Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope; Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; The_score_counts_the_destinations_holding_the_newest_verified_envelope; Ac02_the_page_prints_the_drill_values_the_json_route_answers
+M8 EXPECT-OK expect=S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent
+M8 RESTORE-OK hash=PRE residue=0
+M9 PRE at=151102 ac=S-52 kind=edit hash=7772415f7324052ee1b1d0060084a84be648162c head-match=true edits=1
+M9 RUN wrapper=1 logExit=1 aprovado=5 falha=1 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-151135-test-filter.log
+M9 RED Squid.Tests.Backup.RedundancyScoreTests.S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent :: Assert.DoesNotContain() Failure: Sub-string found
+M9 GREEN-EXPECT-OK expect=Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate; Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope; Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; The_score_counts_the_destinations_holding_the_newest_verified_envelope; Ac02_the_page_prints_the_drill_values_the_json_route_answers
+M9 EXPECT-OK expect=S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent
+M9 RESTORE-OK hash=PRE residue=0
+M10 PRE at=151136 ac=AC-02 kind=edit hash=a584ad4a796dd715de5fadc7aa2a8b371c81ec56 head-match=true edits=1
+M10 RUN wrapper=1 logExit=1 aprovado=5 falha=1 total=6 filter=FullyQualifiedName~RedundancyScore log=20261122-151210-test-filter.log
+M10 RED Squid.Tests.Backup.RedundancyScoreQaTests.Ac02_the_page_prints_the_drill_values_the_json_route_answers :: Assert.Contains() Failure: Sub-string not found
+M10 GREEN-EXPECT-OK expect=Ac01_ac02_ac03_ac04_The_status_and_the_thin_page_publish_the_state_behind_the_operator_gate; Ac05_The_score_moves_from_1_2_to_2_2_when_the_off_site_holds_the_newest_verified_envelope; Ac01_The_score_format_is_the_one_doc_05_section_8_fixes; The_score_counts_the_destinations_holding_the_newest_verified_envelope; S52_A_partial_off_site_configuration_warns_at_boot_and_the_default_stays_silent
+M10 EXPECT-OK expect=Ac02_the_page_prints_the_drill_values_the_json_route_answers
+M10 RESTORE-OK hash=PRE residue=0
+S1 PRE at=151211 ac=AC-06 kind=scope hash=975670aa79148ea3dff2760b691b7345aac552ab head-match=true edits=1
+S1 SCOPE-EXPECT-OK exit=1 (the scope scan FAILED as it must) SUMMARY head=ba9d32a commits=1 diff-files=8 outside-touches=1 pkg-added=0 residue-backend=1 untracked-backend=1 rogue=0 blobs=5/6 mtime-delta=0 docs-unexpected=0 outside-tree=0 fails=3
+S1 RESTORE-OK hash=PRE residue=0
+S2 PRE at=151214 ac=AC-04 kind=scope hash=3adc9d9b39901de3053e9e900c0a7a415f411bcf head-match=true edits=1
+S2 SCOPE-EXPECT-OK exit=1 (the scope scan FAILED as it must) SUMMARY head=ba9d32a commits=1 diff-files=8 outside-touches=1 pkg-added=1 residue-backend=1 untracked-backend=1 rogue=0 blobs=6/6 mtime-delta=0 docs-unexpected=0 outside-tree=0 fails=3
+S2 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=6 falha=0 log=20261122-151258-test-filter.log
+UNTRACKED backend=1 rogue=0 (esperado 1: so o cenario novo da QA-0060)
+SUMMARY cycles=12 failed=0 residue-backend=0 green-aprovado=6 elapsed-s=388

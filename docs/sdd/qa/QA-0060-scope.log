@@ -1,0 +1,10 @@
+HEAD=ba9d32a commits-over-develop=1 commit-time-utc=2026-11-22 17:10:56Z (esperado 1 commit ba9d32a)
+diff-files=7 outside-touches=0 
+pkg-props-changed=0 pkg-files-in-diff=0 pkg-ref-added-lines=0 (esperado 0/0/0)
+backend-tracked-status=0 backend-untracked=1 rogue-untracked=0 (esperado 0/1/0)
+blobs-identical=6/6 (esperado 6/6)
+mtime-newer-than-commit=7 delta-vs-mutated=0 
+docs-status=12 entries: M docs/sdd/tasks/TASK-0060-tela-redundancia.md | ?? docs/sdd/qa/QA-0060-linux-build.log | ?? docs/sdd/qa/QA-0060-linux-test-gate.log | ?? docs/sdd/qa/QA-0060-linux-test-redundancy.log | ?? docs/sdd/qa/QA-0060-mutations-run1.log | ?? docs/sdd/qa/QA-0060-mutations.log | ?? docs/sdd/qa/QA-0060-scope.log | ?? docs/sdd/qa/QA-0060-tela-redundancia.md | ?? docs/sdd/qa/QA-0060-verify.log | ?? docs/sdd/qa/qa-linux-task-0060.sh | ?? docs/sdd/qa/qa-mutate-task-0060.ps1 | ?? docs/sdd/qa/qa-scope-task-0060.ps1
+docs-unexpected=0  (esperado 0: so WIP do ODEV + artefatos da QA)
+tree-outside-docs-backend=0  (esperado 0)
+SUMMARY head=ba9d32a commits=1 diff-files=7 outside-touches=0 pkg-added=0 residue-backend=0 untracked-backend=1 rogue=0 blobs=6/6 mtime-delta=0 docs-unexpected=0 outside-tree=0 fails=0
