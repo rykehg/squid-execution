@@ -1,0 +1,43 @@
+M1 PRE at=013558 ac=AC-01 hash=51d2abfd7644f80619d56b54325220be3b87eb16 head-match=true find-hits=1
+M1 RUN wrapper=1 logExit=1 aprovado=1 falha=6 total=7 filter=FullyQualifiedName~Squid.Tests.Backup.RestoreDrillTests log=20261122-013621-test-filter.log
+M1 RED-AC Squid.Tests.Backup.RestoreDrillTests.Ac05_The_second_backup_carries_only_the_delta_and_the_chain_still_restores; Squid.Tests.Backup.RestoreDrillTests.The_drill_a_restore_records_stops_the_status_route_answering_null; Squid.Tests.Backup.RestoreDrillTests.Ac06_After_the_restore_projections_quota_and_readiness_all_confer; Squid.Tests.Backup.RestoreDrillTests.Ac01_Roundtrip_restores_100_percent_of_the_aggregate_hashes; Squid.Tests.Backup.RestoreDrillTests.Ac03_An_older_format_is_migrated_and_an_unknown_one_fails_explicitly; Squid.Tests.Backup.RestoreDrillTests.Ac02_Interrupted_backup_resumes_from_the_intact_seqTo_and_corrupt_is_never_accepted
+M1 EXPECT-OK expect=Ac01_Roundtrip_restores_100_percent_of_the_aggregate_hashes
+M1 RESTORE-OK hash=PRE residue=0
+M2 PRE at=013621 ac=AC-02 hash=edd18436f2cd1e8eb8f908f965e5af653d75f028 head-match=true find-hits=1
+M2 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 filter=FullyQualifiedName~Squid.Tests.Backup.RestoreDrillTests log=20261122-013648-test-filter.log
+M2 RED-AC Squid.Tests.Backup.RestoreDrillTests.Ac02_Interrupted_backup_resumes_from_the_intact_seqTo_and_corrupt_is_never_accepted
+M2 EXPECT-OK expect=Ac02_Interrupted_backup_resumes_from_the_intact_seqTo_and_corrupt_is_never_accepted
+M2 RESTORE-OK hash=PRE residue=0
+M3 PRE at=013648 ac=AC-03 hash=7b2eb04fabd5e727eff4ab6174eeabf148b326f4 head-match=true find-hits=1
+M3 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 filter=FullyQualifiedName~Squid.Tests.Backup.RestoreDrillTests log=20261122-013714-test-filter.log
+M3 RED-AC Squid.Tests.Backup.RestoreDrillTests.Ac03_An_older_format_is_migrated_and_an_unknown_one_fails_explicitly
+M3 EXPECT-OK expect=Ac03_An_older_format_is_migrated_and_an_unknown_one_fails_explicitly
+M3 RESTORE-OK hash=PRE residue=0
+M4 PRE at=013714 ac=AC-04 hash=edd18436f2cd1e8eb8f908f965e5af653d75f028 head-match=true find-hits=1
+M4 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 filter=FullyQualifiedName~Squid.Tests.Backup.RestoreDrillTests log=20261122-013739-test-filter.log
+M4 RED-AC Squid.Tests.Backup.RestoreDrillTests.Ac04_A_keyEpoch_without_a_key_in_the_kit_fails_and_destroys_nothing
+M4 EXPECT-OK expect=Ac04_A_keyEpoch_without_a_key_in_the_kit_fails_and_destroys_nothing
+M4 RESTORE-OK hash=PRE residue=0
+M5 PRE at=013739 ac=AC-05 hash=8baa93a39e7be3e22858535b124588a4185af4c9 head-match=true find-hits=1
+M5 RUN wrapper=1 logExit=1 aprovado=5 falha=2 total=7 filter=FullyQualifiedName~Squid.Tests.Backup.RestoreDrillTests log=20261122-013804-test-filter.log
+M5 RED-AC Squid.Tests.Backup.RestoreDrillTests.Ac05_The_second_backup_carries_only_the_delta_and_the_chain_still_restores; Squid.Tests.Backup.RestoreDrillTests.Ac02_Interrupted_backup_resumes_from_the_intact_seqTo_and_corrupt_is_never_accepted
+M5 EXPECT-OK expect=Ac05_The_second_backup_carries_only_the_delta_and_the_chain_still_restores
+M5 RESTORE-OK hash=PRE residue=0
+M6 PRE at=013805 ac=AC-06 hash=d6161a7a10779beb0f83e8ae4dd5be896c912a3e head-match=true find-hits=1
+M6 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 filter=FullyQualifiedName~Squid.Tests.Backup.RestoreDrillTests log=20261122-013828-test-filter.log
+M6 RED-AC Squid.Tests.Backup.RestoreDrillTests.Ac06_After_the_restore_projections_quota_and_readiness_all_confer
+M6 EXPECT-OK expect=Ac06_After_the_restore_projections_quota_and_readiness_all_confer
+M6 RESTORE-OK hash=PRE residue=0
+M7 PRE at=013829 ac=AC-06 hash=6079bdfab933f4115a65f200014c0cdc8a5d5282 head-match=true find-hits=1
+M7 RUN wrapper=1 logExit=1 aprovado=6 falha=1 total=7 filter=FullyQualifiedName~Squid.Tests.Backup.RestoreDrillTests log=20261122-013853-test-filter.log
+M7 RED-AC Squid.Tests.Backup.RestoreDrillTests.The_drill_a_restore_records_stops_the_status_route_answering_null
+M7 EXPECT-OK expect=The_drill_a_restore_records_stops_the_status_route_answering_null
+M7 RESTORE-OK hash=PRE residue=0
+M8 PRE at=013853 ac=SECTION-4-STEP-4 hash=edd18436f2cd1e8eb8f908f965e5af653d75f028 head-match=true find-hits=1
+M8 RUN wrapper=0 logExit=0 aprovado=7 falha=0 total=7 filter=FullyQualifiedName~Squid.Tests.Backup.RestoreDrillTests log=20261122-013917-test-filter.log
+M8 RED-AC NONE
+M8 PROBE-GREEN expect=NONE (no drill fails without the section 4 hash step)
+M8 RESTORE-OK hash=PRE residue=0
+GREEN wrapper=0 logExit=0 aprovado=7 falha=0 log=20261122-013940-test-filter.log
+UNTRACKED backend=0 (esperado 0: a QA nao acrescentou arquivos em backend)
+SUMMARY cycles=8 failed=0 residue-backend=0 green-aprovado=7 elapsed-s=222

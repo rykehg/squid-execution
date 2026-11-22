@@ -1,0 +1,28 @@
+=== QA-0056 runbook spot-check - 2026-11-22 01:47:11 - cwd C:\dev\squid-squad-net\squid-execution
+OK   pre-condicao binario :: C:\dev\squid-squad-net\squid-execution\backend\src\Squid.Service\bin\Debug\net10.0\Squid.Service.dll
+OK   estado limpo na raiz :: db-existe=False backups-existe=False (esperado False/False; nada aqui foi criado por mim - aborto, nao apago)
+OK   porta 8080 livre :: listeners=0
+RK gerada (32 bytes CSPRNG, valor NUNCA registrado aqui) e RK errada de controle gerada
+servico subiu PID=29388 (ASPNETCORE_URLS=http://127.0.0.1:8080, Instance:Operators=operador)
+OK   health do servico :: curl -fsS http://localhost:8080/health exit=0
+OK   A.1 register :: register=201 session-existe=True csrf-existe=True
+OK   A.2 backup/run :: exit=0 Verified=True seqFrom=True
+A.2 body={"id":"bk-2026-11-22T0447Z-d1b1a288","keyEpoch":1,"seqFrom":0,"seqTo":0,"contentHash":"sha256:4cd56dc424538c513248e19498a2b68f4abfd5541f82acd7e86871303d8b493b","sizeBytes":87,"targetId":"local-disk","createdAt":"2026-11-22T04:47:16.6854579+00:00","verifiedAt":"2026-11-22T04:47:16.7412126+00:00","format":1,"status":"Verified"}
+OK   A.3 status :: exit=0 last_success_at=True envelopes_count=True
+A.3 body={"backup":{"last_success_at":"2026-11-22T04:47:16.7412126+00:00","envelopes_count":1,"bytes_total":87,"verify_failures":0},"restore":{"last_drill_at":null,"last_drill_result":null}}
+service parado
+OK   B.1 parar o servico :: PID encerrado; o arquivo de destino fica livre
+OK   B.2 Remove-Item :: arquivo ausente depois do B.2: True
+OK   B.3 restore (RK do kit) :: exit=0 stdout=restore: ok — envelopes=1 eventos=0 agregados=0 seqTo=0
+B.3 out=restore: ok — envelopes=1 eventos=0 agregados=0 seqTo=0
+OK   B.3 recusa com RK errada :: exit=1 stderr=dotnet.exe : restore: falhou — o backup não pôde ser aberto com a chave do kit No C:\dev\squid-squad-net\squid-execution\docs\sdd\qa\qa-runbook-task-0056.ps1:148 caractere:7 + $wk = & dotnet backend/src/Squid.Service/bin/Debug/net10.0/Squid.Serv ... + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ + CategoryInfo : NotSpecified: (restore: falhou... a chave do kit:String) [], RemoteException + FullyQualifiedErrorId : NativeCommandError
+B.3 wrong-key out=dotnet.exe : restore: falhou — o backup não pôde ser aberto com a chave do kit No C:\dev\squid-squad-net\squid-execution\docs\sdd\qa\qa-runbook-task-0056.ps1:148 caractere:7 + $wk = & dotnet backend/src/Squid.Service/bin/Debug/net10.0/Squid.Serv ... + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ + CategoryInfo : NotSpecified: (restore: falhou... a chave do kit:String) [], RemoteException + FullyQualifiedErrorId : NativeCommandError
+servico (2) subiu PID=41688 sobre o banco restaurado
+OK   V.1 health :: curl -fsS http://localhost:8080/health exit=0
+OK   V.2 ready :: curl -fsS http://localhost:8080/ready exit=0 (sobre o banco restaurado)
+OK   V.4 sessao nova apos o restore :: register=201
+OK   V.4 status restore: passed :: exit=0 passed=True drill-at-preenchido=True
+V.4 body={"backup":{"last_success_at":null,"envelopes_count":0,"bytes_total":0,"verify_failures":0},"restore":{"last_drill_at":"2026-11-22T04:47:18.0792552+00:00","last_drill_result":"restore: passed"}}
+service parado
+OK   teardown limpo :: db=False backups=False (esperado False/False)
+SUMMARY fails=0 (secao C - ciclo podman P-01 - fora do escopo AC-07: nao executada por esta QA)
